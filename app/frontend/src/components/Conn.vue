@@ -252,23 +252,15 @@ const selectNode = async (node) => {
   console.log('选中节点:', node)
   spin_loading.value = true
   try {
-    const res = await TestClient(node.name, node)
-
-    console.log(res)
+    const res = await SetConnect(node.name, node, false)
     if (res.err !== "") {
       message.error("连接失败：" + res.err)
     } else {
       message.success('连接成功')
-      const res = await SetConnect(node.name, node, false)
-      if (res.err !== "") {
-        message.error("连接失败：" + res.err)
-      } else {
-        emitter.emit('menu_select', "节点")
-        emitter.emit('selectNode', node)
-      }
-    }
+      emitter.emit('menu_select', "节点")
+      emitter.emit('selectNode', node)
+  }
   }catch (e) {
-    console.trace()
     message.error(e)
   }
   spin_loading.value = false
