@@ -3,13 +3,13 @@
     <n-flex vertical>
       <n-flex align="center">
         <h2 style="width: 42px;">集群</h2>
-        <n-text>共有 {{ esNodes.length }} 个</n-text>
+        <n-text>共有 {{ Nodes.length }} 个</n-text>
         <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">添加集群</n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
 
         <n-grid :x-gap="12" :y-gap="12" :cols="4">
-          <n-gi v-for="node in esNodes" :key="node.id">
+          <n-gi v-for="node in Nodes" :key="node.id">
             <n-card :title="node.name" @click="selectNode(node)" hoverable class="conn_card">
 
               <template #header-extra>
@@ -23,7 +23,7 @@
                         删除
                       </n-button>
                     </template>
-                    确定删除该节点吗？
+                    确定删除吗？
                   </n-popconfirm>
                 </n-space>
               </template>
@@ -44,39 +44,57 @@
             ref="formRef"
             :model="currentNode"
             :rules="{
-              name: {required: true, message: '请输入名称', trigger: 'blur'},
-              bootstrap_servers: {required: true, message: '请输入kafka连接地址', trigger: 'blur'},
-              port: {required: true, type: 'number', message: '请输入有效的端口号', trigger: 'blur'},
+              name: {required: true, message: '请输入昵称', trigger: 'blur'},
+              bootstrap_servers: {required: true, message: '请输入连接地址', trigger: 'blur'},
             }"
             label-placement="left"
         >
-          <n-form-item label="名称" path="name">
+          <n-form-item label="昵称" path="name">
             <n-input v-model:value="currentNode.name" placeholder="输入名称"/>
           </n-form-item>
-          <n-form-item label="bootstrap_servers" path="bootstrap_servers">
-            <n-input v-model:value="currentNode.host" placeholder="127.0.0.1:9092"/>
+
+          <n-form-item label="连接地址" path="bootstrap_servers">
+            <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
           </n-form-item>
-          <n-form-item label="用户名" path="username">
-            <n-input v-model:value="currentNode.username" placeholder="输入用户名"/>
+
+          <n-form-item label="使用 TLS" path="tls">
+            <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
-          <n-form-item label="密码" path="password">
+
+          <n-form-item label="跳过 TLS 验证" path="skipTLSVerify">
+            <n-switch checked-value="enable" unchecked-value="disable" value="enable" v-model:value="currentNode.skipTLSVerify"/>
+          </n-form-item>
+
+          <n-form-item label="TLS certFile" path="tls_cert_file">
+            <n-input v-model:value="currentNode.tls_cert_file" placeholder="输入 pem 证书路径"/>
+          </n-form-item>
+
+          <n-form-item label="TLS keyFile" path="tls_key_file">
+            <n-input v-model:value="currentNode.tls_key_file" placeholder="输入 key 私钥路径"/>
+          </n-form-item>
+
+          <n-form-item label="TLS CA 证书" path="tls_ca_file">
+            <n-input v-model:value="currentNode.tls_ca_file" placeholder="输入 CA 证书路径"/>
+          </n-form-item>
+
+          <n-form-item label="使用 SASL" path="sasl">
+            <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.sasl"/>
+          </n-form-item>
+
+          <n-form-item label="SASL 机制" path="sasl_mechanism">
+            <n-dropdown :options="sasl_mechanism_options"  @select="handleSelect"><n-button>{{currentNode.sasl_mechanism || '请选择'}}</n-button></n-dropdown>
+          </n-form-item>
+
+          <n-form-item label="SASL 用户名" path="sasl_user">
+            <n-input v-model:value="currentNode.sasl_user" placeholder="输入用户名"/>
+          </n-form-item>
+
+          <n-form-item label="SASL 密码" path="sasl_pwd">
             <n-input
-                v-model:value="currentNode.password"
+                v-model:value="currentNode.sasl_pwd"
                 type="password"
                 placeholder="输入密码"
             />
-          </n-form-item>
-
-          <n-form-item label="使用 SSL" path="useSSL">
-            <n-switch v-model:value="currentNode.useSSL"/>
-          </n-form-item>
-
-          <n-form-item label="跳过 SSL 验证" path="skipSSLVerify">
-            <n-switch v-model:value="currentNode.skipSSLVerify"/>
-          </n-form-item>
-
-          <n-form-item label="CA 证书" path="caCert">
-            <n-input v-model:value="currentNode.caCert" type="textarea" placeholder="输入 CA 证书内容"/>
           </n-form-item>
 
         </n-form>
@@ -98,21 +116,52 @@ import {useMessage} from 'naive-ui'
 import {renderIcon} from "../utils/common";
 import {AddFilled} from "@vicons/material";
 import emitter from "../utils/eventBus";
-import {SetConnect} from "../../wailsjs/go/service/Service";
+import {SetConnect, TestClient} from "../../wailsjs/go/service/Service";
 import {GetConfig, SaveConfig} from "../../wailsjs/go/config/AppConfig";
 
 
 const message = useMessage()
 
-const esNodes = ref([])
+const Nodes = ref([])
 
 const showEditDrawer = ref(false)
-const currentNode = ref({})
+const currentNode = ref({
+  id: 0,
+  name: '',
+  bootstrap_servers: '',
+  tls: 'disable',
+  skipTLSVerify: 'true',
+  tls_cert_file: '',
+  tls_key_file: '',
+  tls_ca_file: '',
+  sasl: 'disable',
+  sasl_mechanism: "PLAIN",
+  sasl_user: '',
+  sasl_pwd: '',
+})
 const isEditing = ref(false)
 const spin_loading = ref(false)
 const test_connect_loading = ref(false)
+const sasl_mechanism_options = [
+  {
+    label: 'PLAIN',
+    key: 'PLAIN'
+  },
+  {
+    label: 'SCRAM-SHA-256',
+    key: 'SCRAM-SHA-256'
+  },
+  {
+    label: 'SCRAM-SHA-512',
+    key: 'SCRAM-SHA-512'
+  },
+  {
+    label: 'GSSAPI',
+    key: 'SASLTypeGSSAPI'
+  },
+]
 
-const drawerTitle = computed(() => isEditing.value ? '编辑 ES 连接' : '添加 ES 连接')
+const drawerTitle = computed(() => isEditing.value ? '编辑连接' : '添加连接')
 
 const formRef = ref(null)
 
@@ -123,7 +172,7 @@ onMounted(async () => {
 const refreshNodeList = async () => {
   spin_loading.value = true
   const config = await GetConfig()
-  esNodes.value = config.connects
+  Nodes.value = config.connects
   spin_loading.value = false
 }
 
@@ -134,16 +183,7 @@ function editNode(node) {
 }
 
 const addNewNode = async () => {
-  currentNode.value = {
-    name: '',
-    host: '',
-    port: 9200,
-    username: '',
-    password: '',
-    useSSL: false,
-    skipSSLVerify: false,
-    caCert: ''
-  }
+  currentNode.value = {}
   isEditing.value = false
   showEditDrawer.value = true
 }
@@ -155,24 +195,20 @@ const saveNode = async () => {
       const config = await GetConfig()
       // edit
       if (isEditing.value) {
-        console.log("edit")
-        const index = esNodes.value.findIndex(node => node.id === currentNode.value.id)
-        console.log(index)
-        console.log(currentNode.value)
+        const index = Nodes.value.findIndex(node => node.id === currentNode.value.id)
         if (index !== -1) {
-          esNodes.value[index] = {...currentNode.value}
+          Nodes.value[index] = {...currentNode.value}
           console.log(currentNode.value)
         }
       } else {
         // add
-        const newId = Math.max(...esNodes.value.map(node => node.id), 0) + 1
-        esNodes.value.push({...currentNode.value, id: newId})
+        const newId = Math.max(...Nodes.value.map(node => node.id), 0) + 1
+        Nodes.value.push({...currentNode.value, id: newId})
       }
       console.log(config)
 
       // 保存
-      config.connects = esNodes.value
-      console.log(config)
+      config.connects = Nodes.value
       await SaveConfig(config)
       showEditDrawer.value = false
 
@@ -185,12 +221,12 @@ const saveNode = async () => {
 }
 
 const deleteNode = async (id) => {
-  console.log(esNodes.value)
+  console.log(Nodes.value)
   console.log(id)
-  esNodes.value = esNodes.value.filter(node => node.id !== id)
-  console.log(esNodes.value)
+  Nodes.value = Nodes.value.filter(node => node.id !== id)
+  console.log(Nodes.value)
   const config = await GetConfig()
-  config.connects = esNodes.value
+  config.connects = Nodes.value
   await SaveConfig(config)
   await refreshNodeList()
   message.success('删除成功')
@@ -199,10 +235,9 @@ const deleteNode = async (id) => {
 const test_connect = async () => {
   test_connect_loading.value = true
   try {
-    const node = currentNode.value
-    const res = await TestClient(node.host, node.username, node.password, node.caCert, node.useSSL, node.skipSSLVerify)
-    if (res !== "") {
-      message.error("连接失败：" + res)
+    const res = await TestClient(currentNode.value.name, currentNode.value)
+    if (res.err !== "") {
+      message.error("连接失败：" + res.err)
     } else {
       message.success('连接成功')
     }
@@ -211,6 +246,7 @@ const test_connect = async () => {
   }
   test_connect_loading.value = false
 }
+
 const selectNode = async (node) => {
   // 这里实现切换菜单的逻辑
   console.log('选中节点:', node)
@@ -229,6 +265,10 @@ const selectNode = async (node) => {
     emitter.emit('menu_select', "节点")
     emitter.emit('selectNode', node)
   }
+}
+
+const handleSelect = (key) => {
+  currentNode.value.sasl_mechanism = key
 }
 </script>
 

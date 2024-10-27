@@ -3,12 +3,16 @@ export namespace types {
 	export class Connect {
 	    id: number;
 	    name: string;
-	    host: string;
-	    username: string;
-	    password: string;
-	    useSSL: boolean;
-	    skipSSLVerify: boolean;
-	    caCert: string;
+	    bootstrap_servers: string;
+	    tls: string;
+	    skipTLSVerify: string;
+	    tls_cert_file: string;
+	    tls_key_file: string;
+	    tls_ca_file: string;
+	    sasl: string;
+	    sasl_mechanism: string;
+	    sasl_user: string;
+	    sasl_pwd: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Connect(source);
@@ -18,12 +22,16 @@ export namespace types {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
-	        this.host = source["host"];
-	        this.username = source["username"];
-	        this.password = source["password"];
-	        this.useSSL = source["useSSL"];
-	        this.skipSSLVerify = source["skipSSLVerify"];
-	        this.caCert = source["caCert"];
+	        this.bootstrap_servers = source["bootstrap_servers"];
+	        this.tls = source["tls"];
+	        this.skipTLSVerify = source["skipTLSVerify"];
+	        this.tls_cert_file = source["tls_cert_file"];
+	        this.tls_key_file = source["tls_key_file"];
+	        this.tls_ca_file = source["tls_ca_file"];
+	        this.sasl = source["sasl"];
+	        this.sasl_mechanism = source["sasl_mechanism"];
+	        this.sasl_user = source["sasl_user"];
+	        this.sasl_pwd = source["sasl_pwd"];
 	    }
 	}
 	export class Config {
@@ -65,6 +73,50 @@ export namespace types {
 		}
 	}
 	
+	export class GroupInfo {
+	    Group: string;
+	    Topics: {[key: string]: PartitionOffset[]};
+	    TotalLag: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GroupInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Group = source["Group"];
+	        this.Topics = source["Topics"];
+	        this.TotalLag = source["TotalLag"];
+	    }
+	}
+	export class ResultResp {
+	    result: {[key: string]: any};
+	    err: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ResultResp(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.result = source["result"];
+	        this.err = source["err"];
+	    }
+	}
+	export class ResultsResp {
+	    results: any[];
+	    err: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ResultsResp(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.results = source["results"];
+	        this.err = source["err"];
+	    }
+	}
 	export class Tag {
 	    tag_name: string;
 	    body: string;
