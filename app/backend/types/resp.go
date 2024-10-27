@@ -46,3 +46,19 @@ type PartitionOffset struct {
 	Offset    int64
 	Lag       int64
 }
+
+// BrokerConfig Broker配置结构
+type BrokerConfig struct {
+	Name      string          `json:"name"`
+	Value     string          `json:"value"`
+	Source    string          `json:"source"` // DYNAMIC_BROKER_CONFIG, DEFAULT_CONFIG, STATIC_BROKER_CONFIG
+	ReadOnly  bool            `json:"read_only"`
+	Sensitive bool            `json:"sensitive"`
+	Synonyms  []ConfigSynonym `json:"synonyms,omitempty"`
+}
+
+type ConfigSynonym struct {
+	Name   string `json:"name"`
+	Value  string `json:"value"`
+	Source string `json:"source"`
+}

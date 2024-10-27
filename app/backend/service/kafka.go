@@ -6,7 +6,9 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/IBM/sarama"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -36,7 +38,7 @@ func NewKafkaService() *Service {
 	return &Service{}
 }
 
-func (k *Service) SetConnect(connectName string, conn map[string]string, isTest bool) *types.ResultResp {
+func (k *Service) SetConnect(connectName string, conn map[string]interface{}, isTest bool) *types.ResultResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
@@ -52,8 +54,9 @@ func (k *Service) SetConnect(connectName string, conn map[string]string, isTest 
 
 		// 如果需要证书认证
 		if conn["tls_cert_file"] != "" && conn["tls_key_file"] != "" {
-			cert, err := tls.LoadX509KeyPair(conn["tls_cert_file"], conn["tls_key_file"])
+			cert, err := tls.LoadX509KeyPair(conn["tls_cert_file"].(string), conn["tls_key_file"].(string))
 			if err != nil {
+				log.Println("loading x509 key pair failed:", err)
 				result.Err = fmt.Sprintf("loading x509 key pair failed: %v", err)
 				return result
 
@@ -63,8 +66,9 @@ func (k *Service) SetConnect(connectName string, conn map[string]string, isTest 
 
 		// 如果需要CA证书
 		if conn["tls_ca_file"] != "" {
-			caCert, err := os.ReadFile(conn["tls_ca_file"])
+			caCert, err := os.ReadFile(conn["tls_ca_file"].(string))
 			if err != nil {
+				log.Println("reading CA file failed:", err)
 				result.Err = fmt.Sprintf("reading CA file failed: %v", err)
 				return result
 			}
@@ -79,11 +83,11 @@ func (k *Service) SetConnect(connectName string, conn map[string]string, isTest 
 	// SASL配置
 	if conn["sasl"] == "enable" {
 		config.Net.SASL.Enable = true
-		config.Net.SASL.User = conn["sasl_user"]
-		config.Net.SASL.Password = conn["sasl_pwd"]
+		config.Net.SASL.User = conn["sasl_user"].(string)
+		config.Net.SASL.Password = conn["sasl_pwd"].(string)
 
 		// SASL机制设置
-		mechanism := conn["sasl_mechanism"]
+		mechanism := conn["sasl_mechanism"].(string)
 		switch strings.ToUpper(mechanism) {
 		case "PLAIN":
 			config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
@@ -94,15 +98,18 @@ func (k *Service) SetConnect(connectName string, conn map[string]string, isTest 
 		case "SASLTypeGSSAPI":
 			config.Net.SASL.Mechanism = sarama.SASLTypeGSSAPI
 		default:
+			log.Println("不支持的SASL机制", mechanism)
 			result.Err = fmt.Sprintf("unsupported SASL mechanism: %s", mechanism)
+			return result
 		}
 	}
 
 	// Convert conn map to proper config
 	// Add necessary configurations from conn map to sarama config
-	bootstrapServers := strings.Split(conn["bootstrap_servers"], ",")
+	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
 	admin, err := sarama.NewClusterAdmin(bootstrapServers, config)
 	if err != nil {
+		log.Println("创建Admin失败", err)
 		result.Err = err.Error()
 		return result
 	} else {
@@ -114,6 +121,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]string, isTest 
 		} else {
 			_, err = admin.ListTopics()
 			if err != nil {
+				log.Println("连接集群失败", err)
 				result.Err = err.Error()
 				return result
 			}
@@ -133,7 +141,7 @@ func (k *Service) newConsumer() (sarama.Consumer, error) {
 }
 
 // TestClient 测试连接
-func (k *Service) TestClient(connectName string, conn map[string]string) *types.ResultResp {
+func (k *Service) TestClient(connectName string, conn map[string]interface{}) *types.ResultResp {
 	return k.SetConnect(connectName, conn, true)
 }
 
@@ -146,15 +154,15 @@ func (k *Service) GetBrokers() *types.ResultResp {
 		return result
 	}
 
-	brokers, _, err := k.kac.DescribeCluster()
+	brokers, controllerID, err := k.kac.DescribeCluster()
 	if err != nil {
 		result.Err = err.Error()
 		return result
 	}
 
-	brokerInfo := make([]map[string]interface{}, 0)
+	var brokersResp []map[string]interface{}
 	for _, broker := range brokers {
-		brokerInfo = append(brokerInfo, map[string]interface{}{
+		brokersResp = append(brokersResp, map[string]interface{}{
 			"node_id": broker.ID(),
 			"host":    broker.Addr(),
 			"rack":    broker.Rack(),
@@ -162,11 +170,44 @@ func (k *Service) GetBrokers() *types.ResultResp {
 	}
 
 	clusterInfo := map[string]interface{}{
-		"brokers":       brokerInfo,
-		"cluster_id":    "", // Sarama doesn't provide cluster ID directly
-		"controller_id": 0,  // Would need additional logic to determine controller
+		"brokers":       brokersResp,
+		"controller_id": controllerID, // Would need additional logic to determine controller
 	}
 	result.Result = clusterInfo
+	return result
+}
+
+// GetBrokerConfig 获取Broker配置
+func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
+	result := &types.ResultsResp{}
+
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+
+	// 获取broker配置资源
+	configResource := sarama.ConfigResource{
+		Type: sarama.BrokerResource,
+		Name: strconv.Itoa(int(brokerID)),
+	}
+
+	configs, err := k.kac.DescribeConfig(configResource)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	// 转换为map格式
+	for _, config := range configs {
+		result.Results = append(result.Results, map[string]interface{}{
+			"Name":      config.Name,
+			"Value":     config.Value,
+			"ReadOnly":  config.ReadOnly,
+			"Default":   config.Default,
+			"Sensitive": config.Sensitive,
+		})
+	}
 	return result
 }
 

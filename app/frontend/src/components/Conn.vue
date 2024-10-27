@@ -251,20 +251,27 @@ const selectNode = async (node) => {
   // 这里实现切换菜单的逻辑
   console.log('选中节点:', node)
   spin_loading.value = true
+  try {
+    const res = await TestClient(node.name, node)
 
-  // node：{ id: 1, name: 'ES节点1', host: 'localhost', port: 9200, username: 'user1', password: 'pass1' },
-  const res = await TestClient(node.host, node.username, node.password, node.caCert, node.useSSL, node.skipSSLVerify)
-  spin_loading.value = false
-
-  console.log(res)
-  if (res !== "") {
-    message.error("连接失败：" + res)
-  } else {
-    message.success('连接成功')
-    await SetConnect(node.name, node.host, node.username, node.password, node.caCert, node.useSSL, node.skipSSLVerify)
-    emitter.emit('menu_select', "节点")
-    emitter.emit('selectNode', node)
+    console.log(res)
+    if (res.err !== "") {
+      message.error("连接失败：" + res.err)
+    } else {
+      message.success('连接成功')
+      const res = await SetConnect(node.name, node, false)
+      if (res.err !== "") {
+        message.error("连接失败：" + res.err)
+      } else {
+        emitter.emit('menu_select', "节点")
+        emitter.emit('selectNode', node)
+      }
+    }
+  }catch (e) {
+    console.trace()
+    message.error(e)
   }
+  spin_loading.value = false
 }
 
 const handleSelect = (key) => {

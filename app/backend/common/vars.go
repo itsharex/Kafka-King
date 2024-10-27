@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	Project          = "Bronya0/ES-King"
+	Project          = "Bronya0/Kafka-King"
 	GITHUB_URL       = fmt.Sprintf("https://github.com/%s", Project)
 	GITHUB_REPOS_URL = fmt.Sprintf("https://api.github.com/repos/%s", Project)
 	UPDATE_URL       = fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", Project)

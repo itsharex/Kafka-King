@@ -61,7 +61,7 @@ import {
   NLayoutHeader,
   NMessageProvider
 } from 'naive-ui'
-import {HiveOutlined, SettingsOutlined} from '@vicons/material'
+import {HiveOutlined, SettingsOutlined, AllOutOutlined} from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
 import {GetConfig, SaveTheme} from "../wailsjs/go/config/AppConfig";
@@ -69,6 +69,7 @@ import {WindowSetSize} from "../wailsjs/runtime";
 import {renderIcon} from "./utils/common";
 import Aside from "./components/Aside.vue";
 import Conn from "./components/Conn.vue";
+import Nodes from "./components/Nodes.vue";
 import emitter from "./utils/eventBus";
 
 let headerClass = shallowRef('lightTheme')
@@ -101,6 +102,12 @@ const sideMenuOptions = [
     key: '集群',
     icon: renderIcon(HiveOutlined),
     component: Conn,
+  },
+  {
+    label: '节点',
+    key: '节点',
+    icon: renderIcon(AllOutOutlined),
+    component: Nodes,
   },
   {
     label: '设置',

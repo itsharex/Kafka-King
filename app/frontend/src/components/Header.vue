@@ -57,7 +57,7 @@ const isMaximized = ref(false);
 const check_msg = ref("");
 const app_name = ref("");
 const MaxMinIcon = shallowRef(CropSquareFilled)
-const update_url = "https://github.com/Bronya0/wails-template/releases"
+const update_url = "https://github.com/Bronya0/Kafka-King/releases"
 const update_loading = ref(false)
 let theme = lightTheme
 
