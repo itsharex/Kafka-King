@@ -97,6 +97,26 @@
             />
           </n-form-item>
 
+          <n-form-item label="kerberos keytab 路径" path="kerberos_user_keytab">
+            <n-input v-model:value="currentNode.kerberos_user_keytab" placeholder="输入keytab文件路径"/>
+          </n-form-item>
+
+          <n-form-item label="kerberos krb5.conf 路径" path="kerberos_krb5_conf">
+            <n-input v-model:value="currentNode.kerberos_krb5_conf" placeholder="输入krb5.conf文件路径"/>
+          </n-form-item>
+
+          <n-form-item label="Kerberos_user 用户名" path="sasl_user">
+            <n-input v-model:value="currentNode.Kerberos_user" placeholder="输入Kerberos_user用户名"/>
+          </n-form-item>
+
+          <n-form-item label="Kerberos_realm 领域域名" path="Kerberos_realm">
+            <n-input v-model:value="currentNode.Kerberos_realm" placeholder="输入Kerberos领域域名"/>
+          </n-form-item>
+
+          <n-form-item label="kerberos_service_name 服务名" path="sasl_user">
+            <n-input v-model:value="currentNode.kerberos_service_name" placeholder="输入配置的kerberos_service_name"/>
+          </n-form-item>
+
         </n-form>
         <template #footer>
           <n-space justify="end">
@@ -138,6 +158,11 @@ const currentNode = ref({
   sasl_mechanism: "PLAIN",
   sasl_user: '',
   sasl_pwd: '',
+  kerberos_user_keytab: '',
+  kerberos_krb5_conf: '',
+  Kerberos_user: '',
+  Kerberos_realm: '',
+  kerberos_service_name: '',
 })
 const isEditing = ref(false)
 const spin_loading = ref(false)

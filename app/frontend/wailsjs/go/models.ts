@@ -13,6 +13,11 @@ export namespace types {
 	    sasl_mechanism: string;
 	    sasl_user: string;
 	    sasl_pwd: string;
+	    kerberos_user_keytab: string;
+	    kerberos_krb5_conf: string;
+	    Kerberos_user: string;
+	    Kerberos_realm: string;
+	    kerberos_service_name: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Connect(source);
@@ -32,6 +37,11 @@ export namespace types {
 	        this.sasl_mechanism = source["sasl_mechanism"];
 	        this.sasl_user = source["sasl_user"];
 	        this.sasl_pwd = source["sasl_pwd"];
+	        this.kerberos_user_keytab = source["kerberos_user_keytab"];
+	        this.kerberos_krb5_conf = source["kerberos_krb5_conf"];
+	        this.Kerberos_user = source["Kerberos_user"];
+	        this.Kerberos_realm = source["Kerberos_realm"];
+	        this.kerberos_service_name = source["kerberos_service_name"];
 	    }
 	}
 	export class Config {

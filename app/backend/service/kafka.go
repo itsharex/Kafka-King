@@ -145,19 +145,18 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 		return result
 	}
 	admin := kadm.NewClient(cl)
+	ctx := context.Background()
+	_, err = admin.ListTopics(ctx)
+	if err != nil {
+		log.Println("连接集群失败", err)
+		result.Err = err.Error()
+		return result
+	}
 	if isTest == false {
 		k.connectName = connectName
 		k.kac = admin
 		k.config = config
 		k.bootstrapServers = bootstrapServers
-	} else {
-		ctx := context.Background()
-		_, err = admin.ListTopics(ctx)
-		if err != nil {
-			log.Println("连接集群失败", err)
-			result.Err = err.Error()
-			return result
-		}
 	}
 
 	// Convert conn map to proper config

@@ -20,18 +20,23 @@ type ResultResp struct {
 	Err    string                 `json:"err"`
 }
 type Connect struct {
-	Id               int    `json:"id"`
-	Name             string `json:"name"`
-	BootstrapServers string `json:"bootstrap_servers"`
-	Tls              string `json:"tls"`
-	SkipTLSVerify    string `json:"skipTLSVerify"`
-	TlsCertFile      string `json:"tls_cert_file"`
-	TlsKeyFile       string `json:"tls_key_file"`
-	TlsCaFile        string `json:"tls_ca_file"`
-	Sasl             string `json:"sasl"`
-	SaslMechanism    string `json:"sasl_mechanism"`
-	SaslUser         string `json:"sasl_user"`
-	SaslPwd          string `json:"sasl_pwd"`
+	Id                  int    `json:"id"`
+	Name                string `json:"name"`
+	BootstrapServers    string `json:"bootstrap_servers"`
+	Tls                 string `json:"tls"`
+	SkipTLSVerify       string `json:"skipTLSVerify"`
+	TlsCertFile         string `json:"tls_cert_file"`
+	TlsKeyFile          string `json:"tls_key_file"`
+	TlsCaFile           string `json:"tls_ca_file"`
+	Sasl                string `json:"sasl"`
+	SaslMechanism       string `json:"sasl_mechanism"`
+	SaslUser            string `json:"sasl_user"`
+	SaslPwd             string `json:"sasl_pwd"`
+	KerberosUserKeytab  string `json:"kerberos_user_keytab"`
+	KerberosKrb5Conf    string `json:"kerberos_krb5_conf"`
+	KerberosUser        string `json:"Kerberos_user"`
+	KerberosRealm       string `json:"Kerberos_realm"`
+	KerberosServiceName string `json:"kerberos_service_name"`
 }
 type H map[string]interface{}
 
