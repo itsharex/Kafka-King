@@ -334,13 +334,28 @@ func (k *Service) DescribeTopic(topics []string) *types.ResultsResp {
 		}
 
 		for _, metadata := range topicMetadata {
-			detail := sarama.TopicDetail{
-				NumPartitions:     int32(len(metadata.Partitions)),
-				ReplicationFactor: int16(len(metadata.Partitions[0].Replicas)),
+			var partitions []map[string]interface{}
+			for _, partition := range metadata.Partitions {
+				partitions = append(partitions, map[string]interface{}{
+					"Version":         partition.Version,
+					"Err":             partition.Err.Error(),
+					"ID":              partition.ID,
+					"Leader":          partition.Leader,
+					"LeaderEpoch":     partition.LeaderEpoch,
+					"Replicas":        partition.Replicas,
+					"Isr":             partition.Isr,
+					"OfflineReplicas": partition.OfflineReplicas,
+				})
 			}
+
 			result.Results = append(result.Results, map[string]interface{}{
-				"topic":  topic,
-				"detail": detail,
+				"topic":      topic,
+				"Name":       metadata.Name,
+				"Err":        metadata.Err,
+				"Partitions": partitions,
+				"Version":    metadata.Version,
+				"IsInternal": metadata.IsInternal,
+				"Uuid":       metadata.Uuid,
 			})
 		}
 	}
