@@ -73,22 +73,6 @@ export namespace types {
 		}
 	}
 	
-	export class GroupInfo {
-	    Group: string;
-	    Topics: {[key: string]: PartitionOffset[]};
-	    TotalLag: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new GroupInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Group = source["Group"];
-	        this.Topics = source["Topics"];
-	        this.TotalLag = source["TotalLag"];
-	    }
-	}
 	export class ResultResp {
 	    result: {[key: string]: any};
 	    err: string;

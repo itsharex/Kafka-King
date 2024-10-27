@@ -157,7 +157,7 @@ const sasl_mechanism_options = [
   },
   {
     label: 'GSSAPI',
-    key: 'SASLTypeGSSAPI'
+    key: 'GSSAPI'
   },
 ]
 

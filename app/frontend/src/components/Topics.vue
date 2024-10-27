@@ -57,7 +57,7 @@ import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, formattedJson, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone, InfoOutlined, DeleteForeverTwotone} from "@vicons/material";
-import { GetTopics, GetTopicConfig, DescribeTopic, DeleteTopic, CreatePartitions, CreateTopics} from "../../wailsjs/go/service/Service";
+import { GetTopics, GetTopicConfig, DeleteTopic} from "../../wailsjs/go/service/Service";
 
 const config_data = ref([])
 const partitions_data = ref([])
@@ -113,10 +113,13 @@ const getType = (value) => {
 }
 
 const columns = [
+  { title: 'ID', key: 'ID', sorter: 'default',width: 50,resizable: true },
   { title: 'topic', key: 'topic', sorter: 'default',width: 50,resizable: true },
   { title: '分区数', key: 'partition_count', sorter: 'default',width: 10,resizable: true },
   { title: '副本因子', key: 'replication_factor', sorter: 'default',width: 10,resizable: true },
-  { title: 'ReplicaAssignment', key: 'ReplicaAssignment', sorter: 'default',width: 20,resizable: true },
+  { title: '内部主题', key: 'IsInternal', sorter: 'default',width: 20,resizable: true ,
+    render: (row) => h(NTag, {type: getType(row['IsInternal'])}, {default: () => row['IsInternal'] === true ? "是": "否"}),
+  },
   {
     title: '操作',
     key: 'actions',
@@ -178,13 +181,12 @@ const columns = [
 ]
 
 const partitions_columns = [
-  { title: 'ID', key: 'ID', sorter: 'default',width: 10,resizable: true },
-  { title: 'Version', key: 'Version', sorter: 'default',width: 10,resizable: true },
-  { title: '分区故障', key: 'Err', sorter: 'default',width: 30,resizable: true,ellipsis: {tooltip: true},},
-  { title: 'Leader ID', key: 'Leader', sorter: 'default',width: 15,resizable: true },
+  { title: 'ID', key: 'partition', sorter: 'default',width: 20,resizable: true },
+  { title: '分区故障', key: 'err', sorter: 'default',width: 30,resizable: true,ellipsis: {tooltip: true},},
+  { title: 'Leader ID', key: 'leader', sorter: 'default',width: 15,resizable: true },
   { title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default',width: 15,resizable: true },
-  { title: '托管此分区的副本ID集', key: 'Replicas', sorter: 'default',width: 15,resizable: true },
-  { title: 'ISR副本ID集', key: 'Isr', sorter: 'default',width: 15,resizable: true },
+  { title: '托管此分区的副本ID集', key: 'replicas', sorter: 'default',width: 15,resizable: true },
+  { title: 'ISR副本ID集', key: 'isr', sorter: 'default',width: 15,resizable: true },
   { title: '离线副本ID集', key: 'OfflineReplicas', sorter: 'default',width: 15,resizable: true },
 ]
 const config_columns = [
@@ -224,14 +226,8 @@ const getTopicConfig = async (topic) => {
 const getTopicDetail = async (topic) => {
   loading.value = true
   try {
-    const res = await DescribeTopic([topic])
-    console.log(res)
-    if (res.err !== "") {
-      message.error(res.err)
-    } else {
-      partitions_data.value = res.results[0].Partitions
-      activeTab.value = "详情"
-    }
+    partitions_data.value = data.value.find(item => item.topic === topic).partitions
+    activeTab.value = "详情"
   }catch (e) {
     message.error(e)
   }
