@@ -28,8 +28,8 @@
                 </n-space>
               </template>
               <n-descriptions :column="1" label-placement="left">
-                <n-descriptions-item label="主机">
-                  {{ node.host }}
+                <n-descriptions-item label="地址">
+                  {{ node.bootstrap_servers }}
                 </n-descriptions-item>
               </n-descriptions>
             </n-card>
