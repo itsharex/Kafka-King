@@ -251,8 +251,9 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	// 转换为map格式
 	for _, config := range cfg {
 		result.Results = append(result.Results, map[string]interface{}{
-			"Name":  config.Key,
-			"Value": config.Value,
+			"Name":   config.Key,
+			"Value":  config.Value,
+			"Source": config.Source.String(),
 			//"ReadOnly":  config.,
 			//"Default":   config.,
 			"Sensitive": config.Sensitive,
@@ -296,8 +297,8 @@ func (k *Service) GetTopics() *types.ResultsResp {
 			"partition_count":    len(topicDetail.Partitions),
 			"replication_factor": len(topicDetail.Partitions[0].Replicas),
 			"IsInternal":         topicDetail.IsInternal,
-			"Err":                topicDetail.Err,
-			"partitions":         partitions,
+			//"Err":                topicDetail.Err,
+			"partitions": partitions,
 		})
 	}
 

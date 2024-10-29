@@ -42,7 +42,7 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, formattedJson, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
 
@@ -123,13 +123,11 @@ const getType = (value) => {
 const config_columns = [
   { title: '配置名', key: 'Name', sorter: 'default',width: 100,resizable: true },
   { title: '值', key: 'Value', sorter: 'default',width: 140,resizable: true },
-  { title: '是否只读', key: 'ReadOnly', sorter: 'default',width: 20,resizable: true,
-    render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['ReadOnly'] === true ? "是": "否"}),
-  },
-  { title: '是否默认', key: 'Default', width: 20,resizable: true,
-    render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['Default'] === true ? "是": "否"}),
-  },
-  { title: '是否敏感', key: 'Sensitive', width: 20,resizable: true,
+  { title: '来源', key: 'Source', sorter: 'default',width: 50,resizable: true,},
+  // { title: '是否默认', key: 'Default', width: 20,resizable: true,
+  //   render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['Default'] === true ? "是": "否"}),
+  // },
+  { title: '是否敏感', key: 'Sensitive',width: 20,resizable: true,sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: getType(row['Sensitive'])}, {default: () => row['Sensitive'] === true ? "是": "否"}),
   },
 

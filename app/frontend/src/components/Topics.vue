@@ -55,9 +55,15 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, formattedJson, renderIcon} from "../utils/common";
-import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone, InfoOutlined, DeleteForeverTwotone} from "@vicons/material";
-import { GetTopics, GetTopicConfig, DeleteTopic} from "../../wailsjs/go/service/Service";
+import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {
+  DeleteForeverTwotone,
+  DriveFileMoveTwotone,
+  InfoOutlined,
+  RefreshOutlined,
+  SettingsTwotone
+} from "@vicons/material";
+import {DeleteTopic, GetTopicConfig, GetTopics} from "../../wailsjs/go/service/Service";
 
 const config_data = ref([])
 const partitions_data = ref([])
@@ -117,7 +123,7 @@ const columns = [
   { title: 'topic', key: 'topic', sorter: 'default',width: 50,resizable: true },
   { title: '分区数', key: 'partition_count', sorter: 'default',width: 10,resizable: true },
   { title: '副本因子', key: 'replication_factor', sorter: 'default',width: 10,resizable: true },
-  { title: '内部主题', key: 'IsInternal', sorter: 'default',width: 20,resizable: true ,
+  { title: '内部主题', key: 'IsInternal',width: 20,resizable: true , sorter: (row1, row2) => Number(row1['IsInternal']) - Number(row2['IsInternal']),
     render: (row) => h(NTag, {type: getType(row['IsInternal'])}, {default: () => row['IsInternal'] === true ? "是": "否"}),
   },
   {
@@ -192,13 +198,13 @@ const partitions_columns = [
 const config_columns = [
   { title: '配置名', key: 'Name', sorter: 'default',width: 100,resizable: true },
   { title: '值', key: 'Value', sorter: 'default',width: 140,resizable: true },
-  { title: '是否只读', key: 'ReadOnly', sorter: 'default',width: 20,resizable: true,
+  { title: '是否只读', key: 'ReadOnly',width: 20,resizable: true, sorter: (row1, row2) => Number(row1['ReadOnly']) - Number(row2['ReadOnly']),
     render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['ReadOnly'] === true ? "是": "否"}),
   },
-  { title: '是否默认', key: 'Default', width: 20,resizable: true,
+  { title: '是否默认', key: 'Default', width: 20,resizable: true, sorter: (row1, row2) => Number(row1['Default']) - Number(row2['Default']),
     render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['Default'] === true ? "是": "否"}),
   },
-  { title: '是否敏感', key: 'Sensitive', width: 20,resizable: true,
+  { title: '是否敏感', key: 'Sensitive', width: 20,resizable: true, sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: getType(row['Sensitive'])}, {default: () => row['Sensitive'] === true ? "是": "否"}),
   },
 
