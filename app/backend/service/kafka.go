@@ -281,15 +281,23 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	for topicName, topicDetail := range topics {
 		var partitions []interface{}
 		for _, partition := range topicDetail.Partitions {
+			errMsg := ""
+			if partition.Err != nil {
+				errMsg = partition.Err.Error()
+			}
 			partitions = append(partitions, map[string]interface{}{
 				"partition":       partition.Partition,
 				"leader":          partition.Leader,
 				"replicas":        partition.Replicas,
 				"isr":             partition.ISR,
-				"err":             partition.Err.Error(),
+				"err":             errMsg,
 				"LeaderEpoch":     partition.LeaderEpoch,
 				"OfflineReplicas": partition.OfflineReplicas,
 			})
+		}
+		resultErrMsg := ""
+		if topicDetail.Err != nil {
+			resultErrMsg = topicDetail.Err.Error()
 		}
 		result.Results = append(result.Results, map[string]interface{}{
 			"ID":                 topicDetail.ID,
@@ -297,8 +305,8 @@ func (k *Service) GetTopics() *types.ResultsResp {
 			"partition_count":    len(topicDetail.Partitions),
 			"replication_factor": len(topicDetail.Partitions[0].Replicas),
 			"IsInternal":         topicDetail.IsInternal,
-			//"Err":                topicDetail.Err,
-			"partitions": partitions,
+			"Err":                resultErrMsg,
+			"partitions":         partitions,
 		})
 	}
 

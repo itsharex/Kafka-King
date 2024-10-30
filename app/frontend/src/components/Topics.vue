@@ -119,8 +119,9 @@ const getType = (value) => {
 }
 
 const columns = [
-  { title: 'ID', key: 'ID', sorter: 'default',width: 50,resizable: true },
-  { title: 'topic', key: 'topic', sorter: 'default',width: 50,resizable: true },
+  { title: 'ID', key: 'ID', sorter: 'default',width: 40,resizable: true,ellipsis: {tooltip: true},  },
+  { title: 'topic', key: 'topic', sorter: 'default',width: 80,resizable: true,ellipsis: {tooltip: true}, },
+  { title: '主题故障', key: 'Err', sorter: 'default',width: 40,resizable: true,ellipsis: {tooltip: true}, },
   { title: '分区数', key: 'partition_count', sorter: 'default',width: 10,resizable: true },
   { title: '副本因子', key: 'replication_factor', sorter: 'default',width: 10,resizable: true },
   { title: '内部主题', key: 'IsInternal',width: 20,resizable: true , sorter: (row1, row2) => Number(row1['IsInternal']) - Number(row2['IsInternal']),
