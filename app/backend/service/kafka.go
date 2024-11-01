@@ -352,14 +352,19 @@ func (k *Service) GetTopics() *types.ResultsResp {
 //
 
 // CreateTopics 创建主题
-func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]*string) *types.ResultResp {
+func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]string) *types.ResultResp {
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
 		return result
 	}
+	// 转换为 map[string]*string
+	pointerMap := make(map[string]*string)
+	for key, value := range configs {
+		pointerMap[key] = &value
+	}
 	ctx := context.Background()
-	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), configs, topics...)
+	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), pointerMap, topics...)
 	if err != nil {
 		result.Err = err.Error()
 		return result

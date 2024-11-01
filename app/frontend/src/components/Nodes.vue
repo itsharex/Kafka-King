@@ -17,17 +17,16 @@
               size="small"
               :bordered="false"
               striped
+              :pagination="pagination"
           />
         </n-tab-pane>
         <n-tab-pane name="配置" tab="Configs">
           <n-data-table
               :columns="config_columns"
               :data="config_data"
-              size="small"
               :bordered="false"
-              striped
-              :max-height="600"
-              virtual-scroll
+              :pagination="pagination"
+
           />
         </n-tab-pane>
       </n-tabs>
@@ -83,6 +82,19 @@ const getData = async () => {
 
 }
 
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  showSizePicker: true,
+  pageSizes: [5, 10, 20, 30, 40],
+  onChange: (page) => {
+    pagination.value.page = page
+  },
+  onUpdatePageSize: (pageSize) => {
+    pagination.value.pageSize = pageSize
+    pagination.value.page = 1
+  },
+})
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
@@ -95,7 +107,12 @@ const downloadAllDataCsv = async () => {
 
 const columns = [
   { title: 'node_id', key: 'node_id', sorter: 'default',width: 20,resizable: true },
-  { title: 'host', key: 'host', sorter: 'default',width: 50,resizable: true },
+  { title: 'host', key: 'host', sorter: 'default',width: 50,resizable: true,
+    render: (row) => h(NTag, {type: "info"}, {default: () => row['host']}),
+  },
+  { title: 'port', key: 'port', sorter: 'default',width: 20,resizable: true,
+    render: (row) => h(NTag, {type: "success"}, {default: () => row['port']}),
+  },
   { title: 'rack', key: 'rack', sorter: 'default',width: 20,resizable: true },
   {
     title: '配置', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: true},
@@ -121,8 +138,10 @@ const getType = (value) => {
 }
 
 const config_columns = [
-  { title: '配置名', key: 'Name', sorter: 'default',width: 100,resizable: true },
-  { title: '值', key: 'Value', sorter: 'default',width: 140,resizable: true },
+  { title: '配置名', key: 'Name', sorter: 'default',width: 80,resizable: true,
+  },
+  { title: '值', key: 'Value', sorter: 'default',width: 140,resizable: true,
+  },
   { title: '来源', key: 'Source', sorter: 'default',width: 50,resizable: true,},
   // { title: '是否默认', key: 'Default', width: 20,resizable: true,
   //   render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['Default'] === true ? "是": "否"}),

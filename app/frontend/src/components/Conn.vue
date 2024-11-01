@@ -281,9 +281,9 @@ const selectNode = async (node) => {
     if (res.err !== "") {
       message.error("连接失败：" + res.err)
     } else {
-      message.success('连接成功')
       emitter.emit('menu_select', "节点")
       emitter.emit('selectNode', node)
+      message.success('连接成功')
   }
   }catch (e) {
     message.error(e)

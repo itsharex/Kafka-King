@@ -13,9 +13,9 @@
           <n-flex vertical>
             <!--          搜索框、新增按钮-->
             <n-flex align="center">
-              <n-input v-model:value="searchText" placeholder="输入主题名称" clearable style="width: 300px" />
+              <n-input v-model:value="searchText" placeholder="输入主题名称" clearable style="width: 300px"/>
               <n-button @click="getData" :render-icon="renderIcon(SearchOutlined)">search</n-button>
-              <n-button @click="showDrawer=true" :render-icon="renderIcon(SearchOutlined)">创建主题</n-button>
+              <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">创建主题</n-button>
             </n-flex>
             <n-data-table
                 ref="tableRef"
@@ -25,34 +25,42 @@
                 :bordered="false"
                 striped
                 :pagination="pagination"
-
             />
           </n-flex>
 
         </n-tab-pane>
 
-        <n-tab-pane name="详情" tab="详情">
-          <n-data-table
-              :columns="partitions_columns"
-              :data="partitions_data"
-              size="small"
-              :bordered="false"
-              striped
-              :max-height="600"
-              virtual-scroll
-          />
+        <n-tab-pane name="详情" tab="分区">
+          <n-flex vertical>
+            <n-flex align="center">
+              <n-tag type="success">
+                {{ activeDetailTopic }}
+              </n-tag>
+            </n-flex>
+            <n-data-table
+                :columns="partitions_columns"
+                :data="partitions_data"
+                :bordered="false"
+                :pagination="pagination"
+            />
+          </n-flex>
+
         </n-tab-pane>
 
         <n-tab-pane name="配置" tab="配置">
-          <n-data-table
-              :columns="config_columns"
-              :data="config_data"
-              size="small"
-              :bordered="false"
-              striped
-              :max-height="600"
-              virtual-scroll
-          />
+          <n-flex vertical>
+            <n-flex align="center">
+              <n-tag type="success">
+                {{ activeConfigTopic }}
+              </n-tag>
+            </n-flex>
+            <n-data-table
+                :columns="config_columns"
+                :data="config_data"
+                :bordered="false"
+                :pagination="pagination"
+            />
+          </n-flex>
         </n-tab-pane>
       </n-tabs>
 
@@ -119,8 +127,9 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, formattedJson, isValidJson, renderIcon} from "../utils/common";
 import {
+  AddFilled,
   DeleteForeverTwotone,
   DriveFileMoveTwotone,
   InfoOutlined,
@@ -144,10 +153,12 @@ const topic_add = ref({
 const message = useMessage()
 const tableRef = ref();
 const searchText = ref("");
+const activeDetailTopic = ref("当前主题");
+const activeConfigTopic = ref("当前主题");
 const showDrawer = ref(false)
 
 const selectNode = async (node) => {
-  await getData()
+  data.value = []
 }
 
 onMounted(async () => {
@@ -164,7 +175,14 @@ const getData = async () => {
       message.error(res.err)
     } else {
       console.log(res)
-      data.value = res.results
+      // 排序
+      res.results.sort((a, b) => a['topic'] > b['topic'] ? 1 : -1)
+      if (searchText.value !== ""){
+        // 模糊搜索
+        data.value = res.results.filter(item => item['topic'].includes(searchText.value))
+      }else {
+        data.value = res.results
+      }
     }
   } catch (e) {
     message.error(e)
@@ -186,9 +204,7 @@ const pagination = ref({
     pagination.value.pageSize = pageSize
     pagination.value.page = 1
   },
-  itemCount: data.value.length
 })
-
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
@@ -208,17 +224,21 @@ const getType = (value) => {
 
 const columns = [
   {title: 'ID', key: 'ID', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: true},},
-  {title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: true},},
-  {title: '主题故障', key: 'Err', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: true},},
-  {title: '分区数', key: 'partition_count', sorter: 'default', width: 20, resizable: true},
-  {title: '副本因子', key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
+  {title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: true},
+    render: (row) => h(NTag, {type: "info"}, {default: () => row['topic']}),
+  },
+  {title: '分区', key: 'partition_count', sorter: 'default', width: 20, resizable: true},
+  {title: '副本', key: 'replication_factor', sorter: 'default', width: 20, resizable: true},
+  {title: '主题故障', key: 'Err', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: true},
+    render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "健康" : row['Err']}),
+  },
   {
     title: '内部主题',
     key: 'IsInternal',
     width: 30,
     resizable: true,
     sorter: (row1, row2) => Number(row1['IsInternal']) - Number(row2['IsInternal']),
-    render: (row) => h(NTag, {type: getType(row['IsInternal'])}, {default: () => row['IsInternal'] === true ? "是" : "否"}),
+    render: (row) => h(NTag, {type: row['IsInternal'] === true ? "warning" : "success"}, {default: () => row['IsInternal'] === true ? "是" : "否"}),
   },
   {
     title: '操作',
@@ -239,6 +259,7 @@ const columns = [
                   secondary: true,
                   onClick: async () => {
                     await getTopicConfig(row["topic"])
+                    activeConfigTopic.value = row["topic"]
                   }
                 },
                 {
@@ -253,10 +274,11 @@ const columns = [
                   secondary: true,
                   onClick: async () => {
                     await getTopicDetail(row["topic"])
+                    activeDetailTopic.value = row["topic"]
                   }
                 },
                 {
-                  default: () => '详情',
+                  default: () => '分区',
                   icon: () => h(NIcon, null, {default: () => h(InfoOutlined)})
                 }
             ),
@@ -267,17 +289,21 @@ const columns = [
                 },
                 {
                   trigger: () =>
-                      h(
-                          NButton,
-                          {
-                            strong: true,
-                            secondary: true,
-                            type: 'error'
-                          },
-                          {default: () => '删除',
-                            icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
-                          }
-                      ),
+                      row['IsInternal'] === false ?
+                          h(
+                              NButton,
+                              {
+                                strong: true,
+                                secondary: true,
+                                type: 'error'
+                              },
+                              {
+                                default: () => '删除',
+                                icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
+                              }
+                          )
+                          : h(NButton, {disabled: true}, {default: () => '不可删除'})
+                  ,
                   default: () => `确认删除${row["topic"]}?`
                 }
             ),
@@ -288,8 +314,10 @@ const columns = [
 ]
 
 const partitions_columns = [
-  {title: 'ID', key: 'partition', sorter: 'default', width: 20, resizable: true},
-  {title: '分区故障', key: 'err', sorter: 'default', width: 30, resizable: true, ellipsis: {tooltip: true},},
+  {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
+  {title: '分区故障', key: 'err', sorter: 'default', width: 30, resizable: true, ellipsis: {tooltip: true},
+    render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "健康" : row['err']}),
+  },
   {title: 'Leader ID', key: 'leader', sorter: 'default', width: 15, resizable: true},
   {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
   {title: '托管此分区的副本ID集', key: 'replicas', sorter: 'default', width: 15, resizable: true},
@@ -349,7 +377,9 @@ const getTopicConfig = async (topic) => {
 const getTopicDetail = async (topic) => {
   loading.value = true
   try {
-    partitions_data.value = data.value.find(item => item.topic === topic).partitions
+    let partitions = data.value.find(item => item['topic']  === topic)['partitions']
+    partitions.sort((a, b) => a['partition'] > b['partition'] ? 1 : -1)
+    partitions_data.value = partitions
     activeTab.value = "详情"
   } catch (e) {
     message.error(e)
@@ -378,7 +408,11 @@ const deleteTopic = async (topic) => {
 const addTopic = async () => {
   loading.value = true
   try {
-    const res = await CreateTopics(topic_add.value.topics, topic_add.value.partitions, topic_add.value.replication_factor, topic_add.value.configs)
+    let configs = {}
+    if (isValidJson(topic_add.value.configs)){
+     configs = JSON.parse(topic_add.value.configs)
+    }
+    const res = await CreateTopics(topic_add.value.topics, topic_add.value.partitions, topic_add.value.replication_factor, configs)
     console.log(res)
     if (res.err !== "") {
       message.error(res.err)
@@ -394,6 +428,25 @@ const addTopic = async () => {
 }
 
 </script>
+
+}
+} catch (e) {
+message.error(e)
+}
+loading.value = false
+
+}
+
+const addTopic = async () => {
+loading.value = true
+try {
+const res = await CreateTopics(topic_add.value.topics, topic_add.value.partitions, topic_add.value.replication_factor, topic_add.value.configs)
+console.log(res)
+if (res.err !== "") {
+message.error(res.err)
+} else {
+message.success("删除成功")
+await getData()
 
 
 <style scoped>
