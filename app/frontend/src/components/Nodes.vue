@@ -9,7 +9,7 @@
     </n-flex>
     <n-spin :show="loading" description="Connecting...">
       <n-tabs type="segment" animated  v-model:value="activeTab">
-        <n-tab-pane name="broker" tab="broker">
+        <n-tab-pane name="broker" tab="Brokers">
           <n-data-table
               ref="tableRef"
               :columns="columns"
@@ -19,7 +19,7 @@
               striped
           />
         </n-tab-pane>
-        <n-tab-pane name="配置" tab="配置">
+        <n-tab-pane name="配置" tab="Configs">
           <n-data-table
               :columns="config_columns"
               :data="config_data"

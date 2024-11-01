@@ -350,33 +350,23 @@ func (k *Service) GetTopics() *types.ResultsResp {
 //	return nil
 //}
 //
-//// CreateTopics 创建主题
-//func (k *Service) CreateTopics(configs []map[string]interface{}) *types.ResultResp {
-//	result := &types.ResultResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//
-//	for _, config := range configs {
-//		topic := config["topic"].(string)
-//		topicDetail := &sarama.TopicDetail{
-//			NumPartitions:     int32(config["numPartitions"].(int)),
-//			ReplicationFactor: int16(config["replicationFactor"].(int)),
-//			ConfigEntries: map[string]*string{
-//				"cleanup.policy": k.ptr(config["cleanupPolicy"].(string)), // 或 "compact"
-//				"retention.ms":   k.ptr(config["retentionMs"].(string)),   // 7天
-//			},
-//		}
-//		err := k.kac.CreateTopic(topic, topicDetail, false)
-//		if err != nil {
-//			result.Err = err.Error()
-//			return result
-//		}
-//	}
-//
-//	return result
-//}
+
+// CreateTopics 创建主题
+func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]*string) *types.ResultResp {
+	result := &types.ResultResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), configs, topics...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	return result
+}
 
 // DeleteTopic 删除主题
 func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
