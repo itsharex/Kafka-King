@@ -1,88 +1,114 @@
 package service
 
 import (
+	"app/backend/common"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
-	"os"
+	"log"
 	"testing"
+	"time"
 )
 
 // 引入 testing 包
 
 func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
-	//ks := NewKafkaService()
-	//conn := map[string]interface{}{
-	//	"bootstrap_servers": "127.0.0.1:9092",
-	//	"tls":               "disable",
-	//	"tls_skip_verify":   "false",
-	//	"tls_ca_file":       "path/to/ca.pem",
-	//	"tls_cert_file":     "path/to/client-cert.pem",
-	//	"tls_key_file":      "path/to/client-key.pem",
-	//	"sasl":              "enable",
-	//	"sasl_mechanism":    "PLAIN",
-	//	"sasl_user":         "admin",
-	//	"sasl_pwd":          "admin-secret",
-	//}
-	//
-	//err := ks.SetConnect("test", conn, false)
-	//if err.Err != "" {
-	//	panic(err.Err)
-	//}
+
 	ctx := context.Background()
 
 	seeds := []string{"localhost:9092"}
-	// One client can both produce and consume!
-	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
-
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer cl.Close()
 
 	// 2. 自定义TLS配置
 	// 加载CA证书
-	caCert, err := os.ReadFile("ca.pem")
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	// 加载客户端证书和私钥
-	cert, err := tls.LoadX509KeyPair("client-cert.pem", "client-key.pem")
-	tlsConfig := &tls.Config{
-		RootCAs:      caCertPool,
-		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS12,
-	}
+	//caCert, err := os.ReadFile("ca.pem")
+	//caCertPool := x509.NewCertPool()
+	//caCertPool.AppendCertsFromPEM(caCert)
+	//// 加载客户端证书和私钥
+	//cert, err := tls.LoadX509KeyPair("client-cert.pem", "client-key.pem")
+	//tlsConfig := &tls.Config{
+	//	RootCAs:      caCertPool,
+	//	Certificates: []tls.Certificate{cert},
+	//	MinVersion:   tls.VersionTLS12,
+	//}
 
-	client, _ := kgo.NewClient(
+	//创建客户端
+	client, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
 		kgo.SASL(plain.Auth{
 			User: "admin",
 			Pass: "admin-secret",
 		}.AsMechanism()),
-		kgo.DialTLSConfig(tlsConfig),
-		//kgo.ConsumerGroup("my-group-identifier"),
-		//kgo.ConsumeTopics("foo"),
+		kgo.ProducerBatchCompression(kgo.GzipCompression()),
 	)
-
-	admin := kadm.NewClient(client)
-	topics, err := admin.ListTopics(ctx)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
-	// 计算每个主题的副本因子
-	for _, topic := range topics {
-		topicName := topic.Topic
-		partitionCount := len(topic.Partitions)
-		replicationFactor := len(topic.Partitions[0].Replicas)
+	//包装admin客户端
+	admin := kadm.NewClient(client)
+	defer client.Close()
+
+	//生产消息
+	st := time.Now()
+	for i := 0; i < 10; i++ {
+		client.Produce(ctx, &kgo.Record{
+			Topic: "1",
+			Value: []byte(time.Now().Format(time.DateTime)),
+		}, nil)
 	}
-	fmt.Printf("%+v", topics)
-	fmt.Println(admin.ListBrokers(ctx))
-	fmt.Println(admin.ListGroups(ctx))
-	fmt.Println(admin.ListTopicsWithInternal(ctx))
+	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+
+	//消费消息。订阅也可以在创建客户端的时候做
+	client.AddConsumeTopics("1")
+	fetches := client.PollRecords(context.Background(), 100)
+	if errs := fetches.Errors(); len(errs) > 0 {
+		panic(fmt.Sprint(errs))
+	}
+	for _, _ = range fetches.Records() {
+		//fmt.Printf("%+v\n", string(record.Value))
+	}
+
+	//提交offset
+	if err := admin.CommitAllOffsets(ctx, "g1", kadm.OffsetsFromFetches(fetches)); err != nil {
+		log.Fatalf("提交offsets失败: %v", err)
+	}
+
+	//读取offset
+	res2, err := admin.FetchOffsetsForTopics(ctx, "g1", "1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	new_map := map[string]map[int32]interface{}{}
+	for k1, v := range res2.Offsets() {
+		if _, ok := new_map[k1]; !ok {
+			new_map[k1] = make(map[int32]interface{})
+		}
+		for k2, v2 := range v {
+			//fmt.Printf("%+v\n", v2)
+			m := common.StructToMap(v2)
+			new_map[k1][k2] = m
+		}
+	}
+	fmt.Printf("%+v\n", new_map)
+
+	//topics, err := admin.ListTopics(ctx)
+	//fmt.Printf("%+v", topics)
+
+	//fmt.Println(admin.ListBrokers(ctx))
+
+	//fmt.Println(admin.ListGroups(ctx))
+
+	//fmt.Println(admin.ListTopicsWithInternal(ctx))
+
+	//res, _ := admin.ListStartOffsets(ctx, "1")
+	//fmt.Printf("%+v\n", res)
+	//
+	//res, _ = admin.ListCommittedOffsets(ctx, "1")
+	//fmt.Printf("%+v\n", res)
+	//
+	//res, _ = admin.ListEndOffsets(ctx, "1")
+	//fmt.Printf("%+v\n", res)
 
 	//ks.CreateTopics([]map[string]interface{}{
 	//	{

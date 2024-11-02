@@ -1,6 +1,7 @@
 package service
 
 import (
+	"app/backend/common"
 	"app/backend/types"
 	"context"
 	"crypto/tls"
@@ -251,11 +252,9 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	// 转换为map格式
 	for _, config := range cfg {
 		result.Results = append(result.Results, map[string]interface{}{
-			"Name":   config.Key,
-			"Value":  config.Value,
-			"Source": config.Source.String(),
-			//"ReadOnly":  config.,
-			//"Default":   config.,
+			"Name":      config.Key,
+			"Value":     config.Value,
+			"Source":    config.Source.String(),
 			"Sensitive": config.Sensitive,
 		})
 	}
@@ -272,7 +271,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	}
 	ctx := context.Background()
 
-	topics, err := k.kac.ListTopicsWithInternal(ctx)
+	topics, err := k.kac.ListTopics(ctx)
 	if err != nil {
 		result.Err = err.Error()
 		return result
@@ -313,27 +312,83 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	return result
 }
 
-//
-//// GetGroups 获取消费组信息
-//func (k *Service) GetGroups() *types.ResultsResp {
-//	result := &types.ResultsResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//
-//	groups, err := k.kac.ListConsumerGroups()
-//	if err != nil {
-//		result.Err = err.Error()
-//		return result
-//	}
-//
-//	for groupName := range groups {
-//		result.Results = append(result.Results, groupName)
-//	}
-//
-//	return result
-//}
+func (k *Service) GetTopicOffsets(topics []string, groupID string) *types.ResultResp {
+	result := &types.ResultResp{}
+
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+
+	ctx := context.Background()
+	startOffsets, err := k.kac.ListStartOffsets(ctx, topics...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	endOffsets, err := k.kac.ListEndOffsets(ctx, topics...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	//读取offset
+	committedOffsets, err := k.kac.FetchOffsetsForTopics(ctx, groupID, topics...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	// {"topicname":{"0":{"Topic":"1","Partition":0,"At":100,"LeaderEpoch":0,"Metadata":""},"1":。。。
+	result.Result = map[string]any{
+		"start_map":  k.ToMap(startOffsets.Offsets()),
+		"end_map":    k.ToMap(endOffsets.Offsets()),
+		"commit_map": k.ToMap(committedOffsets.Offsets()),
+	}
+
+	return result
+}
+func (k *Service) ToMap(mapStruct map[string]map[int32]kadm.Offset) map[string]map[int32]any {
+	newMap := map[string]map[int32]any{}
+	for k1, v := range mapStruct {
+		if _, ok := newMap[k1]; !ok {
+			newMap[k1] = make(map[int32]any)
+		}
+		for k2, v2 := range v {
+			m := common.StructToMap(v2)
+			newMap[k1][k2] = m
+		}
+	}
+	return newMap
+}
+
+// GetGroups 获取消费组信息
+func (k *Service) GetGroups() *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+	groups, err := k.kac.ListGroups(ctx)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+
+	for group := range groups {
+		result.Results = append(result.Results, map[string]interface{}{
+			"Group":        group,
+			"State":        groups[group].State,
+			"ProtocolType": groups[group].ProtocolType,
+			"Coordinator":  groups[group].Coordinator,
+		})
+	}
+
+	return result
+}
+
 //
 //// DeleteConsumerGroup 删除消费组
 //func (k *Service) DeleteConsumerGroup(groupID string) *types.ResultResp {
@@ -349,7 +404,6 @@ func (k *Service) GetTopics() *types.ResultsResp {
 //	}
 //	return nil
 //}
-//
 
 // CreateTopics 创建主题
 func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]string) *types.ResultResp {
@@ -392,70 +446,25 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 	return result
 }
 
-//
-//// DescribeTopic 获取主题详情
-//func (k *Service) DescribeTopic(topics []string) *types.ResultsResp {
-//	result := &types.ResultsResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//	ctx := context.Background()
-//
-//	for _, topic := range topics {
-//		topicMetadata, err := k.kac.DescribeTopicConfigs(ctx, topics...)
-//		if err != nil {
-//			result.Err = err.Error()
-//			return result
-//		}
-//
-//		for _, metadata := range topicMetadata {
-//			var partitions []map[string]interface{}
-//			for _, partition := range metadata.Partitions {
-//				partitions = append(partitions, map[string]interface{}{
-//					"Version":         partition.Version,
-//					"Err":             partition.Err.Error(),
-//					"ID":              partition.ID,
-//					"Leader":          partition.Leader,
-//					"LeaderEpoch":     partition.LeaderEpoch,
-//					"Replicas":        partition.Replicas,
-//					"Isr":             partition.Isr,
-//					"OfflineReplicas": partition.OfflineReplicas,
-//				})
-//			}
-//
-//			result.Results = append(result.Results, map[string]interface{}{
-//				"topic":      topic,
-//				"Name":       metadata.Name,
-//				"Err":        metadata.Err,
-//				"Partitions": partitions,
-//				"Version":    metadata.Version,
-//				"IsInternal": metadata.IsInternal,
-//				"Uuid":       metadata.Uuid,
-//			})
-//		}
-//	}
-//
-//	return result
-//}
-//
-//// CreatePartitions 添加分区
-//func (k *Service) CreatePartitions(topics []string, count int32) *types.ResultResp {
-//	result := &types.ResultResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//	for _, topic := range topics {
-//		err := k.kac.CreatePartitions(topic, count, nil, false)
-//		if err != nil {
-//			result.Err = err.Error()
-//			return result
-//		}
-//	}
-//
-//	return result
-//}
+// CreatePartitions 添加分区
+func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp {
+	result := &types.ResultResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+
+	for _, topic := range topics {
+		_, err := k.kac.CreatePartitions(ctx, count, topic)
+		if err != nil {
+			result.Err = err.Error()
+			return result
+		}
+	}
+
+	return result
+}
 
 // GetTopicConfig 获取主题配置
 func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
@@ -484,163 +493,107 @@ func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
 	return result
 }
 
-//
-//// AlterTopicConfig 修改主题配置
-//func (k *Service) AlterTopicConfig(topic string, configs map[string]*string) *types.ResultsResp {
-//	result := &types.ResultsResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//
-//	err := k.kac.AlterConfig(sarama.TopicResource, topic, configs, false)
-//	if err != nil {
-//		result.Err = err.Error()
-//		return result
-//	}
-//	return result
-//}
-//
-//// DescribeGroup 消费组详情
-//func (k *Service) DescribeGroup(groupID string) (*types.GroupInfo, error) {
-//	// 获取消费组详情
-//	groups, err := k.kac.DescribeConsumerGroups([]string{groupID})
-//	if err != nil {
-//		return nil, fmt.Errorf("describe consumer group failed: %v", err)
-//	}
-//	if len(groups) == 0 {
-//		return nil, fmt.Errorf("group not found: %s", groupID)
-//	}
-//
-//	// 获取消费组offset信息
-//	offsetFetch, err := k.kac.ListConsumerGroupOffsets(groupID, nil)
-//	if err != nil {
-//		return nil, fmt.Errorf("list consumer group offsets failed: %v", err)
-//	}
-//
-//	info := &types.GroupInfo{
-//		Group:  groupID,
-//		Topics: make(map[string][]types.PartitionOffset),
-//	}
-//
-//	// 遍历每个topic的分区offset
-//	for topic, partitions := range offsetFetch.Blocks {
-//		var partitionOffsets []types.PartitionOffset
-//
-//		// 获取topic的最新offset
-//		latestOffsets, err := k.getTopicLatestOffsets(topic)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		for partition, offsetBlock := range partitions {
-//			if offsetBlock.Offset == -1 {
-//				continue // 跳过未消费的分区
-//			}
-//
-//			latestOffset := latestOffsets[partition]
-//			lag := latestOffset - offsetBlock.Offset
-//
-//			po := types.PartitionOffset{
-//				Partition: partition,
-//				Offset:    offsetBlock.Offset,
-//				Lag:       lag,
-//			}
-//			partitionOffsets = append(partitionOffsets, po)
-//			info.TotalLag += lag
-//		}
-//		info.Topics[topic] = partitionOffsets
-//	}
-//
-//	return info, nil
-//}
-//
-//// 获取Topic各分区最新Offset
-//func (k *Service) getTopicLatestOffsets(topic string) (map[int32]int64, error) {
-//	// 获取topic的所有分区
-//	metadata, err := k.kac.DescribeTopics([]string{topic})
-//	if err != nil {
-//		return nil, fmt.Errorf("describe topic failed: %v", err)
-//	}
-//
-//	if len(metadata) == 0 {
-//		return nil, fmt.Errorf("topic not found: %s", topic)
-//	}
-//
-//	client, err := sarama.NewClient(k.bootstrapServers, k.config)
-//	if err != nil {
-//		return nil, fmt.Errorf("create client failed: %v", err)
-//	}
-//	defer client.Close()
-//
-//	offsets := make(map[int32]int64)
-//	for _, partition := range metadata[0].Partitions {
-//		offset, err := client.GetOffset(topic, partition.ID, sarama.OffsetNewest)
-//		if err != nil {
-//			return nil, fmt.Errorf("get partition offset failed: %v", err)
-//		}
-//		offsets[partition.ID] = offset
-//	}
-//
-//	return offsets, nil
-//}
+// AlterTopicConfig 修改主题配置
+func (k *Service) AlterTopicConfig(topic string, name, value string) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ac := []kadm.AlterConfig{
+		{
+			Name:  name,
+			Op:    kadm.SetConfig,
+			Value: &value,
+		},
+	}
 
+	ctx := context.Background()
+	_, err := k.kac.AlterTopicConfigs(ctx, ac, topic)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+	return result
+}
+
+func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ac := []kadm.AlterConfig{
+		{
+			Name:  name,
+			Op:    kadm.SetConfig,
+			Value: &value,
+		},
+	}
+
+	ctx := context.Background()
+	_, err := k.kac.AlterBrokerConfigs(ctx, ac, nodeId)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+	return result
+}
+
+// // DescribeGroup 消费组详情
 //
-//func (k *Service) GetTopicOffsets(topics []string, groupID string) *types.ResultResp {
-//	result := &types.ResultResp{}
-//
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//
-//	topicOffset := make(map[string]map[int32][]int64)
-//	topicLag := make(map[string][]int64)
-//	group, err := sarama.NewConsumerGroup(
-//		k.bootstrapServers,
-//		groupID,
-//		k.config,
-//	)
-//	sarama.NewConsumer()
-//	if err != nil {
-//		result.Err = err.Error()
-//		return result
-//	}
-//
-//	for _, topic := range topics {
-//		partitions, err := group.Partitions(topic)
+//	func (k *Service) DescribeGroup(groupID string) (*types.GroupInfo, error) {
+//		// 获取消费组详情
+//		groups, err := k.kac.DescribeConsumerGroups([]string{groupID})
 //		if err != nil {
-//			continue
+//			return nil, fmt.Errorf("describe consumer group failed: %v", err)
+//		}
+//		if len(groups) == 0 {
+//			return nil, fmt.Errorf("group not found: %s", groupID)
 //		}
 //
-//		topicOffset[topic] = make(map[int32][]int64)
-//		var totalEndOffset, totalCommitted int64
-//
-//		for _, partition := range partitions {
-//			pc, err := group.ConsumePartition(topic, partition, sarama.OffsetOldest)
-//			if err != nil {
-//				continue
-//			}
-//
-//			committed := pc.HighWaterMarkOffset()
-//			endOffset, err := k.getLatestOffset(topic, partition)
-//			if err != nil {
-//				continue
-//			}
-//
-//			lag := endOffset - committed
-//			topicOffset[topic][partition] = []int64{committed, endOffset, lag}
-//
-//			totalEndOffset += endOffset
-//			totalCommitted += committed
+//		// 获取消费组offset信息
+//		offsetFetch, err := k.kac.ListConsumerGroupOffsets(groupID, nil)
+//		if err != nil {
+//			return nil, fmt.Errorf("list consumer group offsets failed: %v", err)
 //		}
 //
-//		topicLag[topic] = []int64{totalEndOffset, totalCommitted}
+//		info := &types.GroupInfo{
+//			Group:  groupID,
+//			Topics: make(map[string][]types.PartitionOffset),
+//		}
+//
+//		// 遍历每个topic的分区offset
+//		for topic, partitions := range offsetFetch.Blocks {
+//			var partitionOffsets []types.PartitionOffset
+//
+//			// 获取topic的最新offset
+//			latestOffsets, err := k.getTopicLatestOffsets(topic)
+//			if err != nil {
+//				return nil, err
+//			}
+//
+//			for partition, offsetBlock := range partitions {
+//				if offsetBlock.Offset == -1 {
+//					continue // 跳过未消费的分区
+//				}
+//
+//				latestOffset := latestOffsets[partition]
+//				lag := latestOffset - offsetBlock.Offset
+//
+//				po := types.PartitionOffset{
+//					Partition: partition,
+//					Offset:    offsetBlock.Offset,
+//					Lag:       lag,
+//				}
+//				partitionOffsets = append(partitionOffsets, po)
+//				info.TotalLag += lag
+//			}
+//			info.Topics[topic] = partitionOffsets
+//		}
+//
+//		return info, nil
 //	}
-//	result.Result = map[string]interface{}{"offsets": topicOffset, "lag": topicLag}
-//
-//	return result
-//}
 
 //func (k *Service) getLatestOffset(topic string, partition int32) (int64, error) {
 //

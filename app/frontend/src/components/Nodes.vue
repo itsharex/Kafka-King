@@ -43,11 +43,13 @@ import emitter from "../utils/eventBus";
 import {NButton, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
-import {GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
+import {AlterNodeConfig, AlterTopicConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
+import ShowOrEdit from "../common/ShowOrEdit.vue";
 
 const config_data = ref([])
 // 当前活动的 TabPane 名称
 const activeTab = ref('broker');
+const activeConfigNode = ref('');
 const loading = ref(false)
 const data = ref([])
 const message = useMessage()
@@ -123,31 +125,30 @@ const columns = [
           secondary: true,
           onClick: async () => {
             await getBrokerConfig(row["node_id"])
+            activeConfigNode.value = row["node_id"]
           }
         },
         {default: () => '配置', icon: () => h(NIcon, null, { default: () => h(SettingsTwotone) })}
     )
   },
 ]
-const getType = (value) => {
-  const type = {
-    true: "success",
-    false: "warning",
-  }
-  return type[value] || 'error'
-}
 
 const config_columns = [
-  { title: '配置名', key: 'Name', sorter: 'default',width: 80,resizable: true,
+  { title: 'Name', key: 'Name', sorter: 'default',width: 80,resizable: true,
   },
-  { title: '值', key: 'Value', sorter: 'default',width: 140,resizable: true,
+  { title: 'Value（双击可编辑）', key: 'Value', sorter: 'default',width: 140,resizable: true,
+    render: (row) => {
+      return h(ShowOrEdit, {
+        value: row['Value'],
+        onUpdateValue(v) {
+          alterNodeConfig(activeConfigNode.value, row['Name'], v)
+        }
+      })
+    }
   },
   { title: '来源', key: 'Source', sorter: 'default',width: 50,resizable: true,},
-  // { title: '是否默认', key: 'Default', width: 20,resizable: true,
-  //   render: (row) => h(NTag, {type: getType(row['ReadOnly'])}, {default: () => row['Default'] === true ? "是": "否"}),
-  // },
   { title: '是否敏感', key: 'Sensitive',width: 20,resizable: true,sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
-    render: (row) => h(NTag, {type: getType(row['Sensitive'])}, {default: () => row['Sensitive'] === true ? "是": "否"}),
+    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error": "info"}, {default: () => row['Sensitive'] === true ? "是": "否"}),
   },
 
 ]
@@ -172,6 +173,24 @@ const getBrokerConfig = async (node_id) => {
 
 }
 
+
+const alterNodeConfig = async (node_id, name, value) => {
+  loading.value = true
+  try {
+    const res = await AlterNodeConfig(node_id, name, value)
+    console.log(res)
+    if (res.err !== "") {
+      message.error(res.err)
+    } else {
+      message.success("编辑成功，刷新配置")
+      await getBrokerConfig(activeConfigNode.value)
+    }
+  } catch (e) {
+    message.error(e)
+  }
+  loading.value = false
+
+}
 
 </script>
 

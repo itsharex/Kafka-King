@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -48,7 +47,7 @@ func TestNewKafkaService(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//fmt.Println(ks.GetGroups())
 	//fmt.Println(ks.GetTopicConfig("test3"))
 	//fmt.Println(ks.DeleteTopic([]string{"test1"}))
-	fmt.Println(ks.DescribeTopic([]string{"test3"}))
+	//fmt.Println(ks.DescribeTopic([]string{"test3"}))
 	//fmt.Println(ks.AlterTopicConfig("test3", map[string]*string{"retention.ms": ptr("60480")}))
 	//fmt.Println(ks.GetTopicConfig("test3"))
 	//fmt.Println(ks.DescribeGroup("test"))
