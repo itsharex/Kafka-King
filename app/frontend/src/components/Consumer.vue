@@ -40,18 +40,7 @@
       />
     </n-flex>
     <n-flex align="center">
-      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(SendTwotone)">拉取消息</n-button>
-    </n-flex>
-
-    <!-- 进度显示 -->
-    <n-flex vertical v-if="messages.length">
-      <n-progress
-          type="line"
-          :percentage="progressPercentage"
-          :indicator-placement="'inside'"
-      >
-        已获取 {{ messages.length }}/{{ maxMessages }} 条消息
-      </n-progress>
+      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(SendTwotone)">消费消息</n-button>
     </n-flex>
 
     <!-- 消息列表 -->
@@ -62,53 +51,16 @@
         :bordered="true"
         striped
     />
-    <!-- 消息详情抽屉 -->
-    <n-drawer v-model:show="showDrawer" :width="500">
-      <n-drawer-content>
-        <template #header>
-          消息详情
-        </template>
-        <n-flex vertical>
-          <n-descriptions bordered>
-            <n-descriptions-item label="Offset">
-              {{ selectedMessage?.offset }}
-            </n-descriptions-item>
-            <n-descriptions-item label="Key">
-              {{ selectedMessage?.key }}
-            </n-descriptions-item>
-            <n-descriptions-item label="Timestamp">
-              {{ formatTimestamp(selectedMessage?.timestamp) }}
-            </n-descriptions-item>
-          </n-descriptions>
-          <n-card title="Headers">
-            <n-descriptions bordered>
-              <n-descriptions-item
-                  v-for="(value, key) in selectedMessage?.headers"
-                  :key="key"
-                  :label="key"
-              >
-                {{ value }}
-              </n-descriptions-item>
-            </n-descriptions>
-          </n-card>
-          <n-card title="Content">
-            <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ selectedMessage?.content }}</pre>
-          </n-card>
-        </n-flex>
-      </n-drawer-content>
-    </n-drawer>
-
   </n-flex>
 </template>
 
 <script setup>
-import {onMounted, ref, computed, h} from 'vue'
+import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {SendTwotone} from "@vicons/material";
-import {NButton, NButtonGroup, NDataTable, NFlex, NIcon, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
-import {GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
-import Consumer from "./Consumer.vue";
+import {NButton, NDataTable, NFlex,  useMessage} from 'naive-ui'
+import {GetGroups, GetTopics, Consumer} from "../../wailsjs/go/service/Service";
 
 const message = useMessage()
 const topic_data = ref([]);
@@ -121,8 +73,6 @@ const maxMessages = ref(100)
 const startOffset = ref(null)
 const loading = ref(false)
 const messages = ref([])
-const showDrawer = ref(false)
-const selectedMessage = ref(null)
 
 const selectNode = async (node) => {
 }
@@ -187,16 +137,6 @@ const pagination = ref({
   },
 })
 
-// 进度百分比
-const progressPercentage = computed(() => {
-  return Math.floor((messages.value.length / maxMessages.value) * 100)
-})
-
-// 格式化时间戳
-const formatTimestamp = (timestamp) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
-}
 
 // 表格列定义
 const columns = [
@@ -209,40 +149,33 @@ const columns = [
     title: 'Offset',
     key: 'offset',
     width: 20,
+    ellipsis: {
+      tooltip: true
+    },
   },
   {
     title: 'Key',
     key: 'Key',
     width: 20,
+    ellipsis: {
+      tooltip: true
+    },
   },
   {
     title: '消息内容',
     key: 'Value',
-    width: 20,
+    width: 40,
     ellipsis: {
       tooltip: true
     },
-    render(row) {
-      const content = row.content || ''
-      return h(
-          'div',
-          {
-            style: {
-              cursor: 'pointer',
-            },
-            onClick: () => showMessageDetail(row)
-          },
-          content.length > 100 ? content.substring(0, 100) + '...' : content
-      )
-    }
   },
   {
     title: '时间戳',
     key: 'Timestamp',
     width: 20,
-    render(row) {
-      return formatTimestamp(row.timestamp)
-    }
+    ellipsis: {
+      tooltip: true
+    },
   },
   {
     title: 'Partition',
@@ -273,45 +206,9 @@ const columns = [
     title: 'ProducerID',
     key: 'ProducerID',
     width: 20,
-  },
-  {
-    title: '操作',
-    key: 'actions',
-    width: 20,
-    render(row) {
-      return h(
-          NFlex,
-          null,
-          {
-            default: () => [
-              h(
-                  NButton,
-                  {
-                    size: 'small',
-                    onClick: () => saveMessageAsString(row)
-                  },
-                  {default: () => '保存为文本'}
-              ),
-              h(
-                  NButton,
-                  {
-                    size: 'small',
-                    onClick: () => saveMessageAsBinary(row)
-                  },
-                  {default: () => '保存为二进制'}
-              )
-            ]
-          }
-      )
-    }
   }
 ]
 
-// 显示消息详情
-const showMessageDetail = (message) => {
-  selectedMessage.value = message
-  showDrawer.value = true
-}
 
 // 获取消息
 const consume = async () => {
@@ -326,7 +223,7 @@ const consume = async () => {
     if (result.err !== "") {
       message.error(result.err)
     }else {
-      messages.value = result
+      messages.value = result.results
       message.success('获取成功')
     }
   } catch (error) {

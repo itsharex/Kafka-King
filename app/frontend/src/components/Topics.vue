@@ -24,7 +24,15 @@
               <n-button @click="getData" :render-icon="renderIcon(SearchOutlined)"></n-button>
               <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">创建主题</n-button>
               <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">刷新 Topic</n-button>
-              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>
+<!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
+              <n-select
+                  @select="getTopicsOffsets"
+                  :options="group_data"
+                  placeholder="选择Group并读取Offsets"
+                  filterable
+                  clearable
+                  style="width: 250px"
+              />
             </n-flex>
             <n-data-table
                 ref="tableRef"

@@ -639,7 +639,8 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 	}
 
 	st := time.Now()
-	////消费消息。订阅也可以在创建客户端的时候做
+
+	//消费消息。订阅也可以在创建客户端的时候做
 	k.client.AddConsumeTopics(topic)
 	fetches := k.client.PollRecords(context.Background(), num)
 	if errs := fetches.Errors(); len(errs) > 0 {
