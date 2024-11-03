@@ -665,10 +665,13 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 	result.Results = res
 
 	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+
 	//提交offset
-	if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
-		result.Err = "提交offsets失败: " + err.Error()
-		return result
+	if group != "" {
+		if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
+			result.Err = "提交offsets失败: " + err.Error()
+			return result
+		}
 	}
 	return result
 }

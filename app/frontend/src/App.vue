@@ -67,7 +67,8 @@ import {
   AllOutOutlined,
   LibraryBooksOutlined,
   GroupsSharp,
-  SendTwotone
+  SendTwotone,
+  MessageOutlined
 } from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
@@ -136,7 +137,7 @@ const sideMenuOptions = [
   {
     label: 'Consumer',
     key: 'Consumer',
-    icon: renderIcon(SendTwotone),
+    icon: renderIcon(MessageOutlined),
     component: Consumer,
   },
   {

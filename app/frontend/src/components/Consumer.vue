@@ -6,7 +6,7 @@
     </n-flex>
     <!-- 查询条件区域 -->
     <n-flex align="center">
-      选择 Topic：
+      必选：Topic：
       <n-select
           v-model:value="selectedTopic"
           :options="topic_data"
@@ -15,32 +15,28 @@
           clearable
           style="width: 300px"
       />
-      选择 Group：
-      <n-select
-          v-model:value="selectedGroup"
-          :options="group_data"
-          placeholder="选择或搜索Consumer Group"
-          filterable
-          clearable
-          style="width: 300px"
-      />
-      消费消息数量：
+
+      必选：消费数量：
       <n-input-number
           v-model:value="maxMessages"
           :min="1"
           placeholder="消费消息数量"
           style="width: 160px"
       />
-      起始Offset：
-      <n-input-number
-          v-model:value="startOffset"
-          :min="0"
-          placeholder="起始Offset"
-          style="width: 160px"
-      />
+
     </n-flex>
     <n-flex align="center">
-      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(SendTwotone)">消费消息</n-button>
+      可选：Group（一旦选择，消费时会自动提交Offset。支持创建新Group）
+      <n-select
+          v-model:value="selectedGroup"
+          :options="group_data"
+          placeholder="选择或创建Consumer Group"
+          filterable
+          clearable
+          tag
+          style="width: 300px"
+      />
+      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">消费消息</n-button>
     </n-flex>
 
     <!-- 消息列表 -->
@@ -58,8 +54,8 @@
 import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
-import {SendTwotone} from "@vicons/material";
-import {NButton, NDataTable, NFlex,  useMessage} from 'naive-ui'
+import {MessageOutlined} from "@vicons/material";
+import {NButton, NDataTable, NFlex, useMessage} from 'naive-ui'
 import {GetGroups, GetTopics, Consumer} from "../../wailsjs/go/service/Service";
 
 const message = useMessage()
@@ -69,7 +65,7 @@ const group_data = ref([]);
 // 表单数据
 const selectedTopic = ref('')
 const selectedGroup = ref('')
-const maxMessages = ref(100)
+const maxMessages = ref(10)
 const startOffset = ref(null)
 const loading = ref(false)
 const messages = ref([])
@@ -88,7 +84,7 @@ const getData = async () => {
     const res = await GetTopics()
     const res2 = await GetGroups()
     if (res.err !== "" || res2.err !== "") {
-      message.error(res.err + res2.err)
+      message.error(res.err === res2.err? res.err : res.err + res2.err)
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -117,7 +113,7 @@ const getData = async () => {
       group_data.value = groups
 
     }
-  }catch (e) {
+  } catch (e) {
     message.error(e)
   }
 }
@@ -219,10 +215,10 @@ const consume = async () => {
 
   loading.value = true
   try {
-    const result = await Consumer(selectedTopic.value,selectedGroup.value,maxMessages.value,)
+    const result = await Consumer(selectedTopic.value, selectedGroup.value, maxMessages.value)
     if (result.err !== "") {
       message.error(result.err)
-    }else {
+    } else {
       messages.value = result.results
       message.success('获取成功')
     }
