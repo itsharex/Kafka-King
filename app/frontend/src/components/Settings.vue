@@ -23,9 +23,15 @@
         </n-flex>
       </n-form-item>
 
-
       <n-form-item>
         <n-button @click="saveConfig" strong type="primary">保存设置</n-button>
+      </n-form-item>
+
+      <n-form-item label="">
+        <n-button @click="BrowserOpenURL(kafka_home_url)" :render-icon="renderIcon(HouseTwotone)">Kafka-King 项目主页</n-button>
+      </n-form-item>
+      <n-form-item label="">
+        <n-button @click="BrowserOpenURL(es_home_url)" :render-icon="renderIcon(HouseTwotone)">推荐同款 ES 客户端</n-button>
       </n-form-item>
 
 
@@ -46,10 +52,13 @@ import {
   useMessage,
 } from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
-import {WindowSetSize} from "../../wailsjs/runtime";
+import {BrowserOpenURL, WindowSetSize} from "../../wailsjs/runtime";
 import {renderIcon} from "../utils/common";
-import {WbSunnyOutlined, NightlightRoundFilled} from '@vicons/material'
+import {WbSunnyOutlined, NightlightRoundFilled, HouseTwotone} from '@vicons/material'
 import emitter from "../utils/eventBus";
+
+const es_home_url = "https://github.com/Bronya0/ES-King"
+const kafka_home_url = "https://github.com/Bronya0/kafka-King"
 
 const message = useMessage()
 let theme = lightTheme
