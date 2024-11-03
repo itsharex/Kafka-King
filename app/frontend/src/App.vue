@@ -61,7 +61,7 @@ import {
   NLayoutHeader,
   NMessageProvider
 } from 'naive-ui'
-import {HiveOutlined, SettingsOutlined, AllOutOutlined, LibraryBooksOutlined} from '@vicons/material'
+import {HiveOutlined, SettingsOutlined, AllOutOutlined, LibraryBooksOutlined, GroupsSharp} from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
 import {GetConfig, SaveTheme} from "../wailsjs/go/config/AppConfig";
@@ -72,6 +72,7 @@ import Conn from "./components/Conn.vue";
 import Nodes from "./components/Nodes.vue";
 import Topics from "./components/Topics.vue";
 import emitter from "./utils/eventBus";
+import Groups from "./components/Groups.vue";
 
 let headerClass = shallowRef('lightTheme')
 const collapsed = ref(true)
@@ -116,6 +117,12 @@ const sideMenuOptions = [
     key: '主题',
     icon: renderIcon(LibraryBooksOutlined),
     component: Topics,
+  },
+  {
+    label: '消费者组',
+    key: '消费者组',
+    icon: renderIcon(GroupsSharp),
+    component: Groups,
   },
   {
     label: '设置',

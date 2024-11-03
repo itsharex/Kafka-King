@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="width: 42px;">节点</h2>
+      <h2 style="max-width: 200px;">节点</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">refresh</n-button>
       <n-text>共计{{ data.length }}个</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">导出为csv</n-button>

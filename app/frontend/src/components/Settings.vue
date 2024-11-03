@@ -1,6 +1,8 @@
 <template>
   <n-flex vertical>
-    <h2 style="width: 42px;">设置</h2>
+    <n-flex align="center">
+      <h2 style="max-width: 200px;">设置</h2>
+    </n-flex>
   </n-flex>
   <div>
     <n-form :model="config" label-placement="left">

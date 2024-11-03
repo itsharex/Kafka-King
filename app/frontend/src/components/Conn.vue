@@ -2,7 +2,7 @@
   <div>
     <n-flex vertical>
       <n-flex align="center">
-        <h2 style="width: 42px;">集群</h2>
+        <h2 style="max-width: 200px;">集群</h2>
         <n-text>共有 {{ Nodes.length }} 个</n-text>
         <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">添加集群</n-button>
       </n-flex>

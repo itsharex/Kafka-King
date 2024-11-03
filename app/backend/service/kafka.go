@@ -312,6 +312,33 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	return result
 }
 
+// GetTopicConfig 获取主题配置
+func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+
+	res, err := k.kac.DescribeTopicConfigs(ctx, topic)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+	cfg := res[0].Configs
+	for _, config := range cfg {
+		result.Results = append(result.Results, map[string]interface{}{
+			"Name":      config.Key,
+			"Value":     config.Value,
+			"Source":    config.Source,
+			"Synonyms":  config.Synonyms,
+			"Sensitive": config.Sensitive,
+		})
+	}
+	return result
+}
+
 func (k *Service) GetTopicOffsets(topics []string, groupID string) *types.ResultResp {
 	result := &types.ResultResp{}
 
@@ -389,6 +416,47 @@ func (k *Service) GetGroups() *types.ResultsResp {
 	return result
 }
 
+// GetGroupMembers 获取消费组下的成员信息
+func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+	groups, err := k.kac.DescribeGroups(ctx, groupLst...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+	//map[g1:{Group:g1 Coordinator:{NodeID:0 Port:9092 Host:DESKTOP-7QTQFHC.mshome.net Rack:<nil> _:{}} State:Stable ProtocolType:consumer Protocol:cooperative-sticky
+	//Members:[{MemberID:kgo-eb77103b-d127-4f0d-9159-6bdc92030cd1 InstanceID:<nil> ClientID:kgo ClientHost:/192.168.160.1 Join:{i:0xc000032960} Assigned:{i:0xc000284000}}] Err:<nil>}]
+	for key := range groups {
+		members := groups[key].Members
+		membersLst := make([]any, 0)
+		for _, member := range members {
+			membersLst = append(membersLst, map[string]any{
+				"MemberID":   member.MemberID,
+				"InstanceID": member.InstanceID,
+				"ClientID":   member.ClientID,
+				"ClientHost": member.ClientHost,
+			})
+
+		}
+
+		result.Results = append(result.Results, map[string]any{
+			"Group":        key,
+			"Coordinator":  groups[key].Coordinator.Host,
+			"State":        groups[key].State,
+			"ProtocolType": groups[key].ProtocolType,
+			"Protocol":     groups[key].Protocol,
+			"Members":      membersLst,
+		})
+	}
+
+	return result
+}
+
 //
 //// DeleteConsumerGroup 删除消费组
 //func (k *Service) DeleteConsumerGroup(groupID string) *types.ResultResp {
@@ -446,6 +514,22 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 	return result
 }
 
+// DeleteGroup 删除Group
+func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
+	result := &types.ResultResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+	_, err := k.kac.DeleteGroups(ctx, groups...)
+	if err != nil {
+		result.Err = err.Error()
+		return result
+	}
+	return result
+}
+
 // CreatePartitions 添加分区
 func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp {
 	result := &types.ResultResp{}
@@ -463,33 +547,6 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 		}
 	}
 
-	return result
-}
-
-// GetTopicConfig 获取主题配置
-func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
-	result := &types.ResultsResp{}
-	if k.kac == nil {
-		result.Err = "请先选择连接"
-		return result
-	}
-	ctx := context.Background()
-
-	res, err := k.kac.DescribeTopicConfigs(ctx, topic)
-	if err != nil {
-		result.Err = err.Error()
-		return result
-	}
-	cfg := res[0].Configs
-	for _, config := range cfg {
-		result.Results = append(result.Results, map[string]interface{}{
-			"Name":      config.Key,
-			"Value":     config.Value,
-			"Source":    config.Source,
-			"Synonyms":  config.Synonyms,
-			"Sensitive": config.Sensitive,
-		})
-	}
 	return result
 }
 
