@@ -57,7 +57,7 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//	}, nil)
 	//}
 	//fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
-	//
+
 	////消费消息。订阅也可以在创建客户端的时候做
 	client.AddConsumeTopics("1")
 	fetches := client.PollRecords(context.Background(), 100)

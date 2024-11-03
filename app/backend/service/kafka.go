@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 const KingGroup = "kafka-king-group"
@@ -38,6 +39,7 @@ type Service struct {
 	//mutex            sync.Mutex
 	config []kgo.Opt
 	kac    *kadm.Client
+	client *kgo.Client
 	//consumer         sarama.Consumer
 	mutex sync.Mutex
 }
@@ -156,6 +158,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 	if isTest == false {
 		k.connectName = connectName
 		k.kac = admin
+		k.client = cl
 		k.config = config
 		k.bootstrapServers = bootstrapServers
 	}
@@ -597,72 +600,74 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 	return result
 }
 
-// // DescribeGroup 消费组详情
-//
-//	func (k *Service) DescribeGroup(groupID string) (*types.GroupInfo, error) {
-//		// 获取消费组详情
-//		groups, err := k.kac.DescribeConsumerGroups([]string{groupID})
-//		if err != nil {
-//			return nil, fmt.Errorf("describe consumer group failed: %v", err)
-//		}
-//		if len(groups) == 0 {
-//			return nil, fmt.Errorf("group not found: %s", groupID)
-//		}
-//
-//		// 获取消费组offset信息
-//		offsetFetch, err := k.kac.ListConsumerGroupOffsets(groupID, nil)
-//		if err != nil {
-//			return nil, fmt.Errorf("list consumer group offsets failed: %v", err)
-//		}
-//
-//		info := &types.GroupInfo{
-//			Group:  groupID,
-//			Topics: make(map[string][]types.PartitionOffset),
-//		}
-//
-//		// 遍历每个topic的分区offset
-//		for topic, partitions := range offsetFetch.Blocks {
-//			var partitionOffsets []types.PartitionOffset
-//
-//			// 获取topic的最新offset
-//			latestOffsets, err := k.getTopicLatestOffsets(topic)
-//			if err != nil {
-//				return nil, err
-//			}
-//
-//			for partition, offsetBlock := range partitions {
-//				if offsetBlock.Offset == -1 {
-//					continue // 跳过未消费的分区
-//				}
-//
-//				latestOffset := latestOffsets[partition]
-//				lag := latestOffset - offsetBlock.Offset
-//
-//				po := types.PartitionOffset{
-//					Partition: partition,
-//					Offset:    offsetBlock.Offset,
-//					Lag:       lag,
-//				}
-//				partitionOffsets = append(partitionOffsets, po)
-//				info.TotalLag += lag
-//			}
-//			info.Topics[topic] = partitionOffsets
-//		}
-//
-//		return info, nil
-//	}
+// Produce 生产消息
+func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+	ctx := context.Background()
+	st := time.Now()
+	headers2 := make([]kgo.RecordHeader, len(headers))
+	for i := 0; i < len(headers); i++ {
+		headers2[i] = kgo.RecordHeader{
+			Key:   headers[i]["key"],
+			Value: []byte(headers[i]["value"]),
+		}
+	}
+	for i := 0; i < num; i++ {
+		k.client.Produce(ctx, &kgo.Record{
+			Topic:     topic,
+			Value:     []byte(value),
+			Key:       []byte(key),
+			Headers:   headers2,
+			Partition: int32(partition),
+		}, nil)
+	}
+	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
 
-//func (k *Service) getLatestOffset(topic string, partition int32) (int64, error) {
-//
-//	client, err := sarama.NewClient(k.bootstrapServers, k.config)
-//	if err != nil {
-//		return 0, err
-//	}
-//	defer client.Close()
-//
-//	offset, err := client.GetOffset(topic, partition, sarama.OffsetNewest)
-//	if err != nil {
-//		return 0, err
-//	}
-//	return offset, nil
-//}
+	return result
+}
+
+// Consumer 消费消息
+func (k *Service) Consumer(topic string, group string, num int) *types.ResultsResp {
+	result := &types.ResultsResp{}
+	if k.kac == nil {
+		result.Err = "请先选择连接"
+		return result
+	}
+
+	st := time.Now()
+	////消费消息。订阅也可以在创建客户端的时候做
+	k.client.AddConsumeTopics(topic)
+	fetches := k.client.PollRecords(context.Background(), num)
+	if errs := fetches.Errors(); len(errs) > 0 {
+		panic(fmt.Sprint(errs))
+	}
+	res := make([]any, num)
+	for i, v := range fetches.Records() {
+		res = append(res, map[string]any{
+			"ID":            i,
+			"Offset":        v.Offset,
+			"Key":           string(v.Key),
+			"Value":         string(v.Value),
+			"Timestamp":     v.Timestamp.Format(time.DateTime),
+			"Partition":     v.Partition,
+			"Topic":         v.Topic,
+			"Headers":       v.Headers,
+			"LeaderEpoch":   v.LeaderEpoch,
+			"ProducerEpoch": v.ProducerEpoch,
+			"ProducerID":    v.ProducerID,
+		})
+	}
+	result.Results = res
+
+	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+	//提交offset
+	if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
+		result.Err = "提交offsets失败: " + err.Error()
+		return result
+	}
+	return result
+}

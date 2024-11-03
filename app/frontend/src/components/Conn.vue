@@ -56,7 +56,7 @@
           <n-form-item label="连接地址" path="bootstrap_servers">
             <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
           </n-form-item>
-
+          注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址  （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）
           <n-form-item label="使用 TLS" path="tls">
             <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
@@ -82,7 +82,14 @@
           </n-form-item>
 
           <n-form-item label="SASL 机制" path="sasl_mechanism">
-            <n-dropdown :options="sasl_mechanism_options"  @select="handleSelect"><n-button>{{currentNode.sasl_mechanism || '请选择'}}</n-button></n-dropdown>
+            <n-select
+                v-model:value="currentNode.sasl_mechanism"
+                :options="sasl_mechanism_options"
+                placeholder="请选择"
+                filterable
+                clearable
+                style="width: 200px"
+            />
           </n-form-item>
 
           <n-form-item label="SASL 用户名" path="sasl_user">
@@ -170,19 +177,19 @@ const test_connect_loading = ref(false)
 const sasl_mechanism_options = [
   {
     label: 'PLAIN',
-    key: 'PLAIN'
+    value: 'PLAIN'
   },
   {
     label: 'SCRAM-SHA-256',
-    key: 'SCRAM-SHA-256'
+    value: 'SCRAM-SHA-256'
   },
   {
     label: 'SCRAM-SHA-512',
-    key: 'SCRAM-SHA-512'
+    value: 'SCRAM-SHA-512'
   },
   {
     label: 'GSSAPI',
-    key: 'GSSAPI'
+    value: 'GSSAPI'
   },
 ]
 
