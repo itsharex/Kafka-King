@@ -2,7 +2,7 @@
   <n-flex vertical>
     <n-flex align="center">
       <h2 style="max-width: 200px;">消费者组</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">refresh</n-button>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">刷新</n-button>
       <n-text>共计{{ group_data.length }}个</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">导出为csv</n-button>
     </n-flex>
