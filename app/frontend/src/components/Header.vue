@@ -31,23 +31,23 @@
 </template>
 
 <script setup>
-import {darkTheme, lightTheme, NAvatar, NButton,  NFlex, useMessage} from 'naive-ui'
+import {darkTheme, lightTheme, NAvatar, NButton, NFlex, useMessage, useNotification} from 'naive-ui'
 import {
-  CodeFilled,
-  SystemUpdateAltSharp,
-  RemoveOutlined,
   CloseFilled,
+  CodeFilled,
+  ContentCopyFilled,
   CropSquareFilled,
-  WbSunnyOutlined,
-  NightlightRoundFilled, ContentCopyFilled
+  NightlightRoundFilled,
+  RemoveOutlined,
+  SystemUpdateAltSharp,
+  WbSunnyOutlined
 } from '@vicons/material'
 import logo from '../assets/images/appicon.png'
 import {h, onMounted, ref, shallowRef} from "vue";
 import {BrowserOpenURL, Quit, WindowMaximise, WindowMinimise, WindowUnmaximise} from "../../wailsjs/runtime";
 import {CheckUpdate} from '../../wailsjs/go/system/Update'
-import {useNotification} from 'naive-ui'
 import {openUrl, renderIcon} from "../utils/common";
-import {GetConfig, GetVersion, GetAppName} from "../../wailsjs/go/config/AppConfig";
+import {GetAppName, GetConfig, GetVersion} from "../../wailsjs/go/config/AppConfig";
 import emitter from "../utils/eventBus";
 
 defineProps(['options', 'value']);
@@ -66,7 +66,7 @@ let version = ref({
   body: "",
 })
 
-const desc = "让音频更懂视觉 "
+const desc = "更人性化的 Kafka GUI "
 const subtitle = ref("")
 
 const notification = useNotification()
@@ -124,7 +124,14 @@ onMounted(async () => {
   version.value.tag_name = v
   subtitle.value = desc + v
   await checkForUpdates()
+
+  emitter.on('selectNode', selectNode)
+
 })
+
+const selectNode = (node) => {
+  subtitle.value = desc + " ==> 当前集群：【" + node.name + "】"
+}
 
 
 const minimizeWindow = () => {
