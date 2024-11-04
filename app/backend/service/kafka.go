@@ -141,7 +141,9 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 		}
 	}
 	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
+
 	config = append(config, kgo.SeedBrokers(bootstrapServers...))
+
 	cl, err := kgo.NewClient(config...)
 	if err != nil {
 		result.Err = err.Error()
@@ -163,41 +165,8 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 		k.bootstrapServers = bootstrapServers
 	}
 
-	// Convert conn map to proper config
-	// Add necessary configurations from conn map to sarama config
-	//bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
-	//admin, err := sarama.NewClusterAdmin(bootstrapServers, config)
-	//if err != nil {
-	//	log.Println("创建Admin失败", err)
-	//	result.Err = err.Error()
-	//	return result
-	//} else {
-	//	if isTest == false {
-	//		k.connectName = connectName
-	//		k.kac = admin
-	//		k.config = config
-	//		k.bootstrapServers = bootstrapServers
-	//	} else {
-	//		_, err = admin.ListTopics()
-	//		if err != nil {
-	//			log.Println("连接集群失败", err)
-	//			result.Err = err.Error()
-	//			return result
-	//		}
-	//	}
-	//}
-
 	return result
 }
-
-// 创建Consumer
-//func (k *Service) newConsumer() (sarama.Consumer, error) {
-//	consumer, err := sarama.NewConsumer(k.bootstrapServers, k.config)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return consumer, nil
-//}
 
 // TestClient 测试连接
 func (k *Service) TestClient(connectName string, conn map[string]interface{}) *types.ResultResp {
@@ -631,7 +600,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 }
 
 // Consumer 消费消息
-func (k *Service) Consumer(topic string, group string, num int) *types.ResultsResp {
+func (k *Service) Consumer(topic string, group string, num, timeout int) *types.ResultsResp {
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
@@ -640,13 +609,20 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 
 	st := time.Now()
 
-	//消费消息。订阅也可以在创建客户端的时候做
+	log.Println("消费消息。订阅也可以在创建客户端的时候做...")
 	k.client.AddConsumeTopics(topic)
-	fetches := k.client.PollRecords(context.Background(), num)
+
+	log.Println("开始poll...")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	fetches := k.client.PollRecords(ctx, num)
+	cancel() // 注意要调用cancel避免context泄露
+
 	if errs := fetches.Errors(); len(errs) > 0 {
-		panic(fmt.Sprint(errs))
+		result.Err = fmt.Sprint(errs)
+		return result
 	}
 	res := make([]any, 0)
+	log.Println("poll完成...", len(fetches.Records()))
 	for i, v := range fetches.Records() {
 		if v == nil {
 			continue
@@ -670,7 +646,7 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
 	fmt.Println(topic, group, num)
 
-	//提交offset
+	log.Println("提交offset...")
 	if group != "" {
 		if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
 			result.Err = "提交offsets失败: " + err.Error()

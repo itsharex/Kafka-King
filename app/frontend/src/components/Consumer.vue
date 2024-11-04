@@ -23,7 +23,13 @@
           placeholder="消费消息数量"
           style="width: 160px"
       />
-
+      poll超时时间：默认10s。如异常或无可消费消息，则会超时
+      <n-input-number
+          v-model:value="timeout"
+          :min="1"
+          placeholder="poll超时时间"
+          style="width: 160px"
+      />
     </n-flex>
     <n-flex align="center">
       可选：Group（一旦选择，消费时会自动提交Offset。支持创建新Group）
@@ -66,6 +72,7 @@ const group_data = ref([]);
 const selectedTopic = ref()
 const selectedGroup = ref()
 const maxMessages = ref(10)
+const timeout = ref(10)
 const loading = ref(false)
 const messages = ref([])
 
@@ -210,7 +217,7 @@ const consume = async () => {
 
   loading.value = true
   try {
-    const result = await Consumer(selectedTopic.value, selectedGroup.value, maxMessages.value)
+    const result = await Consumer(selectedTopic.value, selectedGroup.value, maxMessages.value, timeout.value)
     if (result.err !== "") {
       message.error(result.err)
     } else {
