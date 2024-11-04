@@ -3,7 +3,8 @@
 </p>
 <h1 align="center">Kafka King </h1>
 
-<h4 align="center"><strong>简体中文</strong> | <a href="https://github.com/Bronya0/Kafka-King/blob/main/docs/README_EN.md">English</a></h4>
+<h4 align="center"><strong>简体中文</strong> | <a href="https://github.com/Bronya0/Kafka-King/blob/wails/readme-en.md">English</a></h4>
+
 
 <div align="center">
 
