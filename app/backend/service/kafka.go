@@ -646,8 +646,11 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 	if errs := fetches.Errors(); len(errs) > 0 {
 		panic(fmt.Sprint(errs))
 	}
-	res := make([]any, num)
+	res := make([]any, 0)
 	for i, v := range fetches.Records() {
+		if v == nil {
+			continue
+		}
 		res = append(res, map[string]any{
 			"ID":            i,
 			"Offset":        v.Offset,
@@ -665,6 +668,7 @@ func (k *Service) Consumer(topic string, group string, num int) *types.ResultsRe
 	result.Results = res
 
 	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+	fmt.Println(topic, group, num)
 
 	//提交offset
 	if group != "" {

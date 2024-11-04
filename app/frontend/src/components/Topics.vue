@@ -26,13 +26,14 @@
               <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">刷新 Topic</n-button>
 <!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
               <n-select
-                  @select="getTopicsOffsets"
+                  v-model:value="selectedGroup"
                   :options="group_data"
                   placeholder="选择Group并读取Offsets"
                   filterable
                   clearable
                   style="width: 250px"
               />
+              <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button>
             </n-flex>
             <n-data-table
                 ref="tableRef"
@@ -64,8 +65,15 @@
                 {{ activeDetailTopic }}
               </n-tag>
               <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">添加分区</n-button>
-              <n-dropdown :options="group_data" @select="getPartitionOffsets" ><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>
-
+              <n-select
+                  v-model:value="selectedGroup"
+                  :options="group_data"
+                  placeholder="选择Group并读取Offsets"
+                  filterable
+                  clearable
+                  style="width: 250px"
+              />
+              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button>
             </n-flex>
             <n-data-table
                 :columns="partitions_columns"
@@ -186,21 +194,25 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NInput, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
-import {AddRoadOutlined, LibraryBooksOutlined, SettingsRound} from '@vicons/material'
-import {createCsvContent, download_file, isValidJson, renderIcon} from "../utils/common";
 import {
   AddFilled,
+  AddRoadOutlined,
   DeleteForeverTwotone,
   DriveFileMoveTwotone,
+  LibraryBooksOutlined,
   RefreshOutlined,
   SearchOutlined,
-} from "@vicons/material";
+  SettingsRound
+} from '@vicons/material'
+import {createCsvContent, download_file, isValidJson, renderIcon} from "../utils/common";
 import {
   AlterTopicConfig,
   CreatePartitions,
   CreateTopics,
-  DeleteTopic, GetGroups,
-  GetTopicConfig, GetTopicOffsets,
+  DeleteTopic,
+  GetGroups,
+  GetTopicConfig,
+  GetTopicOffsets,
   GetTopics
 } from "../../wailsjs/go/service/Service";
 import ShowOrEdit from "../common/ShowOrEdit.vue";
@@ -214,6 +226,7 @@ const offsets = ref({
   commit_map: {},
 })
 const activeTab = ref('主题');
+const selectedGroup = ref();
 const loading = ref(false)
 const data = ref([])
 const topic_add = ref({
@@ -310,7 +323,7 @@ const downloadAllDataCsv = async () => {
 
 const columns = [
   {type: "selection",},
-  {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true},},
+  // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true},},
   {
     title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: true},
     render: (row) => h(NButton, {
@@ -470,20 +483,34 @@ const getTopicDetail = async (topic) => {
 
 }
 
-const getTopicsOffsets =  async (key) => {
-  if (selectedRowKeys.value.length === 0){
-    message.warning("请先勾选需要读取Offset的Topic")
-    return
-  }
-  await getOffsets(selectedRowKeys.value, key)
+// 获取当页数据
+const getPage =  (data_lst) => {
+  const start = (pagination.value.page - 1) * pagination.value.pageSize;
+  const end = start + pagination.value.pageSize;
+  return data_lst.slice(start, end)
 }
 
-const getPartitionOffsets =  async (key) => {
+const getTopicsOffsets =  async () => {
+  if (!selectedGroup.value){
+    message.warning("请先选择 Group")
+    return
+  }
+  const page_data = getPage(data.value)
+  const topics = page_data.map(item => item['topic'])
+  await getOffsets(topics, selectedGroup.value)
+}
+
+const getPartitionOffsets =  async () => {
   if (activeDetailTopic.value === ""){
     message.warning("请先从具体的topic切换到本页")
     return
   }
-  await getOffsets([activeDetailTopic.value], key)
+  if (!selectedGroup.value){
+    message.warning("请先选择 Group")
+    return
+  }
+
+  await getOffsets([activeDetailTopic.value], selectedGroup.value)
 }
 
 const getOffsets = async (topics, key) => {
@@ -552,7 +579,7 @@ const getGroups = async () => {
           const data = res.results[k]
           groups.push({
             label: data['Group'],
-            key: data['Group'],
+            value: data['Group'],
             State: data['State'],
             ProtocolType: data['ProtocolType'],
             Coordinator: data['Coordinator'],
@@ -573,7 +600,6 @@ const deleteTopic = async (topic) => {
   loading.value = true
   try {
     const res = await DeleteTopic([topic])
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {
@@ -595,7 +621,6 @@ const addTopic = async () => {
       configs = JSON.parse(topic_add.value.configs)
     }
     const res = await CreateTopics(topic_add.value.topics, topic_add.value.partitions, topic_add.value.replication_factor, configs)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {
@@ -613,7 +638,6 @@ const addTopicPartition = async () => {
   loading.value = true
   try {
     const res = await CreatePartitions([activeDetailTopic.value], addPartitionNum.value)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {
@@ -633,7 +657,6 @@ const alterTopicConfig = async (topic, name, value) => {
   loading.value = true
   try {
     const res = await AlterTopicConfig(topic, name, value)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {

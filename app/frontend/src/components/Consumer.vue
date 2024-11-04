@@ -56,17 +56,16 @@ import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
 import {NButton, NDataTable, NFlex, useMessage} from 'naive-ui'
-import {GetGroups, GetTopics, Consumer} from "../../wailsjs/go/service/Service";
+import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 
 const message = useMessage()
 const topic_data = ref([]);
 const group_data = ref([]);
 
 // 表单数据
-const selectedTopic = ref('')
-const selectedGroup = ref('')
+const selectedTopic = ref()
+const selectedGroup = ref()
 const maxMessages = ref(10)
-const startOffset = ref(null)
 const loading = ref(false)
 const messages = ref([])
 
@@ -103,7 +102,7 @@ const getData = async () => {
         const g_data = res2.results[k]
         groups.push({
           label: g_data['Group'],
-          key: g_data['Group'],
+          value: g_data['Group'],
           State: g_data['State'],
           ProtocolType: g_data['ProtocolType'],
           Coordinator: g_data['Coordinator'],
@@ -143,27 +142,21 @@ const columns = [
   },
   {
     title: 'Offset',
-    key: 'offset',
+    key: 'Offset',
     width: 20,
-    ellipsis: {
-      tooltip: true
-    },
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: 'Key',
     key: 'Key',
     width: 20,
-    ellipsis: {
-      tooltip: true
-    },
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: '消息内容',
     key: 'Value',
     width: 40,
-    ellipsis: {
-      tooltip: true
-    },
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: '时间戳',
@@ -182,11 +175,13 @@ const columns = [
     title: 'Topic',
     key: 'Topic',
     width: 20,
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: 'Headers',
     key: 'Headers',
     width: 20,
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: 'LeaderEpoch',

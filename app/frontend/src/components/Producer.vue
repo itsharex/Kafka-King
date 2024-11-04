@@ -50,7 +50,7 @@
     <n-flex align="center">
       发送次数
       <n-input-number
-          v-model:value="sendTimes"
+          v-model:value="nums"
           :min="1"
           placeholder="发送次数"
           style="width: 160px"
@@ -71,13 +71,13 @@ import emitter from "../utils/eventBus";
 import {useMessage} from "naive-ui";
 import {renderIcon} from "../utils/common";
 import {SendTwotone} from "@vicons/material";
-import {GetTopics,Produce} from "../../wailsjs/go/service/Service";
+import {GetTopics, Produce} from "../../wailsjs/go/service/Service";
 
 const message = useMessage()
 const data = ref([]);
 // 表单数据
-const selectedTopic = ref('')
-const messageKey = ref('')
+const selectedTopic = ref()
+const messageKey = ref()
 const messageContent = ref('')
 const headers = ref([])
 const nums = ref(1)
@@ -145,7 +145,6 @@ const produce = async () => {
   }
   loading.value = true
   try {
-    console.log(selectedTopic.value, messageKey.value, messageContent.value, partition.value, nums.value, headers.value)
     const res = await Produce(selectedTopic.value, messageKey.value, messageContent.value, partition.value, nums.value, headers.value)
     if (res.err !== "") {
       message.error(res.err)
