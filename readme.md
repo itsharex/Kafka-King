@@ -76,5 +76,6 @@ flet pack main.py -i assets/icon.ico  -n kafka-king --add-data=assets/*:assets -
 Apache-2.0 license
 
 # 感谢
-- flet-dev：https://github.com/flet-dev/flet
-- kafka-python：https://github.com/dpkp/kafka-python
+- wails：https://wails.io/docs/gettingstarted/installation
+- naive ui：https://www.naiveui.com/
+- kafka-python：https://github.com/twmb/franz-go/
