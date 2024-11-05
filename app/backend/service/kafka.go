@@ -31,15 +31,10 @@ type TopicConfig struct {
 type Service struct {
 	connectName      string
 	bootstrapServers []string
-	//config           *sarama.Config
-	//kac              sarama.ClusterAdmin
-	//consumer         sarama.Consumer
-	//mutex            sync.Mutex
-	config []kgo.Opt
-	kac    *kadm.Client
-	client *kgo.Client
-	//consumer         sarama.Consumer
-	mutex sync.Mutex
+	config           []kgo.Opt
+	kac              *kadm.Client
+	client           *kgo.Client
+	mutex            sync.Mutex
 }
 
 func (k *Service) ptr(s string) *string {

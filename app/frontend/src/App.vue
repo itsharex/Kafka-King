@@ -20,16 +20,10 @@
                 bordered
                 collapse-mode="width"
                 :collapsed-width="60"
-                :width="130"
-                :collapsed="collapsed"
-                @collapse="collapsed = true"
-                @expand="collapsed = false"
                 style="--wails-draggable:drag"
             >
               <Aside
                   :collapsed-width="60"
-                  :collapsed="collapsed"
-                  :icon-size="24"
                   :value="activeItem.label"
                   :options="sideMenuOptions"
               />

@@ -122,7 +122,8 @@
       <n-form
           ref="formRef"
           :model="topic_add"
-          label-placement="left"
+          label-placement="top"
+          style="text-align: left;"
           label-width="120"
           require-mark-placement="right-hanging"
       >
@@ -174,6 +175,8 @@
 
   <n-modal v-model:show="showModal" preset="dialog" title="添加分区">
     <n-form
+        label-placement="top"
+        style="text-align: left;"
     >
       <n-form-item label="添加的额外的分区数" path="addPartitionNum">
         <n-input-number v-model:value="addPartitionNum" :min="1" placeholder="添加的额外的分区数"
