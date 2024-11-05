@@ -84,7 +84,7 @@ const checkForUpdates = async () => {
       version.value.body = resp.body
       const n = notification.success({
         title: '发现新版本 ' + resp.tag_name,
-        description: resp.body,
+        content: resp.body,
         action: () =>
               h(NFlex, {justify: "flex-end" }, () => [
                 h(

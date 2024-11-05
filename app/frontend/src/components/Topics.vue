@@ -267,10 +267,11 @@ const selectNode = async (node) => {
   }
 
   selectedGroup.value = null
-  searchText.value = ''
   activeDetailTopic.value = ''
   activeConfigTopic.value = ''
   loading.value = false
+  showDrawer.value = false
+  showModal.value = false
   addPartitionNum.value = 1
 
   await getData()

@@ -57,13 +57,14 @@
           <n-form-item label="连接地址" path="bootstrap_servers">
             <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
           </n-form-item>
-          注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址  （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）
+          注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址 （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）
           <n-form-item label="使用 TLS" path="tls">
             <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
 
           <n-form-item label="跳过 TLS 验证" path="skipTLSVerify">
-            <n-switch checked-value="enable" unchecked-value="disable" value="enable" v-model:value="currentNode.skipTLSVerify"/>
+            <n-switch checked-value="enable" unchecked-value="disable" value="enable"
+                      v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
           <n-form-item label="TLS certFile" path="tls_cert_file">
@@ -262,18 +263,25 @@ const deleteNode = async (id) => {
 }
 
 const test_connect = async () => {
-  test_connect_loading.value = true
-  try {
-    const res = await TestClient(currentNode.value.name, currentNode.value)
-    if (res.err !== "") {
-      message.error("连接失败：" + res.err)
-    } else {
-      message.success('连接成功')
+  formRef.value?.validate(async (errors) => {
+    if (!errors) {
+
+      test_connect_loading.value = true
+      try {
+        const res = await TestClient(currentNode.value.name, currentNode.value)
+        if (res.err !== "") {
+          message.error("连接失败：" + res.err)
+        } else {
+          message.success('连接成功')
+        }
+      } catch (e) {
+        message.error(e)
+      }
+      test_connect_loading.value = false
+    }else {
+      message.error('请填写所有必填字段')
     }
-  }catch (e) {
-    message.error(e)
-  }
-  test_connect_loading.value = false
+  })
 }
 
 const selectNode = async (node) => {
@@ -288,8 +296,8 @@ const selectNode = async (node) => {
       emitter.emit('menu_select', "节点")
       emitter.emit('selectNode', node)
       message.success('连接成功')
-  }
-  }catch (e) {
+    }
+  } catch (e) {
     message.error(e)
   }
   spin_loading.value = false
