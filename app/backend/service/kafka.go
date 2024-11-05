@@ -22,8 +22,6 @@ import (
 	"time"
 )
 
-const KingGroup = "kafka-king-group"
-
 type TopicConfig struct {
 	Name              string
 	NumPartitions     int32
@@ -610,7 +608,22 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 	st := time.Now()
 
 	log.Println("消费消息。订阅也可以在创建客户端的时候做...")
-	k.client.AddConsumeTopics(topic)
+
+	currentTopics := k.client.GetConsumeTopics()
+	if len(currentTopics) == 1 && currentTopics[0] == topic {
+		log.Println("当前消费主题和订阅主题一致，无需切换")
+	} else {
+		if len(currentTopics) > 0 {
+			// 1. 暂停所有当前正在消费的topics
+			k.client.PauseFetchTopics(currentTopics...)
+		}
+		// 2. 添加、恢复新的topics
+		k.client.AddConsumeTopics(topic)
+		// 3. 等待rebalance完成
+		time.Sleep(2 * time.Second)
+		k.client.ResumeFetchTopics(topic)
+		time.Sleep(2 * time.Second)
+	}
 
 	log.Println("开始poll...")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)

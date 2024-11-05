@@ -221,6 +221,7 @@ const consume = async () => {
     if (result.err !== "") {
       message.error(result.err)
     } else {
+      console.log(result.results)
       messages.value = result.results
       message.success('获取成功')
     }
