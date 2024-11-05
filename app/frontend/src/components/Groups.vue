@@ -8,7 +8,6 @@
     </n-flex>
     <n-spin :show="loading" description="Connecting...">
       <n-data-table
-          ref="tableRef"
           :columns="columns"
           :data="group_data"
           size="small"
@@ -37,20 +36,21 @@ import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DeleteForeverTwotone, DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
-import {DeleteGroup, DeleteTopic, GetGroupMembers, GetGroups} from "../../wailsjs/go/service/Service";
+import {DeleteGroup, GetGroupMembers, GetGroups} from "../../wailsjs/go/service/Service";
 
 const group_data = ref([])
 const members_data = ref([])
 const loading = ref(false)
 const showDrawer = ref(false)
 const message = useMessage()
-const tableRef = ref();
 
 const selectNode = async (node) => {
-  const data_lst = [members_data, group_data]
-  for (const k in data_lst) {
-    data_lst[k].value = []
-  }
+
+  members_data.value = []
+  group_data.value = []
+
+  loading.value = false
+  await getData()
 }
 
 onMounted(async () => {

@@ -11,7 +11,6 @@
       <n-tabs type="segment" animated  v-model:value="activeTab">
         <n-tab-pane name="broker" tab="Brokers">
           <n-data-table
-              ref="tableRef"
               :columns="columns"
               :data="data"
               size="small"
@@ -43,7 +42,7 @@ import emitter from "../utils/eventBus";
 import {NButton, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
-import {AlterNodeConfig, AlterTopicConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
+import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
 import ShowOrEdit from "../common/ShowOrEdit.vue";
 
 const config_data = ref([])
@@ -53,9 +52,13 @@ const activeConfigNode = ref('');
 const loading = ref(false)
 const data = ref([])
 const message = useMessage()
-const tableRef = ref();
 
 const selectNode = async (node) => {
+  config_data.value = []
+  data.value = []
+  activeConfigNode.value = ''
+  loading.value = false
+
   await getData()
 }
 
@@ -72,7 +75,6 @@ const getData = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      console.log(res)
       const result = res.result
       data.value = result.brokers
     }
@@ -157,7 +159,6 @@ const getBrokerConfig = async (node_id) => {
   loading.value = true
   try {
     const res = await GetBrokerConfig(node_id)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {
@@ -178,7 +179,6 @@ const alterNodeConfig = async (node_id, name, value) => {
   loading.value = true
   try {
     const res = await AlterNodeConfig(node_id, name, value)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {

@@ -614,15 +614,12 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 		log.Println("当前消费主题和订阅主题一致，无需切换")
 	} else {
 		if len(currentTopics) > 0 {
-			// 1. 暂停所有当前正在消费的topics
-			k.client.PauseFetchTopics(currentTopics...)
+			// 1. 清除所有当前正在消费的topics
+			k.client.PurgeTopicsFromConsuming(currentTopics...)
 		}
-		// 2. 添加、恢复新的topics
+		// 2. 添加新的topics
 		k.client.AddConsumeTopics(topic)
-		// 3. 等待rebalance完成
-		time.Sleep(2 * time.Second)
-		k.client.ResumeFetchTopics(topic)
-		time.Sleep(2 * time.Second)
+		//k.client.ResumeFetchTopics(topic)
 	}
 
 	log.Println("开始poll...")

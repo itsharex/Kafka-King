@@ -5,7 +5,7 @@
     </n-flex>
   </n-flex>
   <div>
-    <n-form :model="config" label-placement="left" label-width="auto">
+    <n-form :model="config" label-placement="top" label-width="auto">
       <n-form-item label="窗口宽度">
         <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
@@ -41,20 +41,11 @@
 
 <script setup>
 import {onMounted, ref} from 'vue'
-import {
-  darkTheme,
-  lightTheme,
-  NButton,
-  NForm,
-  NFormItem,
-  NInputNumber,
-  NSelect,
-  useMessage,
-} from 'naive-ui'
+import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
 import {BrowserOpenURL, WindowSetSize} from "../../wailsjs/runtime";
 import {renderIcon} from "../utils/common";
-import {WbSunnyOutlined, NightlightRoundFilled, HouseTwotone} from '@vicons/material'
+import {HouseTwotone, NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
 
 const es_home_url = "https://github.com/Bronya0/ES-King"

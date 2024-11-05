@@ -85,6 +85,15 @@ const partition = ref(0)
 const loading = ref(false)
 
 const selectNode = async (node) => {
+  data.value = []
+  selectedTopic.value = null
+  messageContent.value = ''
+  headers.value = []
+  partition.value = 0
+  loading.value = false
+
+  await getData()
+
 }
 
 onMounted(async () => {

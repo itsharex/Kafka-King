@@ -36,7 +36,6 @@
               <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button>
             </n-flex>
             <n-data-table
-                ref="tableRef"
                 :columns="columns"
                 :data="data"
                 size="small"
@@ -239,7 +238,6 @@ const rowKey = (row) => row['topic']
 const selectedRowKeys = ref([]);
 
 const message = useMessage()
-const tableRef = ref();
 const searchText = ref("");
 const activeDetailTopic = ref("");
 const activeConfigTopic = ref("");
@@ -248,14 +246,32 @@ const showModal = ref(false)
 const addPartitionNum = ref(1)
 
 const selectNode = async (node) => {
-  const data_lst = [config_data, partitions_data, data]
-  for (const k in data_lst) {
-    data_lst[k].value = []
+  config_data.value = []
+  partitions_data.value = []
+  group_data.value = []
+  selectedRowKeys.value = []
+  data.value = []
+  offsets.value = {
+    start_map: {},
+    end_map: {},
+    commit_map: {},
   }
-  const data_txt = [searchText, activeDetailTopic, activeConfigTopic]
-  for (const k in data_txt) {
-    data_txt[k].value = ""
+  topic_add.value = {
+    topics: [],
+    partitions: 1,
+    replication_factor: 1,
+    configs: ""
   }
+
+  selectedGroup.value = null
+  searchText.value = ''
+  activeDetailTopic.value = ''
+  activeConfigTopic.value = ''
+  loading.value = false
+  addPartitionNum.value = 1
+
+  await getData()
+  await getGroups()
 }
 
 onMounted(async () => {
@@ -272,7 +288,6 @@ const getData = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      console.log(res)
       // 排序
       if (res.results) {
         res.results.sort((a, b) => a['topic'] > b['topic'] ? 1 : -1)
@@ -442,7 +457,6 @@ const getTopicConfig = async (topic) => {
   loading.value = true
   try {
     const res = await GetTopicConfig(topic)
-    console.log(res)
     if (res.err !== "") {
       message.error(res.err)
     } else {

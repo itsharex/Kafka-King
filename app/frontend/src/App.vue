@@ -22,7 +22,6 @@
                 :collapsed-width="60"
                 :width="130"
                 :collapsed="collapsed"
-                show-trigger
                 @collapse="collapsed = true"
                 @expand="collapsed = false"
                 style="--wails-draggable:drag"
@@ -62,13 +61,13 @@ import {
   NMessageProvider
 } from 'naive-ui'
 import {
-  HiveOutlined,
-  SettingsOutlined,
   AllOutOutlined,
-  LibraryBooksOutlined,
   GroupsSharp,
+  HiveOutlined,
+  LibraryBooksOutlined,
+  MessageOutlined,
   SendTwotone,
-  MessageOutlined
+  SettingsOutlined
 } from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
@@ -172,7 +171,6 @@ let Theme = shallowRef(lightTheme)
 
 // 主题切换
 function themeChange(newTheme) {
-  console.log(newTheme.name)
   Theme.value = newTheme
   headerClass = newTheme === lightTheme ? "lightTheme" : "darkTheme"
   SaveTheme(newTheme.name)

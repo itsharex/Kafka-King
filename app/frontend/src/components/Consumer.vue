@@ -67,6 +67,7 @@ import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 const message = useMessage()
 const topic_data = ref([]);
 const group_data = ref([]);
+const messages = ref([])
 
 // 表单数据
 const selectedTopic = ref()
@@ -74,9 +75,15 @@ const selectedGroup = ref()
 const maxMessages = ref(10)
 const timeout = ref(10)
 const loading = ref(false)
-const messages = ref([])
 
 const selectNode = async (node) => {
+  topic_data.value = []
+  group_data.value = []
+  messages.value = []
+  selectedTopic.value = null
+  selectedGroup.value = null
+  loading.value = false
+  await getData()
 }
 
 onMounted(async () => {
@@ -86,6 +93,7 @@ onMounted(async () => {
 
 
 const getData = async () => {
+  console.log('初始化消费者数据')
   try {
     const res = await GetTopics()
     const res2 = await GetGroups()
@@ -221,7 +229,6 @@ const consume = async () => {
     if (result.err !== "") {
       message.error(result.err)
     } else {
-      console.log(result.results)
       messages.value = result.results
       message.success('获取成功')
     }

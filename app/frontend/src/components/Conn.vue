@@ -47,8 +47,7 @@
               name: {required: true, message: '请输入昵称', trigger: 'blur'},
               bootstrap_servers: {required: true, message: '请输入连接地址', trigger: 'blur'},
             }"
-            label-placement="left"
-            label-width="auto"
+            label-placement="top"
             style="text-align: left;"
         >
           <n-form-item label="昵称" path="name">
@@ -232,7 +231,6 @@ const saveNode = async () => {
         const index = Nodes.value.findIndex(node => node.id === currentNode.value.id)
         if (index !== -1) {
           Nodes.value[index] = {...currentNode.value}
-          console.log(currentNode.value)
         }
       } else {
         // add
@@ -255,10 +253,7 @@ const saveNode = async () => {
 }
 
 const deleteNode = async (id) => {
-  console.log(Nodes.value)
-  console.log(id)
   Nodes.value = Nodes.value.filter(node => node.id !== id)
-  console.log(Nodes.value)
   const config = await GetConfig()
   config.connects = Nodes.value
   await SaveConfig(config)
