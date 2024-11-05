@@ -48,6 +48,8 @@
               bootstrap_servers: {required: true, message: '请输入连接地址', trigger: 'blur'},
             }"
             label-placement="left"
+            label-width="auto"
+            style="text-align: left;"
         >
           <n-form-item label="昵称" path="name">
             <n-input v-model:value="currentNode.name" placeholder="输入名称"/>

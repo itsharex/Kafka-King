@@ -5,7 +5,7 @@
     </n-flex>
   </n-flex>
   <div>
-    <n-form :model="config" label-placement="left">
+    <n-form :model="config" label-placement="left" label-width="auto">
       <n-form-item label="窗口宽度">
         <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
