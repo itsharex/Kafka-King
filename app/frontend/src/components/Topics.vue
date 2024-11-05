@@ -645,6 +645,7 @@ const addTopic = async () => {
     } else {
       message.success("创建成功")
       showDrawer.value = false
+      topic_add.value.topics = []
       await getData()
       emitter.emit('refreshTopic')
     }
