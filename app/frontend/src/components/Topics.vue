@@ -623,6 +623,7 @@ const deleteTopic = async (topic) => {
     } else {
       message.success("删除成功")
       await getData()
+      emitter.emit('refreshTopic')
     }
   } catch (e) {
     message.error(e)
@@ -645,6 +646,7 @@ const addTopic = async () => {
       message.success("创建成功")
       showDrawer.value = false
       await getData()
+      emitter.emit('refreshTopic')
     }
   } catch (e) {
     message.error(e)

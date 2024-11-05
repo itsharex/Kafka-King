@@ -84,17 +84,22 @@ const nums = ref(1)
 const partition = ref(0)
 const loading = ref(false)
 
+const refreshTopic = async () => {
+  await getData()
+}
+
 const selectNode = async (node) => {
   data.value = []
   selectedTopic.value = null
   loading.value = false
 
   await getData()
-
 }
 
 onMounted(async () => {
   emitter.on('selectNode', selectNode)
+  emitter.on('refreshTopic', refreshTopic)
+
   await getData()
 })
 
