@@ -20,16 +20,11 @@
                 bordered
                 collapse-mode="width"
                 :collapsed-width="60"
-                :width="130"
-                :collapsed="collapsed"
-                @collapse="collapsed = true"
-                @expand="collapsed = false"
+                :collapsed="true"
                 style="--wails-draggable:drag"
             >
               <Aside
                   :collapsed-width="60"
-                  :collapsed="collapsed"
-                  :icon-size="24"
                   :value="activeItem.label"
                   :options="sideMenuOptions"
               />
@@ -84,7 +79,6 @@ import Producer from "./components/Producer.vue";
 import Consumer from "./components/Consumer.vue";
 
 let headerClass = shallowRef('lightTheme')
-const collapsed = ref(true)
 
 onMounted(async () => {
   // 从后端加载配置

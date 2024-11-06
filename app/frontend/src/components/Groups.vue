@@ -45,9 +45,8 @@ const showDrawer = ref(false)
 const message = useMessage()
 
 const selectNode = async (node) => {
-
-  members_data.value = []
   group_data.value = []
+  members_data.value = []
 
   loading.value = false
   await getData()
@@ -55,6 +54,7 @@ const selectNode = async (node) => {
 
 onMounted(async () => {
   emitter.on('selectNode', selectNode)
+
   await getData()
 })
 

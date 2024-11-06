@@ -46,11 +46,11 @@ import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/ser
 import ShowOrEdit from "../common/ShowOrEdit.vue";
 
 const config_data = ref([])
+const data = ref([])
 // 当前活动的 TabPane 名称
 const activeTab = ref('broker');
 const activeConfigNode = ref('');
 const loading = ref(false)
-const data = ref([])
 const message = useMessage()
 
 const selectNode = async (node) => {

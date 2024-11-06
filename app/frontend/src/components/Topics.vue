@@ -122,7 +122,8 @@
       <n-form
           ref="formRef"
           :model="topic_add"
-          label-placement="left"
+          label-placement="top"
+          style="text-align: left;"
           label-width="120"
           require-mark-placement="right-hanging"
       >
@@ -174,6 +175,8 @@
 
   <n-modal v-model:show="showModal" preset="dialog" title="添加分区">
     <n-form
+        label-placement="top"
+        style="text-align: left;"
     >
       <n-form-item label="添加的额外的分区数" path="addPartitionNum">
         <n-input-number v-model:value="addPartitionNum" :min="1" placeholder="添加的额外的分区数"
@@ -264,10 +267,11 @@ const selectNode = async (node) => {
   }
 
   selectedGroup.value = null
-  searchText.value = ''
   activeDetailTopic.value = ''
   activeConfigTopic.value = ''
   loading.value = false
+  showDrawer.value = false
+  showModal.value = false
   addPartitionNum.value = 1
 
   await getData()
@@ -619,6 +623,7 @@ const deleteTopic = async (topic) => {
     } else {
       message.success("删除成功")
       await getData()
+      emitter.emit('refreshTopic')
     }
   } catch (e) {
     message.error(e)
@@ -640,7 +645,9 @@ const addTopic = async () => {
     } else {
       message.success("创建成功")
       showDrawer.value = false
+      topic_add.value.topics = []
       await getData()
+      emitter.emit('refreshTopic')
     }
   } catch (e) {
     message.error(e)

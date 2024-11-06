@@ -76,6 +76,9 @@ const maxMessages = ref(10)
 const timeout = ref(10)
 const loading = ref(false)
 
+const refreshTopic = async () => {
+  await getData()
+}
 const selectNode = async (node) => {
   topic_data.value = []
   group_data.value = []
@@ -88,6 +91,7 @@ const selectNode = async (node) => {
 
 onMounted(async () => {
   emitter.on('selectNode', selectNode)
+  emitter.on('refreshTopic', refreshTopic)
   await getData()
 })
 
