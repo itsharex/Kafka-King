@@ -121,7 +121,7 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'Group', key: 'Group', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
+  {title: 'Group', key: 'Group', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
   {
     title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
@@ -136,7 +136,7 @@ const columns = [
     sorter: 'default',
     width: 20,
     resizable: true,
-    ellipsis: {tooltip: true}
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}}
   },
   {
     title: '操作',
@@ -192,10 +192,10 @@ const columns = [
 ]
 
 const members_columns = [
-  {title: 'MemberID', key: 'MemberID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
-  {title: 'InstanceID', key: 'InstanceID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
-  {title: 'ClientID', key: 'ClientID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
-  {title: 'ClientHost', key: 'ClientHost', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
+  {title: 'MemberID', key: 'MemberID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'InstanceID', key: 'InstanceID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'ClientID', key: 'ClientID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'ClientHost', key: 'ClientHost', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
 
 ]
 
