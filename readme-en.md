@@ -68,4 +68,4 @@ Apache- 2.0 license
 # Thanks
 - wails：https://wails.io/docs/gettingstarted/installation
 - naive ui：https://www.naiveui.com/
-- kafka-python：https://github.com/twmb/franz-go/
+- franz-go：https://github.com/twmb/franz-go/
