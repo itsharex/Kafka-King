@@ -338,9 +338,9 @@ const downloadAllDataCsv = async () => {
 
 const columns = [
   {type: "selection",},
-  // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true},},
+  // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
   {
-    title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: true},
+    title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NButton, {
       tertiary : true,
       type: "info",
@@ -362,12 +362,12 @@ const columns = [
   },
   {title: '副本', key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
   {
-    title: '主题故障', key: 'Err', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: true},
+    title: '主题故障', key: 'Err', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "健康" : row['Err']}),
   },
-  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: true},},
-  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: true},},
-  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: true},},
+  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
   {
     title: '操作',
     key: 'actions',
@@ -414,12 +414,12 @@ const columns = [
 const partitions_columns = [
   {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
   {
-    title: '分区故障', key: 'err', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true},
+    title: '分区故障', key: 'err', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "健康" : row['err']}),
   },
-  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: true},},
-  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 16, resizable: true, ellipsis: {tooltip: true},},
-  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: true},},
+  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 16, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
   {title: 'Leader ID', key: 'leader', sorter: 'default', width: 15, resizable: true},
   {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
   {title: '托管此分区的副本ID集', key: 'replicas', sorter: 'default', width: 15, resizable: true},

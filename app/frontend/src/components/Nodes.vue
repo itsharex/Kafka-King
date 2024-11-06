@@ -119,7 +119,7 @@ const columns = [
   },
   { title: 'rack', key: 'rack', sorter: 'default',width: 20,resizable: true },
   {
-    title: '配置', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: true},
+    title: '配置', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(
         NButton,
         {

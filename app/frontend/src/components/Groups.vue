@@ -123,11 +123,11 @@ const downloadAllDataCsv = async () => {
 const columns = [
   {title: 'Group', key: 'Group', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true}},
   {
-    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: true},
+    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
   },
   {
-    title: 'State', key: 'State', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: true},
+    title: 'State', key: 'State', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "success"}, {default: () => row['State']}),
   },
   {
