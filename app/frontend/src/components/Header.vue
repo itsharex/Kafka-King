@@ -1,10 +1,18 @@
 <template>
-  <n-page-header :subtitle="subtitle" style="padding: 4px;--wails-draggable:drag">
+  <n-page-header style="padding: 4px;--wails-draggable:drag">
     <template #avatar>
       <n-avatar :src="logo"/>
     </template>
     <template #title>
       <div style="font-weight: 800">{{app_name}}</div>
+    </template>
+    <template #subtitle>
+      <n-tooltip>
+        <template #trigger>
+          <n-tag :type=title_tag v-if="subtitle">{{subtitle}}</n-tag>
+          <n-p v-else>{{desc}}</n-p>
+        </template>
+      </n-tooltip>
     </template>
     <template #extra>
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
@@ -56,6 +64,7 @@ const MoonOrSunnyOutline = shallowRef(WbSunnyOutlined)
 const isMaximized = ref(false);
 const check_msg = ref("");
 const app_name = ref("");
+const title_tag = ref("success");
 const MaxMinIcon = shallowRef(CropSquareFilled)
 const update_url = "https://github.com/Bronya0/Kafka-King/releases"
 const update_loading = ref(false)
@@ -71,6 +80,24 @@ const subtitle = ref("")
 
 const notification = useNotification()
 const message = useMessage()
+
+onMounted(async () => {
+  emitter.on('selectNode', selectNode)
+  // emitter.on('changeTitleType', changeTitleType)
+
+  app_name.value = await GetAppName()
+
+  const config = await GetConfig()
+  MoonOrSunnyOutline.value = config.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
+  const v = await GetVersion()
+  version.value.tag_name = v
+  subtitle.value = desc + v
+  await checkForUpdates()
+})
+
+const selectNode = (node) => {
+  subtitle.value = "当前集群：【" + node.name + "】"
+}
 
 const checkForUpdates = async () => {
   update_loading.value = true
@@ -114,25 +141,6 @@ const checkForUpdates = async () => {
     update_loading.value = false
   }
 }
-
-onMounted(async () => {
-  app_name.value = await GetAppName()
-
-  const config = await GetConfig()
-  MoonOrSunnyOutline.value = config.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
-  const v = await GetVersion()
-  version.value.tag_name = v
-  subtitle.value = desc + v
-  await checkForUpdates()
-
-  emitter.on('selectNode', selectNode)
-
-})
-
-const selectNode = (node) => {
-  subtitle.value = desc + " ==> 当前集群：【" + node.name + "】"
-}
-
 
 const minimizeWindow = () => {
   WindowMinimise()
