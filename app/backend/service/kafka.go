@@ -120,11 +120,13 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 				conn["Kerberos_realm"].(string), // realm (Kerberos领域，大写的域名)
 				kt,                              // keytab对象
 				cfg,                             // krb5配置对象
+				client.DisablePAFXFAST(true),    // 禁用PA-FX-FAST，提高兼容性
 			)
 			// 创建GSSAPI认证
 			config = append(config, kgo.SASL(kerberos.Auth{
-				Client:  kerberosClient,
-				Service: conn["kerberos_service_name"].(string),
+				Client:           kerberosClient,
+				Service:          conn["kerberos_service_name"].(string),
+				PersistAfterAuth: true, // 保留上下文
 			}.AsMechanism()))
 
 		default:
