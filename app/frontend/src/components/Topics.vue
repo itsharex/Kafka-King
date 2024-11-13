@@ -20,11 +20,12 @@
           <n-flex vertical>
             <!--          搜索框、新增按钮-->
             <n-flex align="center">
-              <n-input v-model:value="searchText" @keydown.enter="getData" placeholder="输入主题名称" clearable style="width: 300px"/>
+              <n-input v-model:value="searchText" @keydown.enter="getData" placeholder="输入主题名称" clearable
+                       style="width: 300px"/>
               <n-button @click="getData" :render-icon="renderIcon(SearchOutlined)"></n-button>
               <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">创建主题</n-button>
               <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">刷新 Topic</n-button>
-<!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
+              <!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
               <n-select
                   v-model:value="selectedGroup"
                   :options="group_data"
@@ -59,7 +60,7 @@
 
           <n-flex vertical>
             <n-flex align="center">
-              <n-text>topic: </n-text>
+              <n-text>topic:</n-text>
               <n-tag type="success">
                 {{ activeDetailTopic }}
               </n-tag>
@@ -94,7 +95,7 @@
 
           <n-flex vertical>
             <n-flex align="center">
-              <n-text>topic: </n-text>
+              <n-text>topic:</n-text>
 
               <n-tag type="success">
                 {{ activeConfigTopic }}
@@ -329,9 +330,9 @@ const pagination = ref({
 
 const downloadAllDataCsv = async () => {
   let datas = {
-    "配置":  [config_data,config_columns],
-    "主题": [data,columns],
-    "分区": [partitions_data,partitions_columns]
+    "配置": [config_data, config_columns],
+    "主题": [data, columns],
+    "分区": [partitions_data, partitions_columns]
   }
   const csvContent = createCsvContent(
       datas[activeTab.value][0].value,
@@ -344,20 +345,21 @@ const columns = [
   {type: "selection",},
   // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
   {
-    title: 'topic', key: 'topic', sorter: 'default', width: 80, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
-    render: (row) => h(NButton, {
-      tertiary : true,
-      type: "info",
+    title: 'topic', key: 'topic', sorter: 'default', width: 80, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    render: (row) => h(NText, {
+      type: 'info',
+      style: {cursor: 'pointer'},
       onClick: async () => {
         await getTopicConfig(row["topic"])
         activeConfigTopic.value = row["topic"]
       }
     }, {default: () => row['topic']}),
   },
-  {title: '分区', key: 'partition_count', sorter: 'default', width: 30, resizable: true,
-    render: (row) => h(NButton, {
-      tertiary : true,
-      type: "info",
+  {
+    title: '分区', key: 'partition_count', sorter: 'default', width: 30, resizable: true,
+    render: (row) => h(NText, {
+      type: 'info',
+      style: {cursor: 'pointer'},
       onClick: async () => {
         await getTopicDetail(row["topic"])
         activeDetailTopic.value = row["topic"]
@@ -366,12 +368,38 @@ const columns = [
   },
   {title: '副本', key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
   {
-    title: '主题故障', key: 'Err', sorter: 'default', width: 40, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: '主题故障',
+    key: 'Err',
+    sorter: 'default',
+    width: 40,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "健康" : row['Err']}),
   },
-  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
-  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
-  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {
+    title: 'StartOffset',
+    key: 'StartOffset',
+    sorter: 'default',
+    width: 50,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
+  {
+    title: 'CommittedOffset',
+    key: 'CommittedOffset',
+    sorter: 'default',
+    width: 60,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
+  {
+    title: 'EndOffset',
+    key: 'EndOffset',
+    sorter: 'default',
+    width: 50,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
   {
     title: '操作',
     key: 'actions',
@@ -418,12 +446,38 @@ const columns = [
 const partitions_columns = [
   {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
   {
-    title: '分区故障', key: 'err', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: '分区故障',
+    key: 'err',
+    sorter: 'default',
+    width: 20,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "健康" : row['err']}),
   },
-  {title: 'StartOffset', key: 'StartOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
-  {title: 'CommittedOffset', key: 'CommittedOffset', sorter: 'default', width: 16, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
-  {title: 'EndOffset', key: 'EndOffset', sorter: 'default', width: 15, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  {
+    title: 'StartOffset',
+    key: 'StartOffset',
+    sorter: 'default',
+    width: 15,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
+  {
+    title: 'CommittedOffset',
+    key: 'CommittedOffset',
+    sorter: 'default',
+    width: 16,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
+  {
+    title: 'EndOffset',
+    key: 'EndOffset',
+    sorter: 'default',
+    width: 15,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
   {title: 'Leader ID', key: 'leader', sorter: 'default', width: 15, resizable: true},
   {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
   {title: '托管此分区的副本ID集', key: 'replicas', sorter: 'default', width: 15, resizable: true},
@@ -490,7 +544,7 @@ const getTopicDetail = async (topic) => {
     // 获取offsets
     if (selectedRowKeys.value.length > 0) {
       await getTopicsOffsets()
-    }else {
+    } else {
       mergeOffsets()
     }
     activeTab.value = "分区"
@@ -502,14 +556,14 @@ const getTopicDetail = async (topic) => {
 }
 
 // 获取当页数据
-const getPage =  (data_lst) => {
+const getPage = (data_lst) => {
   const start = (pagination.value.page - 1) * pagination.value.pageSize;
   const end = start + pagination.value.pageSize;
   return data_lst.slice(start, end)
 }
 
-const getTopicsOffsets =  async () => {
-  if (!selectedGroup.value){
+const getTopicsOffsets = async () => {
+  if (!selectedGroup.value) {
     message.warning("请先选择 Group")
     return
   }
@@ -518,12 +572,12 @@ const getTopicsOffsets =  async () => {
   await getOffsets(topics, selectedGroup.value)
 }
 
-const getPartitionOffsets =  async () => {
-  if (activeDetailTopic.value === ""){
+const getPartitionOffsets = async () => {
+  if (activeDetailTopic.value === "") {
     message.warning("请先从具体的topic切换到本页")
     return
   }
-  if (!selectedGroup.value){
+  if (!selectedGroup.value) {
     message.warning("请先选择 Group")
     return
   }
@@ -553,21 +607,33 @@ const getOffsets = async (topics, key) => {
 // 刷新topic和分区的offset
 const mergeOffsets = () => {
   // 刷新topic 列表data，把offsets塞进去
-  for (const k in data.value){
+  for (const k in data.value) {
     const v = data.value[k]
     const topic = v['topic']
-    if (topic in offsets.value.start_map){v['StartOffset'] = addOffsets(offsets.value.start_map[topic])}
-    if (topic in offsets.value.end_map){v['EndOffset'] = addOffsets(offsets.value.end_map[topic])}
-    if (topic in offsets.value.commit_map){v['CommittedOffset'] = addOffsets(offsets.value.commit_map[topic])}
+    if (topic in offsets.value.start_map) {
+      v['StartOffset'] = addOffsets(offsets.value.start_map[topic])
+    }
+    if (topic in offsets.value.end_map) {
+      v['EndOffset'] = addOffsets(offsets.value.end_map[topic])
+    }
+    if (topic in offsets.value.commit_map) {
+      v['CommittedOffset'] = addOffsets(offsets.value.commit_map[topic])
+    }
   }
 
-  for (const k in partitions_data.value){
+  for (const k in partitions_data.value) {
     const v = partitions_data.value[k]
     const topic = v['topic']
     const partitions_num = v['partition']
-    if (topic in offsets.value.start_map){v['StartOffset'] = offsets.value.start_map[topic][partitions_num]['At']}
-    if (topic in offsets.value.end_map){v['EndOffset'] = offsets.value.end_map[topic][partitions_num]['At']}
-    if (topic in offsets.value.commit_map){v['CommittedOffset'] = offsets.value.commit_map[topic][partitions_num]['At']}
+    if (topic in offsets.value.start_map) {
+      v['StartOffset'] = offsets.value.start_map[topic][partitions_num]['At']
+    }
+    if (topic in offsets.value.end_map) {
+      v['EndOffset'] = offsets.value.end_map[topic][partitions_num]['At']
+    }
+    if (topic in offsets.value.commit_map) {
+      v['CommittedOffset'] = offsets.value.commit_map[topic][partitions_num]['At']
+    }
 
   }
 
@@ -591,7 +657,7 @@ const getGroups = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      if (res.results){
+      if (res.results) {
         let groups = []
         for (const k in res.results) {
           const data = res.results[k]
