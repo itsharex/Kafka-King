@@ -155,11 +155,6 @@ const pagination = ref({
 // 表格列定义
 const columns = [
   {
-    title: 'ID',
-    key: 'ID',
-    width: 10,
-  },
-  {
     title: 'Offset',
     key: 'Offset',
     width: 20,
@@ -169,26 +164,27 @@ const columns = [
     title: 'Key',
     key: 'Key',
     width: 20,
+    resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: '消息内容',
     key: 'Value',
     width: 40,
+    resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: '时间戳',
     key: 'Timestamp',
     width: 20,
-    ellipsis: {
-      tooltip: true
-    },
+    resizable: true,
+    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: 'Partition',
     key: 'Partition',
-    width: 20,
+    width: 10,
   },
   {
     title: 'Topic',
@@ -200,22 +196,23 @@ const columns = [
     title: 'Headers',
     key: 'Headers',
     width: 20,
+    resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
     title: 'LeaderEpoch',
     key: 'LeaderEpoch',
-    width: 20,
+    width: 10,
   },
   {
     title: 'ProducerEpoch',
     key: 'ProducerEpoch',
-    width: 20,
+    width: 10,
   },
   {
     title: 'ProducerID',
     key: 'ProducerID',
-    width: 20,
+    width: 10,
   }
 ]
 
