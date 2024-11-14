@@ -50,8 +50,8 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		Menu:                     nil,
-		EnableDefaultContextMenu: true,
+		Menu: nil,
+		//EnableDefaultContextMenu: false,
 		//Logger:                   nil,
 		//LogLevel:                 logger.DEBUG,
 		//OnStartup 此回调在前端创建之后调用，但在 index.html 加载之前调用。 它提供了应用程序上下文。
