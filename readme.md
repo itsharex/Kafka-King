@@ -24,9 +24,11 @@
 
 点个star支持作者辛苦开源吧 谢谢❤❤
 
+**同款好用elasticsearch客户端 `ES-King`，可以一起收藏下** ：https://github.com/Bronya0/ES-King
+
+
 加群和作者一起交流： <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz">研发技术交流群：964440643</a>
 
-**同款elasticsearch客户端 `ES-King`，可以一起收藏下** ：https://github.com/Bronya0/ES-King
 
 
 # Kafka-King功能清单
