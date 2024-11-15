@@ -20,9 +20,7 @@
 
 让kafka更好用，make kafka great again!
 
-本项目是一个kafka GUI客户端，支持各个系统，小巧好用。
-
-点个star支持作者辛苦开源吧 谢谢❤❤
+本项目是一个kafka GUI客户端，支持各个系统。点个star支持作者辛苦开源吧 谢谢❤❤
 
 **同款好用elasticsearch客户端 `ES-King`，可以一起收藏下** ：https://github.com/Bronya0/ES-King
 
