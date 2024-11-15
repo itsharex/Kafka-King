@@ -4,10 +4,10 @@ import (
 	"reflect"
 )
 
-// StructToMap 将结构体转换为map[string]interface{}
+// StructToMap 将结构体转换为map[string]any
 // 支持嵌套结构体、指针类型
-func StructToMap(obj interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
+func StructToMap(obj any) map[string]any {
+	result := make(map[string]any)
 	if obj == nil {
 		return result
 	}
@@ -47,7 +47,7 @@ func StructToMap(obj interface{}) map[string]interface{} {
 		case reflect.Slice, reflect.Array:
 			// 处理切片和数组
 			length := value.Len()
-			sliceResult := make([]interface{}, length)
+			sliceResult := make([]any, length)
 			for j := 0; j < length; j++ {
 				item := value.Index(j)
 				// 如果切片元素是结构体,递归处理

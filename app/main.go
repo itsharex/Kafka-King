@@ -69,7 +69,7 @@ func main() {
 		OnShutdown: app.shutdown,
 		//WindowStartState: options.Normal,
 		//指定向前端暴露哪些结构体方法
-		Bind: []interface{}{
+		Bind: []any{
 			app,
 			appConfig,
 			update,

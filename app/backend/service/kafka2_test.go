@@ -78,10 +78,10 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//newMap := map[string]map[int32]interface{}{}
+	//newMap := map[string]map[int32]any{}
 	//for k1, v := range res2.Offsets() {
 	//	if _, ok := newMap[k1]; !ok {
-	//		newMap[k1] = make(map[int32]interface{})
+	//		newMap[k1] = make(map[int32]any)
 	//	}
 	//	for k2, v2 := range v {
 	//		//fmt.Printf("%+v\n", v2)
@@ -109,7 +109,7 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//res, _ = admin.ListEndOffsets(ctx, "1")
 	//fmt.Printf("%+v\n", res)
 
-	//ks.CreateTopics([]map[string]interface{}{
+	//ks.CreateTopics([]map[string]any{
 	//	{
 	//		"topic":             "test3",
 	//		"numPartitions":     2,

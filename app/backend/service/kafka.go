@@ -45,7 +45,7 @@ func NewKafkaService() *Service {
 	return &Service{}
 }
 
-func (k *Service) SetConnect(connectName string, conn map[string]interface{}, isTest bool) *types.ResultResp {
+func (k *Service) SetConnect(connectName string, conn map[string]any, isTest bool) *types.ResultResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
@@ -164,7 +164,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]interface{}, is
 }
 
 // TestClient 测试连接
-func (k *Service) TestClient(connectName string, conn map[string]interface{}) *types.ResultResp {
+func (k *Service) TestClient(connectName string, conn map[string]any) *types.ResultResp {
 	return k.SetConnect(connectName, conn, true)
 }
 
@@ -183,9 +183,9 @@ func (k *Service) GetBrokers() *types.ResultResp {
 		return result
 	}
 
-	var brokersResp []map[string]interface{}
+	var brokersResp []map[string]any
 	for _, broker := range brokers {
-		brokersResp = append(brokersResp, map[string]interface{}{
+		brokersResp = append(brokersResp, map[string]any{
 			"node_id": broker.NodeID,
 			"host":    broker.Host,
 			"port":    broker.Port,
@@ -193,7 +193,7 @@ func (k *Service) GetBrokers() *types.ResultResp {
 		})
 	}
 
-	clusterInfo := map[string]interface{}{
+	clusterInfo := map[string]any{
 		"brokers": brokersResp,
 	}
 	result.Result = clusterInfo
@@ -218,7 +218,7 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	cfg := configs[0].Configs
 	// 转换为map格式
 	for _, config := range cfg {
-		result.Results = append(result.Results, map[string]interface{}{
+		result.Results = append(result.Results, map[string]any{
 			"Name":      config.Key,
 			"Value":     config.Value,
 			"Source":    config.Source.String(),
@@ -245,13 +245,13 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	}
 
 	for topicName, topicDetail := range topics {
-		var partitions []interface{}
+		var partitions []any
 		for _, partition := range topicDetail.Partitions {
 			errMsg := ""
 			if partition.Err != nil {
 				errMsg = partition.Err.Error()
 			}
-			partitions = append(partitions, map[string]interface{}{
+			partitions = append(partitions, map[string]any{
 				"partition":       partition.Partition,
 				"leader":          partition.Leader,
 				"replicas":        partition.Replicas,
@@ -265,7 +265,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 		if topicDetail.Err != nil {
 			resultErrMsg = topicDetail.Err.Error()
 		}
-		result.Results = append(result.Results, map[string]interface{}{
+		result.Results = append(result.Results, map[string]any{
 			"ID":                 topicDetail.ID,
 			"topic":              topicName,
 			"partition_count":    len(topicDetail.Partitions),
@@ -295,7 +295,7 @@ func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
 	}
 	cfg := res[0].Configs
 	for _, config := range cfg {
-		result.Results = append(result.Results, map[string]interface{}{
+		result.Results = append(result.Results, map[string]any{
 			"Name":      config.Key,
 			"Value":     config.Value,
 			"Source":    config.Source,
@@ -372,7 +372,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 	}
 
 	for group := range groups {
-		result.Results = append(result.Results, map[string]interface{}{
+		result.Results = append(result.Results, map[string]any{
 			"Group":        group,
 			"State":        groups[group].State,
 			"ProtocolType": groups[group].ProtocolType,
