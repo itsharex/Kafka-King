@@ -35,6 +35,8 @@ type Service struct {
 	kac              *kadm.Client
 	client           *kgo.Client
 	mutex            sync.Mutex
+	topics           []any
+	groups           []any
 }
 
 func (k *Service) ptr(s string) *string {
@@ -152,12 +154,14 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		result.Err = err.Error()
 		return result
 	}
+	//正式切换节点，赋值并清理缓存
 	if isTest == false {
 		k.connectName = connectName
 		k.kac = admin
 		k.client = cl
 		k.config = config
 		k.bootstrapServers = bootstrapServers
+		k.clearCache()
 	}
 
 	return result
@@ -166,6 +170,11 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 // TestClient 测试连接
 func (k *Service) TestClient(connectName string, conn map[string]any) *types.ResultResp {
 	return k.SetConnect(connectName, conn, true)
+}
+
+func (k *Service) clearCache() {
+	k.topics = nil
+	k.groups = nil
 }
 
 // GetBrokers 获取集群信息
@@ -230,12 +239,20 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 
 // GetTopics 获取主题信息
 func (k *Service) GetTopics() *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 
 	if k.kac == nil {
 		result.Err = "请先选择连接"
 		return result
 	}
+
+	if k.topics != nil && len(k.topics) > 0 {
+		result.Results = k.topics
+		return result
+	}
+
 	ctx := context.Background()
 
 	topics, err := k.kac.ListTopics(ctx)
@@ -275,7 +292,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 			"partitions":         partitions,
 		})
 	}
-
+	k.topics = result.Results
 	return result
 }
 
@@ -359,9 +376,15 @@ func (k *Service) ToMap(mapStruct map[string]map[int32]kadm.Offset) map[string]m
 
 // GetGroups 获取消费组信息
 func (k *Service) GetGroups() *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
+		return result
+	}
+	if k.groups != nil && len(k.groups) > 0 {
+		result.Results = k.groups
 		return result
 	}
 	ctx := context.Background()
@@ -379,7 +402,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 			"Coordinator":  groups[group].Coordinator,
 		})
 	}
-
+	k.groups = result.Results
 	return result
 }
 
@@ -424,53 +447,46 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 	return result
 }
 
-//
-//// DeleteConsumerGroup 删除消费组
-//func (k *Service) DeleteConsumerGroup(groupID string) *types.ResultResp {
-//	result := &types.ResultResp{}
-//	if k.kac == nil {
-//		result.Err = "请先选择连接"
-//		return result
-//	}
-//	err := k.kac.DeleteConsumerGroup(groupID)
-//	if err != nil {
-//		result.Err = err.Error()
-//		return result
-//	}
-//	return nil
-//}
-
 // CreateTopics 创建主题
 func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]string) *types.ResultResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
 		return result
 	}
+
+	k.clearCache()
+
 	// 转换为 map[string]*string
 	pointerMap := make(map[string]*string)
 	for key, value := range configs {
 		pointerMap[key] = &value
 	}
+
 	ctx := context.Background()
 	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), pointerMap, topics...)
 	if err != nil {
 		result.Err = err.Error()
 		return result
 	}
-
 	return result
 }
 
 // DeleteTopic 删除主题
 func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
 		return result
 	}
-	ctx := context.Background()
 
+	k.clearCache()
+
+	ctx := context.Background()
 	for _, topic := range topics {
 		_, err := k.kac.DeleteTopic(ctx, topic)
 		if err != nil {
@@ -483,6 +499,8 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 
 // DeleteGroup 删除Group
 func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
@@ -499,13 +517,17 @@ func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
 
 // CreatePartitions 添加分区
 func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
 		return result
 	}
-	ctx := context.Background()
 
+	k.clearCache()
+
+	ctx := context.Background()
 	for _, topic := range topics {
 		_, err := k.kac.CreatePartitions(ctx, count, topic)
 		if err != nil {
@@ -519,6 +541,8 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 
 // AlterTopicConfig 修改主题配置
 func (k *Service) AlterTopicConfig(topic string, name, value string) *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
@@ -538,10 +562,14 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 		result.Err = err.Error()
 		return result
 	}
+	k.clearCache()
+
 	return result
 }
 
 func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
@@ -566,6 +594,8 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 
 // Produce 生产消息
 func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string) *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
@@ -596,6 +626,8 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 
 // Consumer 消费消息
 func (k *Service) Consumer(topic string, group string, num, timeout int) *types.ResultsResp {
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
 		result.Err = "请先选择连接"
