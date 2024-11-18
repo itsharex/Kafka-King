@@ -2,88 +2,128 @@
   <n-flex vertical>
     <n-flex align="center">
       <h2 style="max-width: 200px;">巡检</h2>
+      <p>巡检Kafka积压情况。</p>
     </n-flex>
 
-  <div class="kafka-monitor">
-    <n-card title="Kafka Offset Monitor">
-      <n-space vertical>
-        <!-- Topic选择器 -->
-        <n-select
-            v-model:value="selectedTopics"
-            multiple
-            placeholder="请选择Topics"
-            :options="topicOptions"
-            @update:value="handleTopicChange"
-        />
+    <n-flex align="center">
+      必选：Topic，支持多选：
+      <n-select
+          v-model:value="selectedTopics"
+          :options="topic_data"
+          placeholder="选择或搜索Kafka Topic"
+          filterable
+          clearable
+          multiple
+          style="width: 300px"
+      />
+      可选：Group
+      <n-select
+          v-model:value="selectedGroup"
+          :options="group_data"
+          placeholder="选择或创建Consumer Group"
+          filterable
+          clearable
+          tag
+          style="width: 300px"
+      />
+      <n-button @click="fetchData" :loading="loading" :render-icon="renderIcon(MessageOutlined)">开始巡检</n-button>
 
-        <!-- 消费组选择器 -->
-        <n-select
-            v-model:value="selectedGroups"
-            multiple
-            placeholder="请选择消费组"
-            :options="groupOptions"
-            @update:value="handleGroupChange"
-        />
+    </n-flex>
 
-        <!-- 图表容器 -->
-        <div ref="chartRef" style="width: 100%; height: 400px"></div>
-      </n-space>
-    </n-card>
-  </div>
+    <n-flex vertical>
+      <n-flex align="center">
+      <!-- 图表容器 -->
+      <div ref="start_chartRef" style="width: 100%; height: 450px"></div>
+      <div ref="commit_chartRef" style="width: 100%; height: 450px"></div>
+      <div ref="end_chartRef" style="width: 100%; height: 450px"></div>
+      </n-flex>
+    </n-flex>
+
   </n-flex>
 
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import * as echarts from 'echarts'
-// import { FetchTopics, FetchGroups, FetchOffsets } from '../wailsjs/go/main/App'
+import {NButton, NFlex, useMessage} from "naive-ui";
+import {GetGroups, GetTopics, GetTopicOffsets} from "../../wailsjs/go/service/Service";
+import emitter from "../utils/eventBus";
+import {renderIcon} from "../utils/common";
+import {MessageOutlined} from "@vicons/material";
 
-const chartRef = ref(null)
-const chart = ref(null)
+const message = useMessage()
+const topic_data = ref([]);
+const group_data = ref([]);
 const selectedTopics = ref([])
-const selectedGroups = ref([])
-const topicOptions = ref([])
-const groupOptions = ref([])
+const selectedGroup = ref(null)
+const start_chartRef = ref(null)
+const commit_chartRef = ref(null)
+const end_chartRef = ref(null)
+const start_chart = ref(null)
+const commit_chart = ref(null)
+const end_chart = ref(null)
 const offsetData = ref({})
+const loading = ref(false)
 
-// 初始化主题和消费组选项
-const initOptions = async () => {
-  try {
-    const topics = await FetchTopics()
-    const groups = await FetchGroups()
+const selectNode = async (node) => {
+  topic_data.value = []
+  group_data.value = []
+  selectedTopics.value = []
+  selectedGroup.value = null
+  start_chartRef.value = null
+  commit_chartRef.value = null
+  end_chartRef.value = null
+  start_chart.value = null
+  commit_chart.value = null
+  end_chart.value = null
+  offsetData.value = {}
+  loading.value = false
 
-    topicOptions.value = topics.map(topic => ({
-      label: topic,
-      value: topic
-    }))
-
-    groupOptions.value = groups.map(group => ({
-      label: group,
-      value: group
-    }))
-  } catch (error) {
-    console.error('Failed to fetch options:', error)
-  }
+  await getData()
 }
+
+onMounted(async () => {
+  emitter.on('selectNode', selectNode)
+  emitter.on('refreshTopic', refreshTopic)
+
+  await getData()
+  initChart()
+  await fetchData()
+  timer = setInterval(fetchData, 5 * 60 * 1000) // 每5分钟更新一次
+
+})
+
+const refreshTopic = async () => {
+  await getData()
+}
+
 
 // 初始化图表
 const initChart = () => {
-  if (chart.value) {
-    chart.value.dispose()
+  if (start_chart.value) {
+    start_chart.value.dispose()
   }
 
-  chart.value = echarts.init(chartRef.value)
+  start_chart.value = echarts.init(start_chartRef.value)
   const option = {
     title: {
       text: 'Kafka Offset监控',
-      left: 'center'
+      left: 'left'
     },
     tooltip: {
       trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+        label: {
+          backgroundColor: '#6a7985'
+        }
+      },
       formatter: function(params) {
-        let result = params[0].axisValue + '<br/>'
+        const time = new Date(params[0].axisValue).toLocaleString()
+        let result = `${time}<br/>`
         params.forEach(param => {
+          const color = param.color
           result += `${param.seriesName}: ${param.value}<br/>`
         })
         return result
@@ -101,21 +141,27 @@ const initChart = () => {
     },
     xAxis: {
       type: 'time',
-      boundaryGap: false
+      boundaryGap: false,
     },
     yAxis: {
       type: 'value',
-      name: 'Offset'
+      name: 'Offset',
     },
     series: []
   }
+  start_chart.value.setOption(option)
 
-  chart.value.setOption(option)
+  commit_chart.value = echarts.init(commit_chartRef.value)
+  commit_chart.value.setOption(option)
+
+  end_chart.value = echarts.init(end_chartRef.value)
+  end_chart.value.setOption(option)
+
 }
 
 // 更新图表数据
 const updateChart = () => {
-  if (!chart.value) return
+  if (!start_chart.value) return
 
   const series = []
   const legendData = []
@@ -138,7 +184,21 @@ const updateChart = () => {
     })
   })
 
-  chart.value.setOption({
+  start_chart.value.setOption({
+    legend: {
+      data: legendData
+    },
+    series: series
+  })
+
+  commit_chart.value.setOption({
+    legend: {
+      data: legendData
+    },
+    series: series
+  })
+
+  end_chart.value.setOption({
     legend: {
       data: legendData
     },
@@ -149,36 +209,97 @@ const updateChart = () => {
 // 定时获取数据
 let timer = null
 const fetchData = async () => {
-  if (selectedTopics.value.length === 0 || selectedGroups.value.length === 0) return
+  if (selectedTopics.value.length === 0 || !selectedGroup.value) {
+    message.warning('请选择Topic和Group')
+    return
+  }
+  loading.value = true
 
   try {
-    const offsets = await FetchOffsets(selectedTopics.value, selectedGroups.value)
-    const timestamp = new Date().getTime()
+    const res = await GetTopicOffsets(selectedTopics.value, selectedGroup.value)
+    if (res.err !== "") {
+      message.error(res.err)
+    } else {
+      const timestamp = new Date().getTime()
 
-    // 更新数据结构
-    selectedTopics.value.forEach(topic => {
-      selectedGroups.value.forEach(group => {
-        const key = `${topic}-${group}`
-        if (!offsetData.value[key]) {
-          offsetData.value[key] = []
+      // 更新数据结构
+      selectedTopics.value.forEach(topic => {
+        if (!offsetData.value[topic]) {
+          offsetData.value[topic] = []
         }
 
-        offsetData.value[key].push({
+        offsetData.value[topic].push({
           timestamp,
-          offset: offsets[topic]?.[group] || 0
+          offset: addOffsets(res.result.end_map[topic])|| 0
         })
 
         // 只保留最近30个数据点
-        if (offsetData.value[key].length > 30) {
-          offsetData.value[key].shift()
+        if (offsetData.value[topic].length > 30) {
+          offsetData.value[topic].shift()
         }
       })
-    })
 
-    updateChart()
-  } catch (error) {
-    console.error('Failed to fetch offsets:', error)
+      updateChart()
+    }
+
+  } catch (e) {
+      message.error(e)
+  }finally {
+    loading.value = false
   }
+}
+
+
+const getData = async () => {
+  console.log('初始化消费者数据')
+  try {
+    const res = await GetTopics()
+    const res2 = await GetGroups()
+    if (res.err !== "" || res2.err !== "") {
+      message.error(res.err === res2.err? res.err : res.err + res2.err)
+    } else {
+      let topic_data_lst = []
+      if (res.results) {
+        res.results.sort((a, b) => a['topic'] > b['topic'] ? 1 : -1)
+        for (const k in res.results) {
+          topic_data_lst.push({
+            "label": res.results[k]['topic'],
+            "value": res.results[k]['topic']
+          })
+        }
+      }
+      topic_data.value = topic_data_lst
+
+      let groups = []
+      for (const k in res2.results) {
+        const g_data = res2.results[k]
+        groups.push({
+          label: g_data['Group'],
+          value: g_data['Group'],
+          State: g_data['State'],
+          ProtocolType: g_data['ProtocolType'],
+          Coordinator: g_data['Coordinator'],
+        })
+      }
+      groups.sort((a, b) => a['label'] > b['label'] ? 1 : -1)
+      group_data.value = groups
+
+    }
+  } catch (e) {
+    message.error(e)
+  }
+}
+
+const addOffsets = (item) => {
+
+  let count = 0;
+  for (const k in item) {
+    const at = item[k]['At']
+    if (at > 0) {
+      count += at
+    }
+  }
+  return count
 }
 
 // 处理选择变化
@@ -192,25 +313,6 @@ const handleGroupChange = () => {
   updateChart()
 }
 
-// 生命周期钩子
-onMounted(async () => {
-  // await initOptions()
-  // initChart()
-  // fetchData()
-  // timer = setInterval(fetchData, 5 * 60 * 1000) // 每5分钟更新一次
-
-  // 响应窗口大小变化
-  window.addEventListener('resize', () => {
-    chart.value?.resize()
-  })
-})
-
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-  }
-  chart.value?.dispose()
-})
 </script>
 
 <style scoped>
