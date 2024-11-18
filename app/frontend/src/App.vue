@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, shallowRef} from 'vue'
+import {onMounted, shallowRef} from 'vue'
 import {
   darkTheme,
   lightTheme,
@@ -77,6 +77,7 @@ import emitter from "./utils/eventBus";
 import Groups from "./components/Groups.vue";
 import Producer from "./components/Producer.vue";
 import Consumer from "./components/Consumer.vue";
+import Monitor from "./components/Monitor.vue";
 
 let headerClass = shallowRef('lightTheme')
 
@@ -138,6 +139,12 @@ const sideMenuOptions = [
     key: '消费者组',
     icon: renderIcon(GroupsSharp),
     component: Groups,
+  },
+  {
+    label: '巡检',
+    key: '巡检',
+    icon: renderIcon(GroupsSharp),
+    component: Monitor,
   },
   {
     label: '设置',
