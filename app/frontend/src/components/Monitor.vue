@@ -14,7 +14,7 @@
           filterable
           clearable
           multiple
-          style="width: 300px"
+          style="width: 600px"
       />
       可选：Group
       <n-select
@@ -31,12 +31,17 @@
     </n-flex>
 
     <n-flex vertical>
+
       <n-flex align="center">
       <!-- 图表容器 -->
-      <div ref="start_chartRef" style="width: 100%; height: 450px"></div>
-      <div ref="commit_chartRef" style="width: 100%; height: 450px"></div>
-      <div ref="end_chartRef" style="width: 100%; height: 450px"></div>
+      <div ref="commit_chartRef" style="width: 48%; height: 400px"></div>
+        <div ref="end_chartRef" style="width: 48%; height: 400px"></div>
       </n-flex>
+
+      <n-flex align="center">
+        <div ref="start_chartRef" style="width: 48%; height: 400px"></div>
+      </n-flex>
+
     </n-flex>
 
   </n-flex>
@@ -47,23 +52,30 @@
 import {onMounted, ref} from 'vue'
 import * as echarts from 'echarts'
 import {NButton, NFlex, useMessage} from "naive-ui";
-import {GetGroups, GetTopics, GetTopicOffsets} from "../../wailsjs/go/service/Service";
+import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Service";
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
+import {EventsOn} from "../../wailsjs/runtime";
 
 const message = useMessage()
 const topic_data = ref([]);
 const group_data = ref([]);
 const selectedTopics = ref([])
 const selectedGroup = ref(null)
+
 const start_chartRef = ref(null)
 const commit_chartRef = ref(null)
 const end_chartRef = ref(null)
 const start_chart = ref(null)
 const commit_chart = ref(null)
 const end_chart = ref(null)
-const offsetData = ref({})
+
+const offsetData = ref({
+  start: {},
+  commit: {},
+  end: {},
+})
 const loading = ref(false)
 
 const selectNode = async (node) => {
@@ -71,13 +83,19 @@ const selectNode = async (node) => {
   group_data.value = []
   selectedTopics.value = []
   selectedGroup.value = null
+
   start_chartRef.value = null
   commit_chartRef.value = null
   end_chartRef.value = null
   start_chart.value = null
   commit_chart.value = null
   end_chart.value = null
-  offsetData.value = {}
+
+  offsetData.value = {
+    start: {},
+    commit: {},
+    end: {},
+  }
   loading.value = false
 
   await getData()
@@ -90,8 +108,12 @@ onMounted(async () => {
   await getData()
   initChart()
   await fetchData()
-  timer = setInterval(fetchData, 5 * 60 * 1000) // 每5分钟更新一次
-
+  timer = setInterval(fetchData, 2 * 60 * 1000) // 定时更新一次
+  EventsOn('resize', () => {
+    start_chart.value?.resize()
+    commit_chart.value?.resize()
+    end_chart.value?.resize()
+  })
 })
 
 const refreshTopic = async () => {
@@ -105,7 +127,7 @@ const initChart = () => {
     start_chart.value.dispose()
   }
 
-  start_chart.value = echarts.init(start_chartRef.value)
+  start_chart.value = echarts.init(start_chartRef.value, 'dark')
   const option = {
     title: {
       text: 'Kafka Offset监控',
@@ -149,12 +171,15 @@ const initChart = () => {
     },
     series: []
   }
+  option.title.text='Start Offset监控'
   start_chart.value.setOption(option)
 
-  commit_chart.value = echarts.init(commit_chartRef.value)
+  option.title.text='Committed Offset监控'
+  commit_chart.value = echarts.init(commit_chartRef.value, 'dark')
   commit_chart.value.setOption(option)
 
-  end_chart.value = echarts.init(end_chartRef.value)
+  option.title.text='End Offset监控'
+  end_chart.value = echarts.init(end_chartRef.value, 'dark')
   end_chart.value.setOption(option)
 
 }
@@ -166,7 +191,8 @@ const updateChart = () => {
   const series = []
   const legendData = []
 
-  Object.entries(offsetData.value).forEach(([key, data]) => {
+  // start
+  Object.entries(offsetData.value.start).forEach(([key, data]) => {
     legendData.push(key)
     series.push({
       name: key,
@@ -191,6 +217,24 @@ const updateChart = () => {
     series: series
   })
 
+  // commit
+  Object.entries(offsetData.value.commit).forEach(([key, data]) => {
+    legendData.push(key)
+    series.push({
+      name: key,
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      data: data.map(item => [item.timestamp, item.offset]),
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowColor: 'rgba(0,0,0,0.3)'
+        }
+      }
+    })
+  })
   commit_chart.value.setOption({
     legend: {
       data: legendData
@@ -198,6 +242,24 @@ const updateChart = () => {
     series: series
   })
 
+  // end
+  Object.entries(offsetData.value.end).forEach(([key, data]) => {
+    legendData.push(key)
+    series.push({
+      name: key,
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      data: data.map(item => [item.timestamp, item.offset]),
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowColor: 'rgba(0,0,0,0.3)'
+        }
+      }
+    })
+  })
   end_chart.value.setOption({
     legend: {
       data: legendData
@@ -222,22 +284,50 @@ const fetchData = async () => {
     } else {
       const timestamp = new Date().getTime()
 
-      // 更新数据结构
+      // 更新数据结构 start_map
       selectedTopics.value.forEach(topic => {
-        if (!offsetData.value[topic]) {
-          offsetData.value[topic] = []
-        }
 
-        offsetData.value[topic].push({
+        if (!offsetData.value.start[topic]) {
+          offsetData.value.start[topic] = []
+        }
+        offsetData.value.start[topic].push({
+          timestamp,
+          offset: addOffsets(res.result.start_map[topic])|| 0
+        })
+
+        if (!offsetData.value.commit[topic]) {
+          offsetData.value.commit[topic] = []
+        }
+        offsetData.value.commit[topic].push({
+          timestamp,
+          offset: addOffsets(res.result.commit_map[topic])|| 0
+        })
+
+        if (!offsetData.value.end[topic]) {
+          offsetData.value.end[topic] = []
+        }
+        offsetData.value.end[topic].push({
           timestamp,
           offset: addOffsets(res.result.end_map[topic])|| 0
         })
 
+
         // 只保留最近30个数据点
-        if (offsetData.value[topic].length > 30) {
-          offsetData.value[topic].shift()
+        if (offsetData.value.start[topic].length > 30) {
+          offsetData.value.start[topic].shift()
         }
+        // 只保留最近30个数据点
+        if (offsetData.value.commit[topic].length > 30) {
+          offsetData.value.commit[topic].shift()
+        }
+        // 只保留最近30个数据点
+        if (offsetData.value.end[topic].length > 30) {
+          offsetData.value.end[topic].shift()
+        }
+
       })
+
+      console.log(offsetData.value)
 
       updateChart()
     }
