@@ -162,12 +162,12 @@ const initChart = () => {
       containLabel: true
     },
     xAxis: {
-      type: 'time',
+      type: 'category',
       boundaryGap: false,
     },
     yAxis: {
       type: 'value',
-      name: 'Offset',
+      boundaryGap: [0, '100%']
     },
     series: []
   }
@@ -197,16 +197,24 @@ const updateChart = () => {
     series.push({
       name: key,
       type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 8,
+      symbol: 'none',
+      sampling: 'lttb',
+      itemStyle: {
+        color: 'rgb(255, 70, 131)'
+      },
       data: data.map(item => [item.timestamp, item.offset]),
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0,0,0,0.3)'
-        }
-      }
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: 'rgb(255, 158, 68)'
+          },
+          {
+            offset: 1,
+            color: 'rgb(255, 70, 131)'
+          }
+        ])
+      },
     })
   })
 
