@@ -153,23 +153,9 @@ const initChart = () => {
     },
     tooltip: {
       trigger: 'axis',
-      formatter: function(params) {
-        const date = new Date(params[0].value[0]);
-        let result = date.toLocaleString() + '<br/>';
-        params.forEach(param => {
-          result += `${param.seriesName}: ${param.value[1]}<br/>`;
-        });
-        return result;
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true
     },
     xAxis: {
-      type: 'time',
+      type: 'category',
       boundaryGap: false,
     },
     yAxis: {
@@ -180,13 +166,15 @@ const initChart = () => {
   option.title.text='Start Offset监控'
   start_chart.value.setOption(option)
 
-  option.title.text='Committed Offset监控'
+  const commit_option = {...option}
+  commit_option.title.text='Committed Offset监控'
   commit_chart.value = echarts.init(commit_chartRef.value, 'dark')
-  commit_chart.value.setOption(option)
+  commit_chart.value.setOption({...commit_option})
 
-  option.title.text='End Offset监控'
+  const end_option = {...option}
+  end_option.title.text='End Offset监控'
   end_chart.value = echarts.init(end_chartRef.value, 'dark')
-  end_chart.value.setOption(option)
+  end_chart.value.setOption({...end_option})
 
 }
 
@@ -196,58 +184,37 @@ const updateChart = () => {
 
   const series = []
   const legendData = []
-
-  // start
-  Object.entries(offsetData.value.start).forEach(([key, data]) => {
-    legendData.push(key)
-    series.push({
-      name: key,
-      type: 'line',
-      stack: 'Total',
-      data: data.map(item => [new Date(item.timestamp), item.offset])
+  const chart_map = {
+    start: start_chart.value,
+    commit: commit_chart.value,
+    end: end_chart.value
+  }
+  for (const k in offsetData.value) {
+    console.log(k)
+    // start
+    Object.entries(offsetData.value[k]).forEach(([key, data]) => {
+      legendData.push(key)
+      series.push({
+        name: key,
+        type: 'line',
+        stack: 'Total',
+        symbol: 'circle',
+        symbolSize: 8,
+        data: data.map(item => [item.time, item.offset])
+      })
     })
-  })
 
-  start_chart.value.setOption({
-    legend: {
-      data: legendData
-    },
-    series: series
-  })
-
-  // commit
-  Object.entries(offsetData.value.commit).forEach(([key, data]) => {
-    legendData.push(key)
-    series.push({
-      name: key,
-      type: 'line',
-      stack: 'Total',
-      data: data.map(item => [item.timestamp, item.offset]),
+    chart_map[k].setOption({
+      legend: {
+        data: legendData
+      },
+      series: series
     })
-  })
-  commit_chart.value.setOption({
-    legend: {
-      data: legendData
-    },
-    series: series
-  })
+    console.log(chart_map[k])
 
-  // end
-  Object.entries(offsetData.value.end).forEach(([key, data]) => {
-    legendData.push(key)
-    series.push({
-      name: key,
-      type: 'line',
-      stack: 'Total',
-      data: data.map(item => [item.timestamp, item.offset]),
-    })
-  })
-  end_chart.value.setOption({
-    legend: {
-      data: legendData
-    },
-    series: series
-  })
+  }
+
+
 }
 
 // 定时获取数据
@@ -264,7 +231,8 @@ const fetchData = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      const timestamp = new Date().getTime()
+      const now = new Date()
+      const time =  now.getMonth() + "/"+ now.getDate() + " "+ now.getHours() + ":"+ now.getMinutes() + ":"+ now.getSeconds()
 
       // 更新数据结构 start_map
       selectedTopics.value.forEach(topic => {
@@ -273,7 +241,7 @@ const fetchData = async () => {
           offsetData.value.start[topic] = []
         }
         offsetData.value.start[topic].push({
-          timestamp,
+          time,
           offset: addOffsets(res.result.start_map[topic])|| 0
         })
 
@@ -281,7 +249,7 @@ const fetchData = async () => {
           offsetData.value.commit[topic] = []
         }
         offsetData.value.commit[topic].push({
-          timestamp,
+          time,
           offset: addOffsets(res.result.commit_map[topic])|| 0
         })
 
@@ -289,7 +257,7 @@ const fetchData = async () => {
           offsetData.value.end[topic] = []
         }
         offsetData.value.end[topic].push({
-          timestamp,
+          time,
           offset: addOffsets(res.result.end_map[topic])|| 0
         })
 
@@ -309,7 +277,6 @@ const fetchData = async () => {
 
       })
 
-      console.log(offsetData.value)
 
       updateChart()
     }
