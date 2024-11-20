@@ -33,13 +33,13 @@
     <n-flex vertical>
 
       <n-flex align="center">
-      <!-- 图表容器 -->
-      <div ref="commit_chartRef" style="width: 48%; height: 400px"></div>
-        <div ref="end_chartRef" style="width: 48%; height: 400px"></div>
       </n-flex>
+      <!-- 图表容器 -->
+      <div ref="start_chartRef" style="width: 100%; height: 500px"></div>
+      <div ref="commit_chartRef" style="width: 100%; height: 500px"></div>
+      <div ref="end_chartRef" style="width: 100%; height: 500px"></div>
 
       <n-flex align="center">
-        <div ref="start_chartRef" style="width: 48%; height: 400px"></div>
       </n-flex>
 
     </n-flex>
@@ -155,9 +155,20 @@ const initChart = () => {
       type: 'time',
       boundaryGap: false,
     },
+    grid: {
+      left: '10%',
+      right: '20%',  // 为图例留出空间
+      bottom: '10%',
+      containLabel: true
+    },
     yAxis: {
       type: 'value',
       boundaryGap: [0, '100%']
+    },
+    legend: {
+      orient: 'vertical',  // 图例垂直显示
+      right: '10%',        // 图例位置在右侧
+      top: 'center'        // 图例垂直居中
     },
     series: []
   }
@@ -193,18 +204,6 @@ const updateChart = () => {
         color: 'rgb(255, 70, 131)'
       },
       data: data.map(item => [item.timestamp, item.offset]),
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          {
-            offset: 0,
-            color: 'rgb(255, 158, 68)'
-          },
-          {
-            offset: 1,
-            color: 'rgb(255, 70, 131)'
-          }
-        ])
-      },
     })
   })
 
@@ -230,7 +229,7 @@ const updateChart = () => {
           shadowBlur: 10,
           shadowColor: 'rgba(0,0,0,0.3)'
         }
-      }
+      },
     })
   })
   commit_chart.value.setOption({
@@ -255,7 +254,7 @@ const updateChart = () => {
           shadowBlur: 10,
           shadowColor: 'rgba(0,0,0,0.3)'
         }
-      }
+      },
     })
   })
   end_chart.value.setOption({
