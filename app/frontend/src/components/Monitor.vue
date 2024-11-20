@@ -35,9 +35,9 @@
       <n-flex align="center">
       </n-flex>
       <!-- 图表容器 -->
-      <div ref="start_chartRef" style="width: 100%; height: 500px"></div>
       <div ref="commit_chartRef" style="width: 100%; height: 500px"></div>
       <div ref="end_chartRef" style="width: 100%; height: 500px"></div>
+      <div ref="start_chartRef" style="width: 100%; height: 500px"></div>
 
       <n-flex align="center">
       </n-flex>
@@ -50,7 +50,17 @@
 
 <script setup>
 import {onMounted, ref} from 'vue'
-import * as echarts from 'echarts'
+import * as echarts from 'echarts/core';
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent
+} from 'echarts/components';
+import { LineChart } from 'echarts/charts';
+import { UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+
 import {NButton, NFlex, useMessage} from "naive-ui";
 import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Service";
 import emitter from "../utils/eventBus";
@@ -107,13 +117,13 @@ onMounted(async () => {
 
   await getData()
   initChart()
-  await fetchData()
+  // await fetchData()
   timer = setInterval(fetchData, 2 * 60 * 1000) // 定时更新一次
-  EventsOn('resize', () => {
-    start_chart.value?.resize()
-    commit_chart.value?.resize()
-    end_chart.value?.resize()
-  })
+  // EventsOn('resize', () => {
+  //   start_chart.value?.resize()
+  //   commit_chart.value?.resize()
+  //   end_chart.value?.resize()
+  // })
 })
 
 const refreshTopic = async () => {
@@ -126,49 +136,44 @@ const initChart = () => {
   if (start_chart.value) {
     start_chart.value.dispose()
   }
+  echarts.use([
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    LegendComponent,
+    LineChart,
+    CanvasRenderer,
+    UniversalTransition
+  ]);
 
   start_chart.value = echarts.init(start_chartRef.value, 'dark')
   const option = {
     title: {
       text: 'Kafka Offset监控',
-      left: 'left'
     },
     tooltip: {
       trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-        label: {
-          backgroundColor: '#6a7985'
-        }
-      },
       formatter: function(params) {
-        const time = new Date(params[0].axisValue).toLocaleString()
-        let result = `${time}<br/>`
+        const date = new Date(params[0].value[0]);
+        let result = date.toLocaleString() + '<br/>';
         params.forEach(param => {
-          const color = param.color
-          result += `${param.seriesName}: ${param.value}<br/>`
-        })
-        return result
+          result += `${param.seriesName}: ${param.value[1]}<br/>`;
+        });
+        return result;
       }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
     },
     xAxis: {
       type: 'time',
       boundaryGap: false,
     },
-    grid: {
-      left: '10%',
-      right: '20%',  // 为图例留出空间
-      bottom: '10%',
-      containLabel: true
-    },
     yAxis: {
-      type: 'value',
-      boundaryGap: [0, '100%']
-    },
-    legend: {
-      orient: 'vertical',  // 图例垂直显示
-      right: '10%',        // 图例位置在右侧
-      top: 'center'        // 图例垂直居中
+      type: 'value'
     },
     series: []
   }
@@ -198,12 +203,8 @@ const updateChart = () => {
     series.push({
       name: key,
       type: 'line',
-      symbol: 'none',
-      sampling: 'lttb',
-      itemStyle: {
-        color: 'rgb(255, 70, 131)'
-      },
-      data: data.map(item => [item.timestamp, item.offset]),
+      stack: 'Total',
+      data: data.map(item => [new Date(item.timestamp), item.offset])
     })
   })
 
@@ -220,16 +221,8 @@ const updateChart = () => {
     series.push({
       name: key,
       type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 8,
+      stack: 'Total',
       data: data.map(item => [item.timestamp, item.offset]),
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0,0,0,0.3)'
-        }
-      },
     })
   })
   commit_chart.value.setOption({
@@ -245,16 +238,8 @@ const updateChart = () => {
     series.push({
       name: key,
       type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 8,
+      stack: 'Total',
       data: data.map(item => [item.timestamp, item.offset]),
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0,0,0,0.3)'
-        }
-      },
     })
   })
   end_chart.value.setOption({
