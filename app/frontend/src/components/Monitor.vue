@@ -33,11 +33,12 @@
     </n-flex>
 
     <n-flex vertical>
-      <n-flex align="center">
-        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>
-        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>
-      </n-flex>
-
+<!--      <n-flex align="center">-->
+<!--        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>-->
+<!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
+<!--      </n-flex>-->
+      <div ref="commit_chartRef" style="width: 98%; height: 440px"></div>
+      <div ref="end_chartRef" style="width: 98%; height: 440px"></div>
     </n-flex>
 
   </n-flex>
@@ -50,6 +51,7 @@ import * as echarts from 'echarts/core';
 import {
   TitleComponent,
   TooltipComponent,
+  ToolboxComponent,
   GridComponent,
   LegendComponent
 } from 'echarts/components';
@@ -62,7 +64,6 @@ import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Se
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
-import {EventsOn} from "../../wailsjs/runtime";
 
 const message = useMessage()
 const topic_data = ref([]);
@@ -114,12 +115,22 @@ onMounted(async () => {
   //   commit_chart.value?.resize()
   //   end_chart.value?.resize()
   // })
+  // 如果使用wails runtime api，也可以这样监听
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize)
 })
 
 const refreshTopic = async () => {
   await getData()
 }
-
+const handleResize = () => {
+  if (end_chart.value) {
+    end_chart.value.resize()
+  }
+  if (commit_chart.value) {
+    commit_chart.value.resize()
+  }
+}
 
 // 初始化图表
 const initChart = () => {
@@ -131,7 +142,8 @@ const initChart = () => {
     LegendComponent,
     LineChart,
     CanvasRenderer,
-    UniversalTransition
+    UniversalTransition,
+    ToolboxComponent
   ]);
 
   const option = {
@@ -251,11 +263,11 @@ const fetchData = async () => {
 
 
         // 只保留最近30个数据点
-        if (offsetData.value.commit[topic].length > 30) {
+        if (offsetData.value.commit[topic].length > 100) {
           offsetData.value.commit[topic].shift()
         }
         // 只保留最近30个数据点
-        if (offsetData.value.end[topic].length > 30) {
+        if (offsetData.value.end[topic].length > 100) {
           offsetData.value.end[topic].shift()
         }
 
@@ -325,21 +337,7 @@ const addOffsets = (item) => {
   return count
 }
 
-// 处理选择变化
-const handleTopicChange = () => {
-  offsetData.value = {}
-  updateChart()
-}
-
-const handleGroupChange = () => {
-  offsetData.value = {}
-  updateChart()
-}
-
 </script>
 
 <style scoped>
-.kafka-monitor {
-  padding: 20px;
-}
 </style>
