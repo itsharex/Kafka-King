@@ -37,6 +37,7 @@
 <!--        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>-->
 <!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
 <!--      </n-flex>-->
+      积压 = 终末offset - 提交offset。
       <div ref="commit_chartRef" style="width: 98%; height: 440px"></div>
       <div ref="end_chartRef" style="width: 98%; height: 440px"></div>
     </n-flex>
