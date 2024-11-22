@@ -6,38 +6,37 @@
     <n-message-provider container-style="word-break: break-all;">
       <n-notification-provider placement="bottom-right" container-style="text-align: left;">
         <n-loading-bar-provider>
-        <n-layout has-sider position="absolute" style="height: 100vh;" :class="headerClass">
-          <!--header-->
-          <n-layout-header bordered style="height: 42px; bottom: 0; padding: 0; ">
-            <Header
-                :value="activeItem.label"
-                :options="menuOptions"
-            />
-          </n-layout-header>
-          <!--side + content-->
-          <n-layout has-sider position="absolute" style="top: 42px; bottom: 0;">
-            <n-layout-sider
-                bordered
-                collapse-mode="width"
-                :collapsed-width="60"
-                :collapsed="true"
-                style="--wails-draggable:drag"
-            >
-              <Aside
-                  :collapsed-width="60"
+          <n-layout has-sider position="absolute" style="height: 100vh;" :class="headerClass">
+            <!--header-->
+            <n-layout-header bordered style="height: 42px; bottom: 0; padding: 0; ">
+              <Header
                   :value="activeItem.label"
-                  :options="sideMenuOptions"
+                  :options="menuOptions"
               />
+            </n-layout-header>
+            <!--side + content-->
+            <n-layout has-sider position="absolute" style="top: 42px; bottom: 0;">
+              <n-layout-sider
+                  bordered
+                  collapse-mode="width"
+                  :collapsed-width="60"
+                  :collapsed="true"
+                  style="--wails-draggable:drag"
+              >
+                <Aside
+                    :collapsed-width="60"
+                    :value="activeItem.label"
+                    :options="sideMenuOptions"
+                />
 
-            </n-layout-sider>
-            <n-layout-content style="padding: 0 16px;">
-              <keep-alive>
-                <component :is="activeItem.component"></component>
-              </keep-alive>
-
-            </n-layout-content>
+              </n-layout-sider>
+              <n-layout-content style="padding: 0 16px;">
+                <keep-alive>
+                  <component :is="activeItem.component"></component>
+                </keep-alive>
+              </n-layout-content>
+            </n-layout>
           </n-layout>
-        </n-layout>
         </n-loading-bar-provider>
       </n-notification-provider>
     </n-message-provider>

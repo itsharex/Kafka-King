@@ -16,6 +16,7 @@
     </template>
     <template #extra>
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
+        <n-button quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>
         <n-button quaternary :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>
         <n-button quaternary @click="openUrl(update_url)"
                   :render-icon="renderIcon(CodeFilled)"/>
@@ -67,6 +68,7 @@ const app_name = ref("");
 const title_tag = ref("success");
 const MaxMinIcon = shallowRef(CropSquareFilled)
 const update_url = "https://github.com/Bronya0/Kafka-King/releases"
+const qq_url = "https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz"
 const update_loading = ref(false)
 let theme = lightTheme
 
