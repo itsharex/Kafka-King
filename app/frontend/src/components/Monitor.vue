@@ -5,12 +5,10 @@
       <p>巡检Kafka积压情况。</p>
     </n-flex>
     <n-flex align="center">
-      必须先选择一至多个topic，及group。每5分钟自动抓取一次数据
-    </n-flex>
-    <n-flex align="center">
-      Topic，支持多选：
+      Topics:
       <n-select
           v-model:value="selectedTopics"
+          @update:value="clear_offset"
           :options="topic_data"
           placeholder="选择或搜索Kafka Topic"
           filterable
@@ -21,6 +19,7 @@
       Group：
       <n-select
           v-model:value="selectedGroup"
+          @update:value="clear_offset"
           :options="group_data"
           placeholder="选择或创建Consumer Group"
           filterable
@@ -29,6 +28,7 @@
           style="width: 300px"
       />
       <n-button @click="fetchData" :loading="loading" :render-icon="renderIcon(MessageOutlined)">开始巡检</n-button>
+      每5分钟自动抓取一次数据
 
     </n-flex>
 
@@ -48,13 +48,7 @@
 <script setup>
 import {onMounted, ref, shallowRef} from 'vue'
 import * as echarts from 'echarts/core';
-import {
-  TitleComponent,
-  TooltipComponent,
-  ToolboxComponent,
-  GridComponent,
-  LegendComponent
-} from 'echarts/components';
+import {GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent} from 'echarts/components';
 import {LineChart} from 'echarts/charts';
 import {UniversalTransition} from 'echarts/features';
 import {CanvasRenderer} from 'echarts/renderers';
@@ -147,6 +141,7 @@ const initChart = () => {
   ]);
 
   const option = {
+    backgroundColor: 'transparent', // 设置背景色为透明
     title: {
       text: 'Kafka Offset监控',
     },
@@ -156,6 +151,9 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
+      splitLine: {
+        show: true
+      },
       data: []
     },
     yAxis: {
@@ -168,7 +166,7 @@ const initChart = () => {
   }
 
   const commit_option = {...option}
-  commit_option.title.text = '已提交 offset'
+  commit_option.title.text = '提交 offset'
   commit_chart.value = echarts.init(commit_chartRef.value, 'dark')
   commit_chart.value.setOption({...commit_option})
 
@@ -179,6 +177,12 @@ const initChart = () => {
 
 }
 
+const clear_offset = (value, option) => {
+  offsetData.value = {
+    commit: {},
+    end: {},
+  }
+}
 // 更新图表数据
 const updateChart = () => {
 
@@ -199,9 +203,7 @@ const updateChart = () => {
       series.push({
         name: topic,
         type: 'line',
-        stack: 'Total',
         symbol: 'circle',
-        symbolSize: 8,
         data: data.map(item => item.offset)
       })
       xs = data.map(item => item.time)
@@ -209,8 +211,6 @@ const updateChart = () => {
 
     chart_map[k].setOption({
       xAxis: {
-        type: 'category',
-        boundaryGap: false,
         data: xs
       },
       legend: {
@@ -218,8 +218,6 @@ const updateChart = () => {
       },
       series: series
     })
-    console.log(k, xs, legendData, series)
-
   }
 
 }

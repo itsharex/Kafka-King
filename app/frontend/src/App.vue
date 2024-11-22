@@ -57,12 +57,13 @@ import {
 } from 'naive-ui'
 import {
   AllOutOutlined,
+  BarChartOutlined,
   GroupsSharp,
   HiveOutlined,
   LibraryBooksOutlined,
   MessageOutlined,
   SendTwotone,
-  SettingsOutlined
+  SettingsOutlined,
 } from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
@@ -143,7 +144,7 @@ const sideMenuOptions = [
   {
     label: '巡检',
     key: '巡检',
-    icon: renderIcon(GroupsSharp),
+    icon: renderIcon(BarChartOutlined),
     component: Monitor,
   },
   {

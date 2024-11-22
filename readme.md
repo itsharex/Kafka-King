@@ -39,6 +39,7 @@
 - [x] 支持模拟生产者，批量发送消息，指定headers、分区
 - [x] topic、分区健康检查（完成）
 - [x] 支持查看消费者组、消费者
+- [x] offset巡检报表
 
 # 下载
 右侧下载，或者点[下载地址](https://github.com/Bronya0/Kafka-King/releases)，展开【Assets】，选择自己的平台下载，支持windows、macos、linux。
@@ -50,10 +51,17 @@
 > **对于SASL机制用户需要勾选开启SASL，并选择SASL协议（通常是plain），并填入用户名密码。**
 
 # 功能截图
+offset巡检，v0.33版本上线
+![](docs/snap/img_5.png)
+连接kafka，支持各个协议（本地要加host）
 ![](docs/snap/img_4.png)
+topic列表，各种操作
 ![](docs/snap/img.png)
+支持修改topic配置
 ![](docs/snap/img_1.png)
+发消息
 ![](docs/snap/img_2.png)
+查看消息
 ![](docs/snap/img_3.png)
 
 
