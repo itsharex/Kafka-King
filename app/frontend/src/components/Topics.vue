@@ -401,6 +401,19 @@ const columns = [
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
   {
+    title: '积压',
+    key: '积压',
+    sorter: 'default',
+    width: 50,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    render: (row) => {
+      if (row.EndOffset !=null && row.CommittedOffset != null){
+        return row.EndOffset - row.CommittedOffset
+      }
+    }
+  },
+  {
     title: '操作',
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
@@ -477,6 +490,19 @@ const partitions_columns = [
     width: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+  },
+  {
+    title: '积压',
+    key: '积压',
+    sorter: 'default',
+    width: 15,
+    resizable: true,
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    render: (row) => {
+      if (row.EndOffset !=null && row.CommittedOffset != null){
+        return row.EndOffset - row.CommittedOffset
+      }
+    }
   },
   {title: 'Leader ID', key: 'leader', sorter: 'default', width: 15, resizable: true},
   {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
