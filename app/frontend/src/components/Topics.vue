@@ -196,7 +196,7 @@
 <script setup>
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
-import {NButton, NButtonGroup, NDataTable, NIcon, NInput, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
+import {NButton, NButtonGroup, NDataTable, NIcon, NInput, NPopconfirm, NTag, NText, useMessage, useDialog} from 'naive-ui'
 import {
   AddFilled,
   AddRoadOutlined,
@@ -242,6 +242,8 @@ const rowKey = (row) => row['topic']
 const selectedRowKeys = ref([]);
 
 const message = useMessage()
+const dialog = useDialog()
+
 const searchText = ref("");
 const activeDetailTopic = ref("");
 const activeConfigTopic = ref("");
