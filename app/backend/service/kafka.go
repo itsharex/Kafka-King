@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"github.com/jcmturner/gokrb5/v8/client"
 	krbConfig "github.com/jcmturner/gokrb5/v8/config"
@@ -610,15 +611,20 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 			Value: []byte(headers[i]["value"]),
 		}
 	}
+	var records []*kgo.Record
 	for i := 0; i < num; i++ {
-		k.client.Produce(ctx, &kgo.Record{
+		records = append(records, &kgo.Record{
 			Topic:     topic,
 			Value:     []byte(value),
 			Key:       []byte(key),
 			Headers:   headers2,
 			Partition: int32(partition),
-		}, nil)
+		})
 	}
+
+	//同步发送
+	k.client.ProduceSync(ctx, records...)
+
 	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
 
 	return result
@@ -653,9 +659,15 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 
 	log.Println("开始poll...")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-	fetches := k.client.PollRecords(ctx, num)
-	cancel() // 注意要调用cancel避免context泄露
+	defer cancel()
 
+	fetches := k.client.PollRecords(ctx, num)
+
+	//超时错误
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		result.Err = "Consume Timeout"
+		return result
+	}
 	if errs := fetches.Errors(); len(errs) > 0 {
 		result.Err = fmt.Sprint(errs)
 		return result

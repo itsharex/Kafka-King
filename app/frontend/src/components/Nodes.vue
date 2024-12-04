@@ -8,7 +8,7 @@
 
     </n-flex>
     <n-spin :show="loading" description="Connecting...">
-      <n-tabs type="segment" animated  v-model:value="activeTab">
+      <n-tabs type="line" animated  v-model:value="activeTab">
         <n-tab-pane name="broker" tab="Brokers">
           <n-data-table
               :columns="columns"
