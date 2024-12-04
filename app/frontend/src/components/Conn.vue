@@ -2,9 +2,9 @@
   <div>
     <n-flex vertical>
       <n-flex align="center">
-        <h2 style="max-width: 200px;">集群</h2>
+        <h2 style="max-width: 200px;">{{t('conn.title')}}</h2>
         <n-text>共有 {{ Nodes.length }} 个</n-text>
-        <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">添加集群</n-button>
+        <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{t('conn.add')}}</n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
 
@@ -44,94 +44,94 @@
             ref="formRef"
             :model="currentNode"
             :rules="{
-              name: {required: true, message: '请输入昵称', trigger: 'blur'},
-              bootstrap_servers: {required: true, message: '请输入连接地址', trigger: 'blur'},
+              name: {required: true, message: t('conn.please_add_name'), trigger: 'blur'},
+              bootstrap_servers: {required: true, message: t('conn.please_add_link'), trigger: 'blur'},
             }"
             label-placement="top"
             style="text-align: left;"
         >
-          <n-form-item label="昵称" path="name">
-            <n-input v-model:value="currentNode.name" placeholder="输入名称"/>
+          <n-form-item :label="t('common.name')" path="name">
+            <n-input v-model:value="currentNode.name" :placeholder="t('conn.input_name')" />
           </n-form-item>
 
-          <n-form-item label="连接地址" path="bootstrap_servers">
+          <n-form-item :label="t('conn.bootstrap_servers')" path="bootstrap_servers">
             <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
           </n-form-item>
-          注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址 （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）
-          <n-form-item label="使用 TLS" path="tls">
+          {{t('conn.tip')}}
+          <n-form-item :label="t('conn.tls')" path="tls">
             <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
 
-          <n-form-item label="跳过 TLS 验证" path="skipTLSVerify">
+          <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
             <n-switch checked-value="enable" unchecked-value="disable" value="enable"
                       v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
           <n-form-item label="TLS certFile" path="tls_cert_file">
-            <n-input v-model:value="currentNode.tls_cert_file" placeholder="输入 pem 证书路径"/>
+            <n-input v-model:value="currentNode.tls_cert_file" :placeholder="t('conn.tls_cert_file')" />
           </n-form-item>
 
           <n-form-item label="TLS keyFile" path="tls_key_file">
-            <n-input v-model:value="currentNode.tls_key_file" placeholder="输入 key 私钥路径"/>
+            <n-input v-model:value="currentNode.tls_key_file" :placeholder="t('conn.tls_key_file')" />
           </n-form-item>
 
-          <n-form-item label="TLS CA 证书" path="tls_ca_file">
-            <n-input v-model:value="currentNode.tls_ca_file" placeholder="输入 CA 证书路径"/>
+          <n-form-item label="TLS caFile" path="tls_ca_file">
+            <n-input v-model:value="currentNode.tls_ca_file" :placeholder="t('conn.tls_ca_file')" />
           </n-form-item>
 
-          <n-form-item label="使用 SASL" path="sasl">
+          <n-form-item :label="t('conn.use_sasl')" path="sasl">
             <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.sasl"/>
           </n-form-item>
 
-          <n-form-item label="SASL 机制" path="sasl_mechanism">
+          <n-form-item :label="t('conn.sasl_mechanism')" path="sasl_mechanism">
             <n-select
                 v-model:value="currentNode.sasl_mechanism"
                 :options="sasl_mechanism_options"
-                placeholder="请选择"
+                :placeholder="t('common.check')"
                 filterable
                 clearable
                 style="width: 200px"
             />
           </n-form-item>
 
-          <n-form-item label="SASL 用户名" path="sasl_user">
-            <n-input v-model:value="currentNode.sasl_user" placeholder="输入用户名"/>
+          <n-form-item :label="t('conn.sasl_user')" path="sasl_user">
+            <n-input v-model:value="currentNode.sasl_user" :placeholder="t('conn.sasl_user')" />
           </n-form-item>
 
-          <n-form-item label="SASL 密码" path="sasl_pwd">
+          <n-form-item :label="t('conn.sasl_pwd')" path="sasl_pwd">
             <n-input
                 v-model:value="currentNode.sasl_pwd"
                 type="password"
-                placeholder="输入密码"
+                :placeholder="t('conn.sasl_pwd')"
             />
           </n-form-item>
 
-          <n-form-item label="kerberos keytab 路径" path="kerberos_user_keytab">
-            <n-input v-model:value="currentNode.kerberos_user_keytab" placeholder="输入keytab文件路径"/>
+          <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
+            <n-input v-model:value="currentNode.kerberos_user_keytab"/>
           </n-form-item>
 
-          <n-form-item label="kerberos krb5.conf 路径" path="kerberos_krb5_conf">
-            <n-input v-model:value="currentNode.kerberos_krb5_conf" placeholder="输入krb5.conf文件路径"/>
+          <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
+            <n-input v-model:value="currentNode.kerberos_krb5_conf"/>
           </n-form-item>
 
-          <n-form-item label="Kerberos_user 用户名" path="sasl_user">
-            <n-input v-model:value="currentNode.Kerberos_user" placeholder="输入Kerberos_user用户名"/>
+          <n-form-item :label="t('conn.Kerberos_user')" path="Kerberos_user">
+            <n-input v-model:value="currentNode.Kerberos_user"/>
           </n-form-item>
 
-          <n-form-item label="Kerberos_realm 领域域名" path="Kerberos_realm">
-            <n-input v-model:value="currentNode.Kerberos_realm" placeholder="输入Kerberos领域域名"/>
+          <n-form-item :label="t('conn.Kerberos_realm')" path="Kerberos_realm">
+            <n-input v-model:value="currentNode.Kerberos_realm"/>
           </n-form-item>
 
-          <n-form-item label="kerberos_service_name 服务名" path="sasl_user">
-            <n-input v-model:value="currentNode.kerberos_service_name" placeholder="输入配置的kerberos_service_name"/>
+          <n-form-item :label="t('conn.kerberos_service_name')" path="kerberos_service_name">
+            <n-input v-model:value="currentNode.kerberos_service_name"/>
           </n-form-item>
 
         </n-form>
         <template #footer>
           <n-space justify="end">
-            <n-button @click="test_connect" :loading="test_connect_loading">连接测试</n-button>
-            <n-button @click="showEditDrawer = false">取消</n-button>
-            <n-button type="primary" @click="saveNode">保存</n-button>
+            <n-button @click="test_connect" :loading="test_connect_loading">{{t('conn.test')}}</n-button>
+            <n-button @click="showEditDrawer = false">{{t('common.cancel')}}</n-button>
+            <n-button type="primary" @click="saveNode">{{t('common.save')}}</n-button>
           </n-space>
         </template>
       </n-drawer-content>
@@ -147,6 +147,9 @@ import {AddFilled} from "@vicons/material";
 import emitter from "../utils/eventBus";
 import {SetConnect, TestClient} from "../../wailsjs/go/service/Service";
 import {GetConfig, SaveConfig} from "../../wailsjs/go/config/AppConfig";
+import {useI18n} from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 
 const message = useMessage()
@@ -195,7 +198,7 @@ const sasl_mechanism_options = [
   },
 ]
 
-const drawerTitle = computed(() => isEditing.value ? '编辑连接' : '添加连接')
+const drawerTitle = computed(() => isEditing.value ? t('conn.edit') : t('conn.add_link'))
 
 const formRef = ref(null)
 

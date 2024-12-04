@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">设置</h2>
+      <h2 style="max-width: 200px;">{{t('settings.title')}}</h2>
     </n-flex>
   </n-flex >
   <n-flex align="center">
@@ -20,7 +20,7 @@
         <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
       <n-form-item label="语言">
-        <n-select v-model:value="config.language" :options="languageOptions" :style="{ maxWidth: '120px' }"/>
+        <n-select v-model:value="config.language" :options="languageOptions" @update:value="changeLang" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
 
       <n-form-item label="主题">
@@ -51,6 +51,9 @@ import {BrowserOpenURL, WindowSetSize} from "../../wailsjs/runtime";
 import {renderIcon} from "../utils/common";
 import {HouseTwotone, NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
+import {useI18n} from "vue-i18n";
+
+const { locale, t } = useI18n()
 
 const es_home_url = "https://github.com/Bronya0/ES-King"
 const kafka_home_url = "https://github.com/Bronya0/kafka-King"
@@ -65,7 +68,8 @@ const config = ref({
 })
 const languageOptions = [
   {label: '中文', value: 'zh-CN'},
-  {label: 'English', value: 'en-US'}
+  {label: 'English', value: 'en-US'},
+  {label: '日本語', value: 'ja-JP'},
 ]
 
 onMounted(async () => {
@@ -95,6 +99,11 @@ const saveConfig = async () => {
   message.success("保存成功")
   config.value = await GetConfig()
 
+}
+
+// 语言变更
+const changeLang = (value) => {
+  locale.value = value
 }
 
 </script>

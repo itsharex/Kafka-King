@@ -1,0 +1,48 @@
+export default {
+    common:{
+        enter: '确认',
+        cancel: '取消',
+        name: '昵称',
+        save: '保存',
+        check: '请选择',
+    },
+    aside: {
+        cluster: '集群',
+        node: '节点',
+        topic: '主题',
+        producer: 'Producer',
+        consumer: 'Consumer',
+        group: '消费者组',
+        monitor: '巡检',
+        settings: '设置'
+    },
+    conn:{
+        title: '集群',
+        add: '添加集群',
+        edit: '编辑连接',
+        test: '连接测试',
+        add_link: '添加连接',
+        please_add_name: '请输入昵称',
+        please_add_link: '请输入连接地址',
+        input_name: '请输入名称',
+        bootstrap_servers: '连接地址',
+        tip: '注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址 （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）',
+        tls: '使用 TLS',
+        skipTLSVerify: '跳过 TLS 验证',
+        tls_cert_file: '输入 pem 证书路径',
+        tls_key_file: '输入 key 私钥路径',
+        tls_ca_file: '输入 CA 证书路径',
+        use_sasl: '使用 SASL',
+        sasl_mechanism: 'SASL 机制',
+        sasl_user: 'SASL 用户名',
+        sasl_pwd: 'SASL 密码',
+        kerberos_user_keytab: 'kerberos keytab 文件路径',
+        kerberos_krb5_conf: 'kerberos krb5.conf 路径',
+        Kerberos_user: 'Kerberos_user 用户名',
+        Kerberos_realm: 'Kerberos_realm 领域域名',
+        kerberos_service_name: 'kerberos_service_name 服务名',
+    },
+    settings:{
+        title: '设置'
+    },
+};

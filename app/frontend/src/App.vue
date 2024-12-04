@@ -81,6 +81,9 @@ import Groups from "./components/Groups.vue";
 import Producer from "./components/Producer.vue";
 import Consumer from "./components/Consumer.vue";
 import Monitor from "./components/Monitor.vue";
+import {useI18n} from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 let headerClass = shallowRef('lightTheme')
 
@@ -107,51 +110,51 @@ onMounted(async () => {
 // 左侧菜单
 const sideMenuOptions = [
   {
-    label: '集群',
-    key: '集群',
+    label: t('aside.cluster'),
+    key: t('aside.cluster'),
     icon: renderIcon(HiveOutlined),
     component: Conn,
   },
   {
-    label: '节点',
-    key: '节点',
+    label: t('aside.node'),
+    key: t('aside.node'),
     icon: renderIcon(AllOutOutlined),
     component: Nodes,
   },
 
   {
-    label: '主题',
-    key: '主题',
+    label: t('aside.topic'),
+    key: t('aside.topic'),
     icon: renderIcon(LibraryBooksOutlined),
     component: Topics,
   },
   {
-    label: 'Producer',
-    key: 'Producer',
+    label: t('aside.producer'),
+    key: t('aside.producer'),
     icon: renderIcon(SendTwotone),
     component: Producer,
   },
   {
-    label: 'Consumer',
-    key: 'Consumer',
+    label: t('aside.consumer'),
+    key: t('aside.consumer'),
     icon: renderIcon(MessageOutlined),
     component: Consumer,
   },
   {
-    label: '消费者组',
-    key: '消费者组',
+    label: t('aside.group'),
+    key: t('aside.group'),
     icon: renderIcon(GroupsSharp),
     component: Groups,
   },
   {
-    label: '巡检',
-    key: '巡检',
+    label: t('aside.monitor'),
+    key: t('aside.monitor'),
     icon: renderIcon(BarChartOutlined),
     component: Monitor,
   },
   {
-    label: '设置',
-    key: '设置',
+    label: t('aside.settings'),
+    key: t('aside.settings'),
     icon: renderIcon(SettingsOutlined),
     component: Settings
   },
@@ -180,15 +183,6 @@ function themeChange(newTheme) {
   SaveTheme(newTheme.name)
 }
 
-// 自定义主题
-// /**
-//  * @type import('naive-ui').GlobalThemeOverrides
-//  */
-// const themeOverrides = {
-//   common: {
-//     bodyColor: '#FDFCFF'
-//   }
-// }
 
 </script>
 
