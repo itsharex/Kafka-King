@@ -53,21 +53,16 @@
 # 功能截图
 offset巡检，v0.33版本上线
 ![](docs/snap/img_5.png)
-连接kafka，支持各个协议（本地要加host）
-![](docs/snap/img_4.png)
 topic列表，各种操作
 ![](docs/snap/img.png)
-支持修改topic配置
-![](docs/snap/img_1.png)
-发消息
-![](docs/snap/img_2.png)
 查看消息
 ![](docs/snap/img_3.png)
 
 
-# 快速开始
-在右侧release下的Assets选择对应版本下载即可。
-或者点击 https://github.com/Bronya0/Kafka-King/releases
+# 捐赠
+有条件可以请作者喝杯咖啡，支持项目发展，感谢💕
+
+![image](https://github.com/user-attachments/assets/da6d46da-4e24-41e3-843d-495c6cd32065)
 
 # 构建
 只有要研究源码才需要手动构建
@@ -75,12 +70,6 @@ topic列表，各种操作
 cd app
 
 wails dev
-
-# 捐赠
-有条件可以请作者喝杯咖啡，支持项目发展，感谢💕
-
-![image](https://github.com/user-attachments/assets/da6d46da-4e24-41e3-843d-495c6cd32065)
-
 
 ## QQ交流群
 <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz">KingTool研发技术交流群：964440643</a>
