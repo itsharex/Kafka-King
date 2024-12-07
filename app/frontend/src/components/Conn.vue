@@ -69,21 +69,21 @@
 
           <n-form-item label="TLS certFile" path="tls_cert_file">
             <n-flex vertical align="flex-start">
-              <n-button @click="handleCertFileChange('*.crt;*.pem')">.crt;.pem</n-button>
+              <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem')">.crt;.pem</n-button>
               {{currentNode.tls_cert_file}}
             </n-flex>
           </n-form-item>
 
           <n-form-item label="TLS keyFile" path="tls_key_file">
             <n-flex vertical align="flex-start">
-              <n-button @click="handleKeyFileChange('*.key')">.key</n-button>
+              <n-button @click="SelectFile('tls_key_file','*.key')">.key</n-button>
               {{currentNode.tls_key_file}}
             </n-flex>
           </n-form-item>
 
           <n-form-item label="TLS caFile" path="tls_ca_file">
             <n-flex vertical align="flex-start">
-              <n-button @click="handleCAChange('*.crt;*.pem')">.crt;.pem</n-button>
+              <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem')">.crt;.pem</n-button>
             {{currentNode.tls_ca_file}}
             </n-flex>
           </n-form-item>
@@ -117,14 +117,14 @@
 
           <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
             <n-flex vertical align="flex-start">
-              <n-button @click="handleKerberosKeytab">keytab</n-button>
+              <n-button @click="SelectFile('kerberos_user_keytab','')">keytab</n-button>
               {{currentNode.kerberos_user_keytab}}
             </n-flex>
           </n-form-item>
 
           <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
             <n-flex vertical align="flex-start">
-              <n-button @click="handleKerberosKrb5Conf">krb5_conf</n-button>
+              <n-button @click="SelectFile('kerberos_krb5_conf','')">krb5_conf</n-button>
               {{currentNode.kerberos_krb5_conf}}
             </n-flex>
           </n-form-item>
@@ -322,45 +322,18 @@ const selectNode = async (node) => {
   spin_loading.value = false
 }
 
-const handleCertFileChange = async(pattern) => {
+// 文件选择
+const SelectFile = async (key, pattern) => {
   try {
-    currentNode.value.tls_cert_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
+    const filePath = await OpenFileDialog({Filters: [{Pattern: pattern}]})
+    if (filePath) {
+      currentNode.value[key] = filePath;
+    }
   } catch (err) {
     console.error('Failed to open file dialog:', err)
   }
-}
+};
 
-const handleKeyFileChange = async(pattern) => {
-  try {
-    currentNode.value.tls_key_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
-  } catch (err) {
-    console.error('Failed to open file dialog:', err)
-  }
-}
-
-const handleCAChange = async(pattern) => {
-  try {
-    currentNode.value.tls_ca_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
-  } catch (err) {
-    console.error('Failed to open file dialog:', err)
-  }
-}
-
-const handleKerberosKeytab = async () => {
-  try {
-    currentNode.value.kerberos_user_keytab = await OpenFileDialog()
-  } catch (err) {
-    console.error('Failed to open file dialog:', err)
-  }
-}
-
-const handleKerberosKrb5Conf = async () => {
-  try {
-    currentNode.value.kerberos_krb5_conf = await OpenFileDialog()
-  } catch (err) {
-    console.error('Failed to open file dialog:', err)
-  }
-}
 </script>
 
 <style>
