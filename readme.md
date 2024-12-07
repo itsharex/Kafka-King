@@ -50,6 +50,8 @@
 > 
 > **对于SASL机制用户需要勾选开启SASL，并选择SASL协议（通常是plain），并填入用户名密码。**
 
+如果遇到webview2运行时错误，从微软官网下载重装运行时即可：https://developer.microsoft.com/zh-cn/microsoft-edge/webview2
+
 # 功能截图
 offset巡检，v0.33版本上线
 ![](docs/snap/img_5.png)
