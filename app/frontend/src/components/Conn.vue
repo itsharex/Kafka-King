@@ -68,15 +68,24 @@
           </n-form-item>
 
           <n-form-item label="TLS certFile" path="tls_cert_file">
-            <n-input v-model:value="currentNode.tls_cert_file" :placeholder="t('conn.tls_cert_file')" />
+            <n-flex vertical align="flex-start">
+              <n-button @click="handleCertFileChange('*.crt;*.pem')">.crt;.pem</n-button>
+              {{currentNode.tls_cert_file}}
+            </n-flex>
           </n-form-item>
 
           <n-form-item label="TLS keyFile" path="tls_key_file">
-            <n-input v-model:value="currentNode.tls_key_file" :placeholder="t('conn.tls_key_file')" />
+            <n-flex vertical align="flex-start">
+              <n-button @click="handleKeyFileChange('*.key')">.key</n-button>
+              {{currentNode.tls_key_file}}
+            </n-flex>
           </n-form-item>
 
           <n-form-item label="TLS caFile" path="tls_ca_file">
-            <n-input v-model:value="currentNode.tls_ca_file" :placeholder="t('conn.tls_ca_file')" />
+            <n-flex vertical align="flex-start">
+              <n-button @click="handleCAChange('*.crt;*.pem')">.crt;.pem</n-button>
+            {{currentNode.tls_ca_file}}
+            </n-flex>
           </n-form-item>
 
           <n-form-item :label="t('conn.use_sasl')" path="sasl">
@@ -107,11 +116,17 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
-            <n-input v-model:value="currentNode.kerberos_user_keytab"/>
+            <n-flex vertical align="flex-start">
+              <n-button @click="handleKerberosKeytab">keytab</n-button>
+              {{currentNode.kerberos_user_keytab}}
+            </n-flex>
           </n-form-item>
 
           <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
-            <n-input v-model:value="currentNode.kerberos_krb5_conf"/>
+            <n-flex vertical align="flex-start">
+              <n-button @click="handleKerberosKrb5Conf">krb5_conf</n-button>
+              {{currentNode.kerberos_krb5_conf}}
+            </n-flex>
           </n-form-item>
 
           <n-form-item :label="t('conn.Kerberos_user')" path="Kerberos_user">
@@ -141,12 +156,12 @@
 
 <script setup>
 import {computed, onMounted, ref} from 'vue'
-import {useMessage} from 'naive-ui'
+import {NButton, useMessage} from 'naive-ui'
 import {renderIcon} from "../utils/common";
 import {AddFilled} from "@vicons/material";
 import emitter from "../utils/eventBus";
 import {SetConnect, TestClient} from "../../wailsjs/go/service/Service";
-import {GetConfig, SaveConfig} from "../../wailsjs/go/config/AppConfig";
+import {GetConfig, OpenFileDialog, SaveConfig} from "../../wailsjs/go/config/AppConfig";
 import {useI18n} from 'vue-i18n'
 
 const { t, locale } = useI18n()
@@ -266,6 +281,7 @@ const deleteNode = async (id) => {
 }
 
 const test_connect = async () => {
+  console.log(currentNode.value)
   formRef.value?.validate(async (errors) => {
     if (!errors) {
 
@@ -306,8 +322,44 @@ const selectNode = async (node) => {
   spin_loading.value = false
 }
 
-const handleSelect = (key) => {
-  currentNode.value.sasl_mechanism = key
+const handleCertFileChange = async(pattern) => {
+  try {
+    currentNode.value.tls_cert_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
+  } catch (err) {
+    console.error('Failed to open file dialog:', err)
+  }
+}
+
+const handleKeyFileChange = async(pattern) => {
+  try {
+    currentNode.value.tls_key_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
+  } catch (err) {
+    console.error('Failed to open file dialog:', err)
+  }
+}
+
+const handleCAChange = async(pattern) => {
+  try {
+    currentNode.value.tls_ca_file = await OpenFileDialog({Filters: [{Pattern: pattern}]})
+  } catch (err) {
+    console.error('Failed to open file dialog:', err)
+  }
+}
+
+const handleKerberosKeytab = async () => {
+  try {
+    currentNode.value.kerberos_user_keytab = await OpenFileDialog()
+  } catch (err) {
+    console.error('Failed to open file dialog:', err)
+  }
+}
+
+const handleKerberosKrb5Conf = async () => {
+  try {
+    currentNode.value.kerberos_krb5_conf = await OpenFileDialog()
+  } catch (err) {
+    console.error('Failed to open file dialog:', err)
+  }
 }
 </script>
 

@@ -5,6 +5,7 @@ import (
 	"app/backend/types"
 	"context"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -100,4 +101,8 @@ func (a *AppConfig) GetVersion() string {
 
 func (a *AppConfig) GetAppName() string {
 	return common.AppName
+}
+
+func (a *AppConfig) OpenFileDialog(options runtime.OpenDialogOptions) (string, error) {
+	return runtime.OpenFileDialog(a.ctx, options)
 }
