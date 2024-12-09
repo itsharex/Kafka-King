@@ -189,7 +189,7 @@ import {SetConnect, TestClient} from "../../wailsjs/go/service/Service";
 import {GetConfig, OpenFileDialog, SaveConfig} from "../../wailsjs/go/config/AppConfig";
 import {useI18n} from 'vue-i18n'
 
-const {t, locale} = useI18n()
+const {t} = useI18n()
 
 
 const message = useMessage()
@@ -259,12 +259,14 @@ function editNode(node) {
   showEditDrawer.value = true
 }
 
+// 新增
 const addNewNode = async () => {
   currentNode.value = {}
   isEditing.value = false
   showEditDrawer.value = true
 }
 
+// 保存
 const saveNode = async () => {
   formRef.value?.validate(async (errors) => {
     if (!errors) {
@@ -296,6 +298,7 @@ const saveNode = async () => {
   })
 }
 
+// 删除
 const deleteNode = async (id) => {
   Nodes.value = Nodes.value.filter(node => node.id !== id)
   const config = await GetConfig()
@@ -305,6 +308,7 @@ const deleteNode = async (id) => {
   message.success('删除成功')
 }
 
+// 测试连接
 const test_connect = async () => {
   console.log(currentNode.value)
   formRef.value?.validate(async (errors) => {
@@ -328,6 +332,7 @@ const test_connect = async () => {
   })
 }
 
+// 选择节点连接
 const selectNode = async (node) => {
   // 这里实现切换菜单的逻辑
   console.log('选中节点:', node)
@@ -337,7 +342,7 @@ const selectNode = async (node) => {
     if (res.err !== "") {
       message.error("连接失败：" + res.err)
     } else {
-      emitter.emit('menu_select', "节点")
+      emitter.emit('menu_select', "node")
       emitter.emit('selectNode', node)
       message.success('连接成功')
     }

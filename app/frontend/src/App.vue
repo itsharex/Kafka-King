@@ -11,10 +11,7 @@
             <n-layout has-sider position="absolute" style="height: 100vh;" :class="headerClass">
               <!--header-->
               <n-layout-header bordered style="height: 42px; bottom: 0; padding: 0; ">
-                <Header
-                    :value="activeItem.label"
-                    :options="menuOptions"
-                />
+                <Header/>
               </n-layout-header>
               <!--side + content-->
               <n-layout has-sider position="absolute" style="top: 42px; bottom: 0;">
@@ -27,7 +24,7 @@
                 >
                   <Aside
                       :collapsed-width="60"
-                      :value="activeItem.label"
+                      :value="activeItem.key"
                       :options="sideMenuOptions"
                   />
 
@@ -113,56 +110,56 @@ onMounted(async () => {
 const sideMenuOptions = [
   {
     label: t('aside.cluster'),
-    key: t('aside.cluster'),
+    key: 'cluster',
     icon: renderIcon(HiveOutlined),
     component: Conn,
   },
   {
     label: t('aside.node'),
-    key: t('aside.node'),
+    key: 'node',
     icon: renderIcon(AllOutOutlined),
     component: Nodes,
   },
 
   {
     label: t('aside.topic'),
-    key: t('aside.topic'),
+    key: 'topic',
     icon: renderIcon(LibraryBooksOutlined),
     component: Topics,
   },
   {
     label: t('aside.producer'),
-    key: t('aside.producer'),
+    key: 'producer',
     icon: renderIcon(SendTwotone),
     component: Producer,
   },
   {
     label: t('aside.consumer'),
-    key: t('aside.consumer'),
+    key: 'consumer',
     icon: renderIcon(MessageOutlined),
     component: Consumer,
   },
   {
     label: t('aside.group'),
-    key: t('aside.group'),
+    key: 'group',
     icon: renderIcon(GroupsSharp),
     component: Groups,
   },
   {
     label: t('aside.monitor'),
-    key: t('aside.monitor'),
+    key: 'monitor',
     icon: renderIcon(AddChartOutlined),
     component: Monitor,
   },
   {
     label: t('aside.settings'),
-    key: t('aside.settings'),
+    key: 'settings',
     icon: renderIcon(SettingsOutlined),
     component: Settings
   },
   {
     label: "关于",
-    key: "关于",
+    key: "about",
     icon: renderIcon(InfoOutlined),
     component: About
   },

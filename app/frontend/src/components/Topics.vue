@@ -196,16 +196,16 @@
 <script setup>
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
-import {NButton, NButtonGroup, NDataTable, NIcon, NInput, NPopconfirm, NTag, NText, useMessage, useDialog} from 'naive-ui'
+import {NButton, NDataTable, NDropdown, NIcon, NInput, NTag, NText, useDialog, useMessage} from 'naive-ui'
 import {
   AddFilled,
   AddRoadOutlined,
-  DeleteForeverTwotone,
   DriveFileMoveTwotone,
   LibraryBooksOutlined,
+  MoreVertFilled,
   RefreshOutlined,
   SearchOutlined,
-  SettingsRound
+  SettingsRound,
 } from '@vicons/material'
 import {createCsvContent, download_file, isValidJson, renderIcon} from "../utils/common";
 import {
@@ -420,43 +420,92 @@ const columns = [
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
     resizable: true,
-    render: (row) => h(
-        NButtonGroup,
-        {
-          vertical: false,
-        },
-        {
-          default: () => [
-            h(
-                NPopconfirm,
+    render: (row) => {
+      const options = [
+        {label: '生产消息', key: 'viewProduce'},
+        {label: '查看/消费消息', key: 'viewConsumer'},
+        {label: '查看 offset', key: 'viewOffset'},
+        {label: '主题配置', key: 'viewConfig'},
+        {label: '查看分区', key: 'viewPartition'},
+        {label: '删除', key: 'deleteTopic'},
+      ]
+      return h(
+          NDropdown,
+          {
+            trigger: 'click',
+            options,
+            onSelect: (key) => handleMenuSelect(key, row)
+          },
+          {
+            default: () => h(
+                NButton,
                 {
-                  onPositiveClick: () => deleteTopic(row["topic"])
+                  strong: true,
+                  secondary: true,
                 },
-                {
-                  trigger: () =>
-                      row['IsInternal'] === false ?
-                          h(
-                              NButton,
-                              {
-                                strong: true,
-                                secondary: true,
-                                type: 'error'
-                              },
-                              {
-                                default: () => '删除',
-                                icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
-                              }
-                          )
-                          : h(NButton, {disabled: true}, {default: () => '不可删除'})
-                  ,
-                  default: () => `确认删除${row["topic"]}?`
-                }
-            ),
-          ]
-        }
-    )
+                {default: () => '操作', icon: () => h(NIcon, null, {default: () => h(MoreVertFilled)})}
+            )
+          }
+      )
+    }
+    //
+    // render: (row) => h(
+    //     NButtonGroup,
+    //     {
+    //       vertical: false,
+    //     },
+    //     {
+    //       default: () => [
+    //         h(
+    //             NPopconfirm,
+    //             {
+    //               onPositiveClick: () => deleteTopic(row["topic"])
+    //             },
+    //             {
+    //               trigger: () =>
+    //                   row['IsInternal'] === false ?
+    //                       h(
+    //                           NButton,
+    //                           {
+    //                             strong: true,
+    //                             secondary: true,
+    //                             type: 'error'
+    //                           },
+    //                           {
+    //                             default: () => '删除',
+    //                             icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
+    //                           }
+    //                       )
+    //                       : h(NButton, {disabled: true}, {default: () => '不可删除'})
+    //               ,
+    //               default: () => `确认删除${row["topic"]}?`
+    //             }
+    //         ),
+    //       ]
+    //     }
+    // )
   },
 ]
+
+
+const handleMenuSelect = async (key, row) => {
+  const func = {
+    "viewProduce": viewProduce,
+    "viewConsumer": viewConsumer,
+    "viewOffset": viewOffset,
+    "viewConfig": viewConfig,
+    "viewPartition": viewPartition,
+    "deleteTopic": deleteTopic,
+  }
+  loading.value = true
+  try {
+    await func[key](row)
+  } catch (e) {
+    message.error(e)
+  }
+  loading.value = false
+}
+
 
 const partitions_columns = [
   {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
@@ -561,6 +610,7 @@ const getTopicConfig = async (topic) => {
   loading.value = false
 
 }
+
 const getTopicDetail = async (topic) => {
   loading.value = true
   try {
@@ -583,6 +633,36 @@ const getTopicDetail = async (topic) => {
 
 }
 
+// 页面跳转，第二个参数是菜单key
+const viewProduce = async (row) => {
+  emitter.emit('menu_select', "producer")
+}
+
+// 页面跳转，第二个参数是菜单key
+const viewConsumer = async (row) => {
+  emitter.emit('menu_select', "consumer")
+}
+
+//  读取某topic的offset
+const viewOffset = async (row) => {
+  if (!selectedGroup.value) {
+    message.warning("请先选择 Group")
+    return
+  }
+  await getOffsets([row.topic], selectedGroup.value)
+}
+
+// 查看配置
+const viewConfig = async (row) => {
+  await getTopicConfig(row["topic"])
+  activeConfigTopic.value = row["topic"]
+}
+
+// 查看分区
+const viewPartition = async (row) => {
+  await getTopicDetail(row["topic"])
+  activeDetailTopic.value = row["topic"]
+}
 // 获取当页数据
 const getPage = (data_lst) => {
   const start = (pagination.value.page - 1) * pagination.value.pageSize;
@@ -678,6 +758,7 @@ const addOffsets = (item) => {
   }
   return count
 }
+
 const getGroups = async () => {
   loading.value = true
   try {
@@ -708,7 +789,18 @@ const getGroups = async () => {
 
 }
 
-const deleteTopic = async (topic) => {
+const deleteTopic = async (row) => {
+  dialog.info({
+    title: '警告',
+    content: `确定要删除 ${row.topic} 吗？`,
+    positiveText: '确定',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      await deleteTopicFunc(row.topic)
+    }
+  })
+}
+const deleteTopicFunc = async (topic) => {
   loading.value = true
   try {
     const res = await DeleteTopic([topic])
