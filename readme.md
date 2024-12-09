@@ -53,7 +53,7 @@
 如果遇到webview2运行时错误，从微软官网下载重装运行时即可：https://developer.microsoft.com/zh-cn/microsoft-edge/webview2
 
 # 功能截图
-offset巡检，v0.33版本上线
+offset巡检，v0.33版本上线，最直观的方式查看消息积压情况
 ![](docs/snap/img_5.png)
 topic列表，各种操作
 ![](docs/snap/img.png)
