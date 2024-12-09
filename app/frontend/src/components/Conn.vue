@@ -2,9 +2,9 @@
   <div>
     <n-flex vertical>
       <n-flex align="center">
-        <h2 style="max-width: 200px;">{{t('conn.title')}}</h2>
+        <h2 style="max-width: 200px;">{{ t('conn.title') }}</h2>
         <n-text>共有 {{ Nodes.length }} 个</n-text>
-        <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{t('conn.add')}}</n-button>
+        <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{ t('conn.add') }}</n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
 
@@ -51,13 +51,13 @@
             style="text-align: left;"
         >
           <n-form-item :label="t('common.name')" path="name">
-            <n-input v-model:value="currentNode.name" :placeholder="t('conn.input_name')" />
+            <n-input v-model:value="currentNode.name" :placeholder="t('conn.input_name')"/>
           </n-form-item>
 
           <n-form-item :label="t('conn.bootstrap_servers')" path="bootstrap_servers">
             <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
           </n-form-item>
-          {{t('conn.tip')}}
+          {{ t('conn.tip') }}
           <n-form-item :label="t('conn.tls')" path="tls">
             <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
@@ -68,24 +68,39 @@
           </n-form-item>
 
           <n-form-item label="TLS certFile" path="tls_cert_file">
+
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem')">.crt;.pem</n-button>
-              {{currentNode.tls_cert_file}}
+              <n-flex align="center" v-if="currentNode.tls_cert_file">
+                <p style="color: gray;">{{ currentNode.tls_cert_file }}</p>
+                <n-button size="tiny" @click="currentNode.tls_cert_file=''" :render-icon="renderIcon(CloseFilled)"/>
+              </n-flex>
             </n-flex>
+
           </n-form-item>
 
           <n-form-item label="TLS keyFile" path="tls_key_file">
+
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_key_file','*.key')">.key</n-button>
-              {{currentNode.tls_key_file}}
+              <n-flex align="center" v-if="currentNode.tls_key_file">
+                <p style="color: gray;">{{ currentNode.tls_key_file }}</p>
+                <n-button size="tiny" @click="currentNode.tls_key_file=''" :render-icon="renderIcon(CloseFilled)"/>
+              </n-flex>
             </n-flex>
+
           </n-form-item>
 
           <n-form-item label="TLS caFile" path="tls_ca_file">
+
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem')">.crt;.pem</n-button>
-            {{currentNode.tls_ca_file}}
+              <n-flex align="center" v-if="currentNode.tls_ca_file">
+                <p style="color: gray;">{{ currentNode.tls_ca_file }}</p>
+                <n-button size="tiny" @click="currentNode.tls_ca_file=''" :render-icon="renderIcon(CloseFilled)"/>
+              </n-flex>
             </n-flex>
+
           </n-form-item>
 
           <n-form-item :label="t('conn.use_sasl')" path="sasl">
@@ -104,7 +119,7 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.sasl_user')" path="sasl_user">
-            <n-input v-model:value="currentNode.sasl_user" :placeholder="t('conn.sasl_user')" />
+            <n-input v-model:value="currentNode.sasl_user" :placeholder="t('conn.sasl_user')"/>
           </n-form-item>
 
           <n-form-item :label="t('conn.sasl_pwd')" path="sasl_pwd">
@@ -116,16 +131,26 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
+
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('kerberos_user_keytab','')">keytab</n-button>
-              {{currentNode.kerberos_user_keytab}}
+              <n-flex align="center" v-if="currentNode.kerberos_user_keytab">
+                <p style="color: gray;">{{ currentNode.kerberos_user_keytab }}</p>
+                <n-button size="tiny" @click="currentNode.kerberos_user_keytab=''"
+                          :render-icon="renderIcon(CloseFilled)"/>
+              </n-flex>
             </n-flex>
+
           </n-form-item>
 
           <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('kerberos_krb5_conf','')">krb5_conf</n-button>
-              {{currentNode.kerberos_krb5_conf}}
+              <n-flex align="center" v-if="currentNode.kerberos_krb5_conf">
+                <p style="color: gray;">{{ currentNode.kerberos_krb5_conf }}</p>
+                <n-button size="tiny" @click="currentNode.kerberos_krb5_conf=''"
+                          :render-icon="renderIcon(CloseFilled)"/>
+              </n-flex>
             </n-flex>
           </n-form-item>
 
@@ -144,9 +169,9 @@
         </n-form>
         <template #footer>
           <n-space justify="end">
-            <n-button @click="test_connect" :loading="test_connect_loading">{{t('conn.test')}}</n-button>
-            <n-button @click="showEditDrawer = false">{{t('common.cancel')}}</n-button>
-            <n-button type="primary" @click="saveNode">{{t('common.save')}}</n-button>
+            <n-button @click="test_connect" :loading="test_connect_loading">{{ t('conn.test') }}</n-button>
+            <n-button @click="showEditDrawer = false">{{ t('common.cancel') }}</n-button>
+            <n-button type="primary" @click="saveNode">{{ t('common.save') }}</n-button>
           </n-space>
         </template>
       </n-drawer-content>
@@ -158,13 +183,13 @@
 import {computed, onMounted, ref} from 'vue'
 import {NButton, useMessage} from 'naive-ui'
 import {renderIcon} from "../utils/common";
-import {AddFilled} from "@vicons/material";
+import {AddFilled, CloseFilled} from "@vicons/material";
 import emitter from "../utils/eventBus";
 import {SetConnect, TestClient} from "../../wailsjs/go/service/Service";
 import {GetConfig, OpenFileDialog, SaveConfig} from "../../wailsjs/go/config/AppConfig";
 import {useI18n} from 'vue-i18n'
 
-const { t, locale } = useI18n()
+const {t, locale} = useI18n()
 
 
 const message = useMessage()
@@ -297,7 +322,7 @@ const test_connect = async () => {
         message.error(e)
       }
       test_connect_loading.value = false
-    }else {
+    } else {
       message.error('请填写所有必填字段')
     }
   })
