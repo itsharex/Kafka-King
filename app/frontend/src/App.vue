@@ -58,10 +58,11 @@ import {
   NMessageProvider
 } from 'naive-ui'
 import {
+  AddChartOutlined,
   AllOutOutlined,
-  BarChartOutlined,
   GroupsSharp,
   HiveOutlined,
+  InfoOutlined,
   LibraryBooksOutlined,
   MessageOutlined,
   SendTwotone,
@@ -81,9 +82,10 @@ import Groups from "./components/Groups.vue";
 import Producer from "./components/Producer.vue";
 import Consumer from "./components/Consumer.vue";
 import Monitor from "./components/Monitor.vue";
+import About from "./components/About.vue";
 import {useI18n} from 'vue-i18n'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 let headerClass = shallowRef('lightTheme')
 
@@ -149,7 +151,7 @@ const sideMenuOptions = [
   {
     label: t('aside.monitor'),
     key: t('aside.monitor'),
-    icon: renderIcon(BarChartOutlined),
+    icon: renderIcon(AddChartOutlined),
     component: Monitor,
   },
   {
@@ -157,6 +159,12 @@ const sideMenuOptions = [
     key: t('aside.settings'),
     icon: renderIcon(SettingsOutlined),
     component: Settings
+  },
+  {
+    label: "关于",
+    key: "关于",
+    icon: renderIcon(InfoOutlined),
+    component: About
   },
 
 ]

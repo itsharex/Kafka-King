@@ -7,12 +7,7 @@
   <n-flex align="center">
 
     <n-form :model="config" label-placement="top" style="text-align: left;">
-      <n-form-item label="项目主页">
-        <n-button @click="BrowserOpenURL(kafka_home_url)" :render-icon="renderIcon(HouseTwotone)">Kafka-King 项目主页</n-button>
-      </n-form-item>
-      <n-form-item label="同款 ES 客户端">
-        <n-button @click="BrowserOpenURL(es_home_url)" :render-icon="renderIcon(HouseTwotone)">推荐同款 ES 客户端</n-button>
-      </n-form-item>
+
       <n-form-item label="窗口宽度">
         <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
@@ -47,9 +42,9 @@
 import {onMounted, ref} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
-import {BrowserOpenURL, WindowSetSize} from "../../wailsjs/runtime";
+import {WindowSetSize} from "../../wailsjs/runtime";
 import {renderIcon} from "../utils/common";
-import {HouseTwotone, NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
+import {NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
 import {useI18n} from "vue-i18n";
 

@@ -38,6 +38,7 @@
 <!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
 <!--      </n-flex>-->
       积压 = 终末offset - 提交offset。
+      <div ref="lag_chartRef" style="width: 98%; height: 440px"></div>
       <div ref="commit_chartRef" style="width: 98%; height: 440px"></div>
       <div ref="end_chartRef" style="width: 98%; height: 440px"></div>
     </n-flex>
@@ -67,11 +68,15 @@ const selectedTopics = ref([])
 const selectedGroup = ref(null)
 
 const commit_chartRef = shallowRef(null)
+const lag_chartRef = shallowRef(null)
 const end_chartRef = shallowRef(null)
+
+const lag_chart = shallowRef(null)
 const commit_chart = shallowRef(null)
 const end_chart = shallowRef(null)
 
 const offsetData = ref({
+  lag: {},
   commit: {},
   end: {},
 })
@@ -83,12 +88,16 @@ const selectNode = async (node) => {
   selectedTopics.value = []
   selectedGroup.value = null
 
+  lag_chartRef.value = null
   commit_chartRef.value = null
   end_chartRef.value = null
+
+  lag_chart.value = null
   commit_chart.value = null
   end_chart.value = null
 
   offsetData.value = {
+    lag: {},
     commit: {},
     end: {},
   }
@@ -105,12 +114,7 @@ onMounted(async () => {
   initChart()
   // await fetchData()
   timer = setInterval(fetchData, 5 * 60 * 1000) // 定时更新一次
-  // EventsOn('resize', () => {
-  //   start_chart.value?.resize()
-  //   commit_chart.value?.resize()
-  //   end_chart.value?.resize()
-  // })
-  // 如果使用wails runtime api，也可以这样监听
+
   // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
 })
@@ -118,12 +122,12 @@ onMounted(async () => {
 const refreshTopic = async () => {
   await getData()
 }
+
 const handleResize = () => {
-  if (end_chart.value) {
-    end_chart.value.resize()
-  }
-  if (commit_chart.value) {
-    commit_chart.value.resize()
+  for (const chartRef of [lag_chartRef.value, commit_chart.value, end_chart.value]) {
+    if (chartRef) {
+      chartRef.resize()
+    }
   }
 }
 
@@ -166,6 +170,11 @@ const initChart = () => {
     series: []
   }
 
+  const lag_option = {...option}
+  lag_option.title.text = '积压量'
+  lag_chart.value = echarts.init(lag_chartRef.value, 'dark')
+  lag_chart.value.setOption({...lag_option})
+
   const commit_option = {...option}
   commit_option.title.text = '提交 offset'
   commit_chart.value = echarts.init(commit_chartRef.value, 'dark')
@@ -178,20 +187,25 @@ const initChart = () => {
 
 }
 
+// 当选择了新的topic或group后，清空之前的数据
 const clear_offset = (value, option) => {
   offsetData.value = {
+    lag: {},
     commit: {},
     end: {},
   }
 }
+
 // 更新图表数据
 const updateChart = () => {
 
-
   const chart_map = {
+    lag: lag_chart.value,
     commit: commit_chart.value,
     end: end_chart.value
   }
+
+  // 把offsetData的数据渲染到图表上
   for (const k in offsetData.value) {
     let series = []
     let legendData = []
@@ -243,7 +257,16 @@ const fetchData = async () => {
       // 更新数据结构 start_map
       selectedTopics.value.forEach(topic => {
 
+        // lag，是end-commit
+        if (!offsetData.value.lag[topic]) {
+          offsetData.value.lag[topic] = []
+        }
+        offsetData.value.lag[topic].push({
+          time: time,
+          offset: addOffsets(res.result.end_map[topic]) - addOffsets(res.result.commit_map[topic]) || 0
+        })
 
+        // commit
         if (!offsetData.value.commit[topic]) {
           offsetData.value.commit[topic] = []
         }
@@ -252,6 +275,7 @@ const fetchData = async () => {
           offset: addOffsets(res.result.commit_map[topic]) || 0
         })
 
+        // end
         if (!offsetData.value.end[topic]) {
           offsetData.value.end[topic] = []
         }
@@ -260,14 +284,11 @@ const fetchData = async () => {
           offset: addOffsets(res.result.end_map[topic]) || 0
         })
 
-
         // 只保留最近30个数据点
-        if (offsetData.value.commit[topic].length > 100) {
-          offsetData.value.commit[topic].shift()
-        }
-        // 只保留最近30个数据点
-        if (offsetData.value.end[topic].length > 100) {
-          offsetData.value.end[topic].shift()
+        for (const key of ["lag", "commit", "end"]){
+          if (offsetData.value[key][topic].length > 100) {
+            offsetData.value[key][topic].shift()
+          }
         }
 
       })
