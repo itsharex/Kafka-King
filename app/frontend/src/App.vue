@@ -47,6 +47,7 @@
 <script setup>
 import {onMounted, shallowRef} from 'vue'
 import {
+  darkTheme,
   enUS,
   jaJP,
   lightTheme,
@@ -158,7 +159,7 @@ onMounted(async () => {
     // 设置窗口大小
     await WindowSetSize(loadedConfig.width, loadedConfig.height)
     // 设置主题
-    themeChange(loadedConfig.theme)
+    themeChange(loadedConfig.theme === darkTheme.name ? darkTheme:lightTheme)
     // 语言切换
     handleLanguageChange(loadedConfig.language)
   }
