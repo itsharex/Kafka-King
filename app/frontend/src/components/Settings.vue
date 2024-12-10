@@ -1,9 +1,9 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{t('settings.title')}}</h2>
+      <h2 style="max-width: 200px;">{{ t('settings.title') }}</h2>
     </n-flex>
-  </n-flex >
+  </n-flex>
   <n-flex align="center">
 
     <n-form :model="config" label-placement="top" style="text-align: left;">
@@ -15,14 +15,12 @@
         <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
       <n-form-item label="语言">
-        <n-select v-model:value="config.language" :options="languageOptions" @update:value="changeLang" :style="{ maxWidth: '120px' }"/>
+        <n-select v-model:value="config.language" :options="languageOptions" @update:value="changeLang"
+                  :style="{ maxWidth: '120px' }"/>
       </n-form-item>
 
       <n-form-item label="主题">
-        <n-flex>
-          <n-button @click="theme=lightTheme" :render-icon="renderIcon(WbSunnyOutlined)"/>
-          <n-button @click="theme=darkTheme" :render-icon="renderIcon(NightlightRoundFilled)"/>
-        </n-flex>
+        <n-button circle :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>
       </n-form-item>
 
       <n-form-item>
@@ -39,7 +37,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, shallowRef} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
 import {WindowSetSize} from "../../wailsjs/runtime";
@@ -48,13 +46,12 @@ import {NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
 import {useI18n} from "vue-i18n";
 
-const { locale, t } = useI18n()
-
-const es_home_url = "https://github.com/Bronya0/ES-King"
-const kafka_home_url = "https://github.com/Bronya0/kafka-King"
+const {locale, t} = useI18n()
 
 const message = useMessage()
 let theme = lightTheme
+let MoonOrSunnyOutline = shallowRef(WbSunnyOutlined)
+
 const config = ref({
   width: 1248,
   height: 768,
@@ -75,6 +72,7 @@ onMounted(async () => {
   console.log(loadedConfig)
   if (loadedConfig) {
     config.value = loadedConfig
+    MoonOrSunnyOutline.value = loadedConfig.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
   }
 })
 
@@ -99,6 +97,12 @@ const saveConfig = async () => {
 // 语言变更
 const changeLang = (value) => {
   locale.value = value
+}
+
+const changeTheme = () => {
+  MoonOrSunnyOutline.value = MoonOrSunnyOutline.value === NightlightRoundFilled ? WbSunnyOutlined : NightlightRoundFilled;
+  theme = MoonOrSunnyOutline.value === NightlightRoundFilled ? darkTheme : lightTheme
+  emitter.emit('update_theme', theme)
 }
 
 </script>
