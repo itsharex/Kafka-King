@@ -5,6 +5,9 @@ export default {
         name: '名前', // Name
         save: '保存', // Save
         check: '選択してください', // Please select
+        edit: '編集',
+        delete: '削除',
+        deleteOk: '本当に削除してもよろしいですか?',
     },
     aside: {
         cluster: 'クラスタ', // Cluster
@@ -43,6 +46,10 @@ export default {
         kerberos_service_name: 'Kerberosサービス名', // Kerberos Service Name
     },
     settings: {
-        title: '設定' // Settings
+        title: '設定',
+        width: 'ウィンドウ幅',
+        height: 'ウィンドウ高さ',
+        lang: '言語',
+        theme: 'テーマ',
     }
 };

@@ -1,6 +1,7 @@
 <template>
   <n-config-provider
       :theme="Theme"
+      :locale="naive_language"
   >
     <!--https://www.naiveui.com/zh-CN/os-theme/components/layout-->
     <n-message-provider container-style="word-break: break-all;">
@@ -46,13 +47,15 @@
 <script setup>
 import {onMounted, shallowRef} from 'vue'
 import {
-  darkTheme,
+  enUS,
+  jaJP,
   lightTheme,
   NConfigProvider,
   NLayout,
   NLayoutContent,
   NLayoutHeader,
-  NMessageProvider
+  NMessageProvider,
+  zhCN
 } from 'naive-ui'
 import {
   AddChartOutlined,
@@ -67,7 +70,7 @@ import {
 } from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
-import {GetConfig, SaveTheme} from "../wailsjs/go/config/AppConfig";
+import {GetConfig} from "../wailsjs/go/config/AppConfig";
 import {WindowSetSize} from "../wailsjs/runtime";
 import {renderIcon} from "./utils/common";
 import Aside from "./components/Aside.vue";
@@ -82,30 +85,11 @@ import Monitor from "./components/Monitor.vue";
 import About from "./components/About.vue";
 import {useI18n} from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 let headerClass = shallowRef('lightTheme')
-
-onMounted(async () => {
-  // 从后端加载配置
-  const loadedConfig = await GetConfig()
-  if (loadedConfig) {
-    await WindowSetSize(loadedConfig.width, loadedConfig.height)
-    if (loadedConfig.theme === 'light') {
-      Theme.value = lightTheme
-      headerClass = "lightTheme"
-    } else {
-      Theme.value = darkTheme
-      headerClass = "darkTheme"
-    }
-  }
-  // =====================注册事件监听=====================
-  // 主题切换
-  emitter.on('update_theme', themeChange)
-  // 菜单切换
-  emitter.on('menu_select', handleMenuSelect)
-})
-// 左侧菜单
+let naive_language = shallowRef(zhCN)
+let Theme = shallowRef(lightTheme)
 // 左侧菜单
 const sideMenuOptions = [
   {
@@ -165,13 +149,28 @@ const sideMenuOptions = [
   },
 
 ]
-
-
-// 顶部菜单
-const menuOptions = []
-
-
 const activeItem = shallowRef(sideMenuOptions[0])
+
+onMounted(async () => {
+  // 从后端加载配置
+  const loadedConfig = await GetConfig()
+  if (loadedConfig) {
+    // 设置窗口大小
+    await WindowSetSize(loadedConfig.width, loadedConfig.height)
+    // 设置主题
+    themeChange(loadedConfig.theme)
+    // 语言切换
+    handleLanguageChange(loadedConfig.language)
+  }
+
+  // =====================注册事件监听=====================
+  // 主题切换
+  emitter.on('update_theme', themeChange)
+  // 菜单切换
+  emitter.on('menu_select', handleMenuSelect)
+  // 语言切换
+  emitter.on('language_change', handleLanguageChange)
+})
 
 // 切换菜单
 function handleMenuSelect(key) {
@@ -179,15 +178,23 @@ function handleMenuSelect(key) {
   activeItem.value = sideMenuOptions.find(item => item.key === key)
 }
 
-let Theme = shallowRef(lightTheme)
 
 // 主题切换
 function themeChange(newTheme) {
   Theme.value = newTheme
   headerClass = newTheme === lightTheme ? "lightTheme" : "darkTheme"
-  SaveTheme(newTheme.name)
 }
 
+// 语言切换
+function handleLanguageChange(language){
+  const languageMap = {
+    'zh-CN': zhCN,
+    'en-US': enUS,
+    'ja-JP': jaJP
+  }
+  locale.value = language
+  naive_language.value = languageMap[language]
+}
 
 </script>
 

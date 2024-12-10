@@ -8,18 +8,18 @@
 
     <n-form :model="config" label-placement="top" style="text-align: left;">
 
-      <n-form-item label="窗口宽度">
+      <n-form-item :label="t('settings.width')" >
         <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
-      <n-form-item label="窗口高度">
+      <n-form-item :label="t('settings.height')">
         <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
-      <n-form-item label="语言">
+      <n-form-item :label="t('settings.lang')">
         <n-select v-model:value="config.language" :options="languageOptions" @update:value="changeLang"
                   :style="{ maxWidth: '120px' }"/>
       </n-form-item>
 
-      <n-form-item label="主题">
+      <n-form-item :label="t('settings.theme')">
         <n-button circle :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>
       </n-form-item>
 
@@ -46,7 +46,7 @@ import {NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
 import {useI18n} from "vue-i18n";
 
-const {locale, t} = useI18n()
+const {t} = useI18n()
 
 const message = useMessage()
 let theme = lightTheme
@@ -96,7 +96,7 @@ const saveConfig = async () => {
 
 // 语言变更
 const changeLang = (value) => {
-  locale.value = value
+  emitter.emit('language_change', value)
 }
 
 const changeTheme = () => {

@@ -5,6 +5,9 @@ export default {
         name: 'Name',
         save: 'Save',
         check: 'Please select',
+        edit: 'edit',
+        delete: 'delete',
+        deleteOk: 'Are you sure you want to delete?',
     },
     aside: {
         cluster: 'Cluster',
@@ -43,6 +46,10 @@ export default {
         kerberos_service_name: 'Kerberos Service Name',
     },
     settings: {
-        title: 'Settings'
+        title: 'Settings',
+        width: 'Window width',
+        height: 'Window height',
+        lang: 'Language',
+        theme: 'Theme',
     }
 };

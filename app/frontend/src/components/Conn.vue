@@ -15,15 +15,15 @@
               <template #header-extra>
                 <n-space>
                   <n-button @click.stop="editNode(node)" size="small">
-                    编辑
+                    {{ t('common.edit') }}
                   </n-button>
-                  <n-popconfirm @positive-click="deleteNode(node.id)" negative-text="取消" positive-text="确定">
+                  <n-popconfirm @positive-click="deleteNode(node.id)">
                     <template #trigger>
                       <n-button @click.stop size="small">
-                        删除
+                        {{ t('common.delete') }}
                       </n-button>
                     </template>
-                    确定删除吗？
+                    {{ t('common.deleteOk') }}
                   </n-popconfirm>
                 </n-space>
               </template>

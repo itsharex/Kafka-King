@@ -5,6 +5,9 @@ export default {
         name: '昵称',
         save: '保存',
         check: '请选择',
+        edit: '编辑',
+        delete: '删除',
+        deleteOk: '确定删除吗？',
     },
     aside: {
         cluster: '集群',
@@ -43,6 +46,10 @@ export default {
         kerberos_service_name: 'kerberos_service_name 服务名',
     },
     settings:{
-        title: '设置'
+        title: '设置',
+        width: '窗口宽度',
+        height: '窗口高度',
+        lang: '语言',
+        theme: '主题',
     },
 };
