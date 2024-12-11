@@ -1,40 +1,40 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">主题</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">刷新</n-button>
-      <n-text>共计{{ data.length }}个</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">导出为csv</n-button>
+      <h2 style="max-width: 200px;">{{t('topic.title')}}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
+      <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
 
     </n-flex>
-    <n-spin :show="loading" description="Connecting...">
+    <n-spin :show="loading" :description="t('common.connecting')">
       <n-tabs type="line" animated v-model:value="activeTab">
 
-        <n-tab-pane name="主题">
+        <n-tab-pane name="Topic">
           <template #tab>
             <n-icon>
               <LibraryBooksOutlined/>
             </n-icon>
-            主题
+            {{t('topic.title')}}
           </template>
           <n-flex vertical>
             <!--          搜索框、新增按钮-->
             <n-flex align="center">
-              <n-input v-model:value="searchText" @keydown.enter="getData" placeholder="输入主题名称" clearable
+              <n-input v-model:value="searchText" @keydown.enter="getData" :placeholder="t('topic.add_name')" clearable
                        style="width: 300px"/>
               <n-button @click="getData" :render-icon="renderIcon(SearchOutlined)"></n-button>
-              <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">创建主题</n-button>
-              <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">刷新 Topic</n-button>
+              <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">{{t('topic.add')}}</n-button>
+              <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Topic</n-button>
               <!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
               <n-select
                   v-model:value="selectedGroup"
                   :options="group_data"
-                  placeholder="选择Group并读取Offsets"
+                  :placeholder="t('topic.selectedGroup')"
                   filterable
                   clearable
                   style="width: 250px"
               />
-              <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button>
+              <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Offsets</n-button>
             </n-flex>
             <n-data-table
                 :columns="columns"
@@ -50,12 +50,12 @@
 
         </n-tab-pane>
 
-        <n-tab-pane name="分区">
+        <n-tab-pane name="Partition">
           <template #tab>
             <n-icon>
               <AddRoadOutlined/>
             </n-icon>
-            分区
+            {{t('topic.partition')}}
           </template>
 
           <n-flex vertical>
@@ -64,16 +64,16 @@
               <n-tag type="success">
                 {{ activeDetailTopic }}
               </n-tag>
-              <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">添加分区</n-button>
+              <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">{{t('topic.add_partition')}}</n-button>
               <n-select
                   v-model:value="selectedGroup"
                   :options="group_data"
-                  placeholder="选择Group并读取Offsets"
+                  :placeholder="t('topic.selectedGroup')"
                   filterable
                   clearable
                   style="width: 250px"
               />
-              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button>
+              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Offsets</n-button>
             </n-flex>
             <n-data-table
                 :columns="partitions_columns"
@@ -85,12 +85,12 @@
 
         </n-tab-pane>
 
-        <n-tab-pane name="配置">
+        <n-tab-pane name="Config">
           <template #tab>
             <n-icon>
               <SettingsRound/>
             </n-icon>
-            配置
+            {{t('common.config')}}
           </template>
 
           <n-flex vertical>
@@ -101,7 +101,7 @@
                 {{ activeConfigTopic }}
               </n-tag>
 
-              <n-button @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">刷新
+              <n-button @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}
               </n-button>
 
             </n-flex>
@@ -119,7 +119,7 @@
   </n-flex>
 
   <n-drawer v-model:show="showDrawer" :width="500">
-    <n-drawer-content title="创建Topic配置">
+    <n-drawer-content :title="t('topic.add')">
       <n-form
           ref="formRef"
           :model="topic_add"
@@ -128,37 +128,32 @@
           label-width="120"
           require-mark-placement="right-hanging"
       >
-        <n-form-item label="Topic名称" path="topics">
+        <n-form-item label="Topic" path="topics">
           <n-dynamic-tags
               v-model:value="topic_add.topics"
-              :max="10"
-              placeholder="请输入Topic名称后回车"
+              :max="100"
           />
         </n-form-item>
 
-        <n-form-item label="分区数" path="partitions">
+        <n-form-item :label="t('topic.partition')" path="partitions">
           <n-input-number
               v-model:value="topic_add.partitions"
               :min="1"
-              :max="100"
-              placeholder="请输入分区数"
           />
         </n-form-item>
 
-        <n-form-item label="副本因子" path="replicationFactor">
+        <n-form-item :label="t('topic.replication_factor')" path="replicationFactor">
           <n-input-number
               v-model:value="topic_add.replication_factor"
               :min="1"
-              :max="5"
-              placeholder="请输入副本因子"
           />
         </n-form-item>
 
-        <n-form-item label="Topic配置" path="config">
+        <n-form-item :label="t('topic.viewConfig')" path="config">
           <n-input
               v-model:value="topic_add.configs"
               type="textarea"
-              placeholder="请输入JSON格式的Topic配置"
+              placeholder="Please Input JSON"
               :rows="8"
           />
         </n-form-item>
@@ -167,26 +162,26 @@
 
       <template #footer>
         <n-space>
-          <n-button @click="showDrawer = false">取消</n-button>
-          <n-button type="primary" @click="addTopic">确认</n-button>
+          <n-button @click="showDrawer = false">{{t('common.cancel')}}</n-button>
+          <n-button type="primary" @click="addTopic">{{t('common.enter')}}</n-button>
         </n-space>
       </template>
     </n-drawer-content>
   </n-drawer>
 
-  <n-modal v-model:show="showModal" preset="dialog" title="添加分区">
+  <n-modal v-model:show="showModal" preset="dialog" :title="t('topic.add_partition')">
     <n-form
         label-placement="top"
         style="text-align: left;"
     >
-      <n-form-item label="添加的额外的分区数" path="addPartitionNum">
-        <n-input-number v-model:value="addPartitionNum" :min="1" placeholder="添加的额外的分区数"
+      <n-form-item :label="t('topic.add_partition_count')" path="addPartitionNum">
+        <n-input-number v-model:value="addPartitionNum" :min="1" :placeholder="t('topic.add_partition_count')"
                         :style="{ maxWidth: '120px' }"/>
       </n-form-item>
       <n-flex>
 
-        <n-button @click="showModal = false">取消</n-button>
-        <n-button type="primary" @click="addTopicPartition">确定</n-button>
+        <n-button @click="showModal = false">{{t('common.cancel')}}</n-button>
+        <n-button type="primary" @click="addTopicPartition">{{t('common.enter')}}</n-button>
       </n-flex>
     </n-form>
 
@@ -207,7 +202,7 @@ import {
   SearchOutlined,
   SettingsRound,
 } from '@vicons/material'
-import {createCsvContent, download_file, isValidJson, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, getCurrentDateTime, isValidJson, renderIcon} from "../utils/common";
 import {
   AlterTopicConfig,
   CreatePartitions,
@@ -219,6 +214,9 @@ import {
   GetTopics
 } from "../../wailsjs/go/service/Service";
 import ShowOrEdit from "../common/ShowOrEdit.vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const config_data = ref([])
 const partitions_data = ref([])
@@ -228,7 +226,7 @@ const offsets = ref({
   end_map: {},
   commit_map: {},
 })
-const activeTab = ref('主题');
+const activeTab = ref('Topic');
 const selectedGroup = ref();
 const loading = ref(false)
 const data = ref([])
@@ -332,15 +330,16 @@ const pagination = ref({
 
 const downloadAllDataCsv = async () => {
   let datas = {
-    "配置": [config_data, config_columns],
-    "主题": [data, columns],
-    "分区": [partitions_data, partitions_columns]
+    "Config": [config_data, config_columns],
+    "Topic": [data, columns],
+    "Partition": [partitions_data, partitions_columns]
   }
   const csvContent = createCsvContent(
       datas[activeTab.value][0].value,
       datas[activeTab.value][1],
   )
-  download_file(csvContent, `${activeTab.value}.csv`, 'text/csv;charset=utf-8;')
+
+  download_file(csvContent, `${activeTab.value}-${getCurrentDateTime()}.csv`, 'text/csv;charset=utf-8;')
 }
 
 const columns = [
@@ -358,7 +357,7 @@ const columns = [
     }, {default: () => row['topic']}),
   },
   {
-    title: '分区', key: 'partition_count', sorter: 'default', width: 30, resizable: true,
+    title: t('topic.partition'), key: 'partition_count', sorter: 'default', width: 30, resizable: true,
     render: (row) => h(NText, {
       type: 'info',
       style: {cursor: 'pointer'},
@@ -368,15 +367,15 @@ const columns = [
       }
     }, {default: () => row['partition_count']}),
   },
-  {title: '副本', key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
+  {title: t('topic.replication_factor'), key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
   {
-    title: '主题故障',
+    title: t('topic.err'),
     key: 'Err',
     sorter: 'default',
     width: 40,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
-    render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "健康" : row['Err']}),
+    render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "health" : row['Err']}),
   },
   {
     title: 'StartOffset',
@@ -403,8 +402,8 @@ const columns = [
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
   {
-    title: '积压',
-    key: '积压',
+    title: t('topic.lag'),
+    key: 'lag',
     sorter: 'default',
     width: 50,
     resizable: true,
@@ -416,18 +415,18 @@ const columns = [
     }
   },
   {
-    title: '操作',
+    title: t('common.action'),
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
     resizable: true,
     render: (row) => {
       const options = [
-        {label: '生产消息', key: 'viewProduce'},
-        {label: '查看/消费消息', key: 'viewConsumer'},
-        {label: '查看 offset', key: 'viewOffset'},
-        {label: '主题配置', key: 'viewConfig'},
-        {label: '查看分区', key: 'viewPartition'},
-        {label: '删除', key: 'deleteTopic'},
+        {label: t('topic.viewProduce'), key: 'viewProduce'},
+        {label: t('topic.viewConsumer'), key: 'viewConsumer'},
+        {label: t('topic.viewOffset'), key: 'viewOffset'},
+        {label: t('topic.viewConfig'), key: 'viewConfig'},
+        {label: t('topic.viewPartition'), key: 'viewPartition'},
+        {label: t('topic.deleteTopic'), key: 'deleteTopic'},
       ]
       return h(
           NDropdown,
@@ -443,7 +442,7 @@ const columns = [
                   strong: true,
                   secondary: true,
                 },
-                {default: () => '操作', icon: () => h(NIcon, null, {default: () => h(MoreVertFilled)})}
+                {default: () => t('common.action'), icon: () => h(NIcon, null, {default: () => h(MoreVertFilled)})}
             )
           }
       )
@@ -516,7 +515,7 @@ const partitions_columns = [
     width: 20,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
-    render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "健康" : row['err']}),
+    render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "health" : row['err']}),
   },
   {
     title: 'StartOffset',
@@ -565,7 +564,7 @@ const partitions_columns = [
 const config_columns = [
   {title: 'Name', key: 'Name', sorter: 'default', width: 100, resizable: true},
   {
-    title: 'Value（双击可编辑）', key: 'Value', sorter: 'default', width: 140, resizable: true,
+    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -575,14 +574,14 @@ const config_columns = [
       })
     }
   },
-  {title: '来源', key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
   {
-    title: '是否敏感',
+    title: t('node.sensitive'),
     key: 'Sensitive',
     width: 20,
     resizable: true,
     sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
-    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "是" : "否"}),
+    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),
   },
 
 ]
@@ -602,7 +601,7 @@ const getTopicConfig = async (topic) => {
       } else {
         config_data.value = []
       }
-      activeTab.value = "配置"
+      activeTab.value = "Config"
     }
   } catch (e) {
     message.error(e)
@@ -625,7 +624,8 @@ const getTopicDetail = async (topic) => {
     } else {
       mergeOffsets()
     }
-    activeTab.value = "分区"
+    activeTab.value = "Partition"
+    console.log(activeTab.value)
   } catch (e) {
     message.error(e)
   }
@@ -646,7 +646,7 @@ const viewConsumer = async (row) => {
 //  读取某topic的offset
 const viewOffset = async (row) => {
   if (!selectedGroup.value) {
-    message.warning("请先选择 Group")
+    message.warning(t('message.selectGroupFirst'))
     return
   }
   await getOffsets([row.topic], selectedGroup.value)
@@ -672,7 +672,7 @@ const getPage = (data_lst) => {
 
 const getTopicsOffsets = async () => {
   if (!selectedGroup.value) {
-    message.warning("请先选择 Group")
+    message.warning(t('message.selectGroupFirst'))
     return
   }
   const page_data = getPage(data.value)
@@ -682,11 +682,11 @@ const getTopicsOffsets = async () => {
 
 const getPartitionOffsets = async () => {
   if (activeDetailTopic.value === "") {
-    message.warning("请先从具体的topic切换到本页")
+    message.warning(t('group.warn'))
     return
   }
   if (!selectedGroup.value) {
-    message.warning("请先选择 Group")
+    message.warning(t('message.selectGroupFirst'))
     return
   }
 
@@ -791,10 +791,10 @@ const getGroups = async () => {
 
 const deleteTopic = async (row) => {
   dialog.info({
-    title: '警告',
-    content: `确定要删除 ${row.topic} 吗？`,
-    positiveText: '确定',
-    negativeText: '取消',
+    title: 'Warning',
+    content: `${t('common.deleteOk')}  Topic: ${row.topic}`,
+    positiveText: t('common.enter'),
+    negativeText: t('common.cancel'),
     onPositiveClick: async () => {
       await deleteTopicFunc(row.topic)
     }
@@ -807,7 +807,7 @@ const deleteTopicFunc = async (topic) => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("删除成功")
+      message.success(t('common.deleteFinish'))
       await getData()
       emitter.emit('refreshTopic')
     }
@@ -829,7 +829,7 @@ const addTopic = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("创建成功")
+      message.success(t('message.addOk'))
       showDrawer.value = false
       topic_add.value.topics = []
       await getData()
@@ -848,7 +848,7 @@ const addTopicPartition = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("添加成功")
+      message.success(t('message.addOk'))
       await getData()
     }
   } catch (e) {
@@ -867,7 +867,7 @@ const alterTopicConfig = async (topic, name, value) => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("编辑成功，刷新配置")
+      message.success(t('message.editOk'))
       await getTopicConfig(activeConfigTopic.value)
     }
   } catch (e) {

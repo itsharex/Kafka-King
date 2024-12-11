@@ -1,69 +1,69 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">Producer</h2>
-      <p>一个生产者客户端，将消息推送到指定的Topic。</p>
+      <h2 style="max-width: 200px;">{{ t('producer.title') }}</h2>
+      <p>{{ t('producer.desc') }}</p>
     </n-flex>
 
     <n-flex align="center">
-      选择Topic：
+      {{ t('producer.selectTopic') }}：
       <n-select
           v-model:value="selectedTopic"
           :options="data"
-          placeholder="必选：选择或搜索Kafka Topic"
+          :placeholder="t('producer.topicPlaceholder')"
           filterable
           clearable
           style="width: 300px"
       />
-      可选：输入消息Key：
-      <n-input v-model:value="messageKey" placeholder="可选：输入消息Key" style="width: 300px"/>
-      可选：指定分区号：
-      <n-input-number v-model:value="partition" placeholder="" style="width: 120px"/>
+      {{ t('producer.optionalMessageKey') }}：
+      <n-input v-model:value="messageKey" :placeholder="t('producer.keyPlaceholder')" style="width: 300px"/>
+      {{ t('producer.specifyPartition') }}：
+      <n-input-number v-model:value="partition" style="width: 120px"/>
     </n-flex>
 
     <n-input
         v-model:value="messageContent"
         type="textarea"
-        placeholder="必填：消息内容，字符串格式，支持JSON"
+        :placeholder="t('producer.messageContentPlaceholder')"
         :rows="12"
         style="text-align: left;"
     />
 
-    <!--    动态添加header-->
+    <!-- Dynamic addition of headers -->
     <n-flex vertical>
       <n-flex align="center">
-        <span>消息Headers:</span>
+        <span>{{ t('producer.headersTitle') }}:</span>
         <n-button size="small" @click="addHeader">
-          添加Header
+          {{ t('producer.addHeader') }}
         </n-button>
       </n-flex>
 
       <n-flex v-for="(header, index) in headers" :key="index" :wrap="false">
-        <n-input v-model:value="header.key" placeholder="Header Key" style="width: 200px"/>
-        <n-input v-model:value="header.value" placeholder="Header Value" style="width: 200px"/>
+        <n-input v-model:value="header.key" :placeholder="t('producer.headerKeyPlaceholder')" style="width: 200px"/>
+        <n-input v-model:value="header.value" :placeholder="t('producer.headerValuePlaceholder')" style="width: 200px"/>
         <n-button size="small" type="error" @click="removeHeader(index)">
-          删除
+          {{ t('producer.removeHeader') }}
         </n-button>
       </n-flex>
     </n-flex>
 
     <n-flex align="center">
-      发送次数
+      {{ t('producer.sendTimes') }}
       <n-input-number
           v-model:value="nums"
           :min="1"
-          placeholder="发送次数"
+          :placeholder="t('producer.sendTimesPlaceholder')"
           style="width: 160px"
       />
-
     </n-flex>
     <n-flex align="center">
-      <n-button @click="produce" :loading="loading" :render-icon="renderIcon(SendTwotone)">发送消息</n-button>
+      <n-button @click="produce" :loading="loading" :render-icon="renderIcon(SendTwotone)">
+        {{ t('producer.sendMessage') }}
+      </n-button>
     </n-flex>
 
   </n-flex>
 </template>
-
 <script setup>
 
 import {onMounted, ref} from 'vue'
@@ -72,6 +72,9 @@ import {useMessage} from "naive-ui";
 import {renderIcon} from "../utils/common";
 import {SendTwotone} from "@vicons/material";
 import {GetTopics, Produce} from "../../wailsjs/go/service/Service";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const message = useMessage()
 const data = ref([]);
@@ -146,12 +149,12 @@ const removeHeader = (index) => {
 // 发送消息
 const produce = async () => {
   if (!selectedTopic.value) {
-    message.error('请选择Topic')
+    message.error(t('message.selectTopic'))
     return
   }
 
   if (!messageContent.value) {
-    message.error('请输入消息内容')
+    message.error(t('message.pleaseInput'))
     return
   }
   loading.value = true
@@ -160,7 +163,7 @@ const produce = async () => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success('发送成功')
+      message.success(t('message.sendSuccess'))
     }
   } catch (error) {
     console.error(error)

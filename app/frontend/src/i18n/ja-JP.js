@@ -1,55 +1,168 @@
 export default {
     common: {
-        enter: '確認', // Confirm
-        cancel: 'キャンセル', // Cancel
-        name: '名前', // Name
-        save: '保存', // Save
-        check: '選択してください', // Please select
-        edit: '編集',
-        delete: '削除',
-        deleteOk: '本当に削除してもよろしいですか?',
+        enter: "確認",
+        cancel: "キャンセル",
+        name: "ニックネーム",
+        save: "保存",
+        check: "選択してください",
+        add: "作成",
+        edit: "編集",
+        delete: "削除",
+        deleteFinish: "削除成功",
+        deleteOk: "本当に削除しますか？",
+        count: "数量",
+        refresh: "更新",
+        read: "読み取り",
+        config: "設定",
+        csv: "CSVとしてエクスポート",
+        connecting: "接続中...",
+        action: "操作"
     },
     aside: {
-        cluster: 'クラスタ', // Cluster
-        node: 'ノード', // Node
-        topic: 'トピック', // Topic
-        producer: 'プロデューサー', // Producer
-        consumer: 'コンシューマー', // Consumer
-        group: 'コンシューマグループ', // Consumer Group
-        monitor: '巡回検査', // Inspection
-        settings: '設定' // Settings
+        cluster: "クラスタ",
+        node: "ノード",
+        topic: "トピック",
+        producer: "プロデューサー",
+        consumer: "コンシューマー",
+        group: "コンシューマグループ",
+        monitor: "巡回",
+        settings: "設定"
     },
     conn: {
-        title: 'クラスタ', // Cluster
-        add: 'クラスタ追加', // Add Cluster
-        edit: '接続編集', // Edit Connection
-        test: '接続テスト', // Test Connection
-        add_link: '接続追加', // Add Connection
-        please_add_name: 'ニックネームを入力してください', // Please enter a nickname
-        please_add_link: '接続アドレスを入力してください', // Please enter the connection address
-        input_name: '名称を入力', // Enter name
-        bootstrap_servers: '接続アドレス', // Connection Address
-        tip: '注意：Kafkaで設定されたadvertised.listenersアドレスがローカルからアクセス可能であることを確認してください（特にDNS解決、IPを入力しても、ローカルのhostsファイルに適切に設定する必要があります）',
-        tls: 'TLSを使用', // Use TLS
-        skipTLSVerify: 'TLS検証をスキップ', // Skip TLS Verification
-        tls_cert_file: 'PEM証明書のパスを入力', // Enter PEM certificate path
-        tls_key_file: '秘密鍵ファイルのパスを入力', // Enter key private key path
-        tls_ca_file: 'CA証明書のパスを入力', // Enter CA certificate path
-        use_sasl: 'SASLを使用', // Use SASL
-        sasl_mechanism: 'SASLメカニズム', // SASL Mechanism
-        sasl_user: 'SASLユーザー名', // SASL Username
-        sasl_pwd: 'SASLパスワード', // SASL Password
-        kerberos_user_keytab: 'Kerberos keytabファイルのパス', // Kerberos keytab file path
-        kerberos_krb5_conf: 'Kerberos krb5.confのパス', // Kerberos krb5.conf path
-        Kerberos_user: 'Kerberosユーザー名', // Kerberos Username
-        Kerberos_realm: 'Kerberosドメイン', // Kerberos Realm
-        kerberos_service_name: 'Kerberosサービス名', // Kerberos Service Name
+        title: "クラスタ",
+        add: "クラスタを追加",
+        edit: "接続を編集",
+        test: "接続テスト",
+        add_link: "接続を追加",
+        please_add_name: "ニックネームを入力してください",
+        please_add_link: "接続アドレスを入力してください",
+        input_name: "名前を入力してください",
+        bootstrap_servers: "接続アドレス",
+        tip: "注意: ローカル環境からKafkaのadvertised.listenersアドレスにアクセスできるようにしてください（特にドメイン名解決、IPを入力してもローカルでhostsを設定する必要があります）",
+        tls: "TLSを使用",
+        skipTLSVerify: "TLS検証をスキップ",
+        tls_cert_file: "PEM証明書パスを入力",
+        tls_key_file: "秘密鍵ファイルパスを入力",
+        tls_ca_file: "CA証明書パスを入力",
+        use_sasl: "SASLを使用",
+        sasl_mechanism: "SASLメカニズム",
+        sasl_user: "SASLユーザー名",
+        sasl_pwd: "SASLパスワード",
+        kerberos_user_keytab: "Kerberos keytabファイルパス",
+        kerberos_krb5_conf: "Kerberos krb5.confパス",
+        Kerberos_user: "Kerberosユーザー",
+        Kerberos_realm: "Kerberos領域",
+        kerberos_service_name: "Kerberosサービス名"
+    },
+    node: {
+        title: "ノード",
+        source: "ソース",
+        value: "値（ダブルクリックで編集）",
+        sensitive: "感度はありますか？",
+        ok_message: "編集成功、設定を更新"
+    },
+    topic: {
+        title: "トピック",
+        add: "トピックを作成",
+        add_name: "トピック名を入力",
+        selectedGroup: "グループを選択してオフセットを読み取る",
+        partition: "パーティション",
+        add_partition: "パーティションを追加",
+        add_partition_count: "追加するパーティション数",
+        replication_factor: "レプリケーションファクター",
+        err: "トピックエラー",
+        lag: "遅延",
+        viewProduce: "メッセージの生成",
+        viewConsumer: "メッセージの表示/消費",
+        viewOffset: "オフセットの読み取り",
+        viewConfig: "トピック設定",
+        viewPartition: "パーティションの表示",
+        deleteTopic: "トピックを削除"
+    },
+    producer: {
+        title: "プロデューサー",
+        desc: "指定されたトピックにメッセージを送信するプロデューサークライアント。",
+        selectTopic: "トピックを選択",
+        topicPlaceholder: "必須：トピックを選択または検索",
+        optionalMessageKey: "オプション：メッセージキーを入力",
+        keyPlaceholder: "オプション：メッセージキーを入力",
+        specifyPartition: "オプション：パーティション番号を指定",
+        messageContentPlaceholder: "必須：メッセージ内容、文字列形式、JSONもサポート",
+        headersTitle: "メッセージヘッダー:",
+        addHeader: "ヘッダーを追加",
+        removeHeader: "削除",
+        headerKeyPlaceholder: "ヘッダーキー",
+        headerValuePlaceholder: "ヘッダーバリュー",
+        sendTimes: "送信回数",
+        sendTimesPlaceholder: "送信回数",
+        sendMessage: "メッセージを送信"
+    },
+    consumer: {
+        title: "コンシューマー",
+        desc: "トピックからのメッセージを表示するシンプルなコンシューマクライアント。",
+        requiredTopic: "必須：トピック",
+        topicPlaceholder: "トピックを選択または検索",
+        requiredMessagesCount: "必須：消費するメッセージ数",
+        messagesCountPlaceholder: "消費するメッセージ数",
+        pollTimeoutDescription: "ポールタイムアウト：デフォルトは10秒。異常または消費可能なメッセージがない場合、タイムアウトします",
+        pollTimeoutPlaceholder: "ポールタイムアウト",
+        optionalGroup: "オプション：グループ（一度選択すると、消費時にオフセットが自動的にコミットされます。新しいグループの作成もサポート）",
+        groupPlaceholder: "コンシューマグループを選択または作成",
+        consumeMessage: "メッセージを消費"
+    },
+    group: {
+        title: "コンシューマグループ",
+        member: "メンバー",
+        warn: "具体的なトピックからこのページに切り替えてください"
+    },
+    inspection: {
+        title: "巡回",
+        desc: "Kafkaの遅延状況を巡回します。",
+        topicsLabel: "トピック",
+        topicPlaceholder: "トピックを選択または検索",
+        groupLabel: "グループ",
+        groupPlaceholder: "コンシューマグループを選択または作成",
+        startInspection: "巡回を開始",
+        autoFetch: "5分ごとにデータを自動取得",
+        lagFormula: "遅延 = 終端オフセット - 提出オフセット。"
     },
     settings: {
-        title: '設定',
-        width: 'ウィンドウ幅',
-        height: 'ウィンドウ高さ',
-        lang: '言語',
-        theme: 'テーマ',
+        title: "設定",
+        width: "ウィンドウ幅",
+        height: "ウィンドウ高さ",
+        lang: "言語",
+        theme: "テーマ"
+    },
+    message: {
+        noMemberFound: "メンバーが見つかりません",
+        saveSuccess: "保存しました",
+        connectSuccess: "接続しました",
+        fetchSuccess: "取得しました",
+        sendSuccess: "送信しました",
+        selectGroupFirst: "まずグループを選択してください",
+        selectTopic: "トピックを選択してください",
+        selectTopicGroup: "トピックとグループを選択してください",
+        connectErr: "接続失敗",
+        addOk: "追加しました",
+        editOk: "編集しました、設定を更新",
+        mustFill: "すべての必須フィールドを入力してください",
+        saveErr: "保存失敗",
+        pleaseInput: "メッセージ内容を入力してください"
+    },
+    about: {
+        title: "について",
+        projectHomepage: "プロジェクトホームページ",
+        kafkaKing: "Kafka-King",
+        esClient: "同様のESクライアント",
+        esKing: "ES-King",
+        technicalGroup: "技術交流グループ",
+        qqGroup: "QQ交流グループ"
+    },
+    header: {
+        desc: "よりユーザーフレンドリーなKafka GUI",
+        c_node: "現在のクラスタ",
+        netErr: "GitHubに接続できません。ネットワークを確認してください",
+        newVersion: "新しいバージョンが見つかりました",
+        down: "今すぐダウンロード"
     }
 };

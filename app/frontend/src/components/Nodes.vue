@@ -1,15 +1,17 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">节点</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">刷新</n-button>
-      <n-text>共计{{ data.length }}个</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">导出为csv</n-button>
-
+      <h2 style="max-width: 200px;">{{t('node.title')}}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
+      <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
     </n-flex>
-    <n-spin :show="loading" description="Connecting...">
+    <n-spin :show="loading" :description="t('common.connecting')">
       <n-tabs type="line" animated  v-model:value="activeTab">
-        <n-tab-pane name="broker" tab="Brokers">
+        <n-tab-pane name="Broker">
+          <template #tab>
+            {{t('node.title')}}
+          </template>
           <n-data-table
               :columns="columns"
               :data="data"
@@ -19,7 +21,10 @@
               :pagination="pagination"
           />
         </n-tab-pane>
-        <n-tab-pane name="配置" tab="Configs">
+        <n-tab-pane name="Config">
+          <template #tab>
+            {{t('common.config')}}
+          </template>
           <n-data-table
               :columns="config_columns"
               :data="config_data"
@@ -40,15 +45,18 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, getCurrentDateTime, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
 import ShowOrEdit from "../common/ShowOrEdit.vue";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const config_data = ref([])
 const data = ref([])
 // 当前活动的 TabPane 名称
-const activeTab = ref('broker');
+const activeTab = ref('Broker');
 const activeConfigNode = ref('');
 const loading = ref(false)
 const message = useMessage()
@@ -102,10 +110,10 @@ const pagination = ref({
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
-      activeTab.value === "broker" ? data.value : config_data.value ,
-      activeTab.value === "broker" ? columns : config_columns
+      activeTab.value === "Broker" ? data.value : config_data.value ,
+      activeTab.value === "Broker" ? columns : config_columns
   )
-  download_file(csvContent, '导出.csv', 'text/csv;charset=utf-8;')
+  download_file(csvContent, `${getCurrentDateTime()}.csv`, 'text/csv;charset=utf-8;')
 }
 
 
@@ -119,7 +127,7 @@ const columns = [
   },
   { title: 'rack', key: 'rack', sorter: 'default',width: 20,resizable: true },
   {
-    title: '配置', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'config', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(
         NButton,
         {
@@ -130,7 +138,7 @@ const columns = [
             activeConfigNode.value = row["node_id"]
           }
         },
-        {default: () => '配置', icon: () => h(NIcon, null, { default: () => h(SettingsTwotone) })}
+        {default: () => t('common.config'), icon: () => h(NIcon, null, { default: () => h(SettingsTwotone) })}
     )
   },
 ]
@@ -138,7 +146,7 @@ const columns = [
 const config_columns = [
   { title: 'Name', key: 'Name', sorter: 'default',width: 80,resizable: true,
   },
-  { title: 'Value（双击可编辑）', key: 'Value', sorter: 'default',width: 140,resizable: true,
+  { title: t('node.value'), key: 'Value', sorter: 'default',width: 140,resizable: true,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -148,9 +156,9 @@ const config_columns = [
       })
     }
   },
-  { title: '来源', key: 'Source', sorter: 'default',width: 50,resizable: true,},
-  { title: '是否敏感', key: 'Sensitive',width: 20,resizable: true,sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
-    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error": "info"}, {default: () => row['Sensitive'] === true ? "是": "否"}),
+  { title: t('node.source'), key: 'Source', sorter: 'default',width: 50,resizable: true,},
+  { title: t('node.sensitive'), key: 'Sensitive',width: 20,resizable: true,sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
+    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error": "info"}, {default: () => row['Sensitive'] === true ? "yes": "no"}),
   },
 
 ]
@@ -165,7 +173,7 @@ const getBrokerConfig = async (node_id) => {
       // 排序
       res.results.sort((a, b) => a["Name"] > b["Name"] ? 1 : -1)
       config_data.value = res.results
-      activeTab.value = "配置"
+      activeTab.value = "Config"
     }
   }catch (e) {
     message.error(e)
@@ -182,7 +190,7 @@ const alterNodeConfig = async (node_id, name, value) => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("编辑成功，刷新配置")
+      message.success(t('node.ok_message'))
       await getBrokerConfig(activeConfigNode.value)
     }
   } catch (e) {

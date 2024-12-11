@@ -3,7 +3,7 @@
     <n-flex vertical>
       <n-flex align="center">
         <h2 style="max-width: 200px;">{{ t('conn.title') }}</h2>
-        <n-text>共有 {{ Nodes.length }} 个</n-text>
+        <n-text>{{t('common.count')}}：{{ Nodes.length }}</n-text>
         <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{ t('conn.add') }}</n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
@@ -291,9 +291,9 @@ const saveNode = async () => {
       showEditDrawer.value = false
 
       await refreshNodeList()
-      message.success('保存成功')
+      message.success(t('message.saveSuccess'))
     } else {
-      message.error('请填写所有必填字段')
+      message.error(t('message.mustFill'))
     }
   })
 }
@@ -305,7 +305,7 @@ const deleteNode = async (id) => {
   config.connects = Nodes.value
   await SaveConfig(config)
   await refreshNodeList()
-  message.success('删除成功')
+  message.success(t('common.deleteFinish'))
 }
 
 // 测试连接
@@ -318,16 +318,16 @@ const test_connect = async () => {
       try {
         const res = await TestClient(currentNode.value.name, currentNode.value)
         if (res.err !== "") {
-          message.error("连接失败：" + res.err)
+          message.error(t('message.connectErr') + "：" + res.err)
         } else {
-          message.success('连接成功')
+          message.success(t('message.connectSuccess'))
         }
       } catch (e) {
         message.error(e)
       }
       test_connect_loading.value = false
     } else {
-      message.error('请填写所有必填字段')
+      message.error(t('message.mustFill'))
     }
   })
 }
@@ -340,11 +340,11 @@ const selectNode = async (node) => {
   try {
     const res = await SetConnect(node.name, node, false)
     if (res.err !== "") {
-      message.error("连接失败：" + res.err)
+      message.error(t('message.connectErr') + "：" + res.err)
     } else {
       emitter.emit('menu_select', "node")
       emitter.emit('selectNode', node)
-      message.success('连接成功')
+      message.success(t('message.connectSuccess'))
     }
   } catch (e) {
     message.error(e)

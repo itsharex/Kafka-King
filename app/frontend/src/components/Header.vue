@@ -16,7 +16,7 @@
     </template>
     <template #extra>
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
-        <n-button quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>
+<!--        <n-button quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>-->
 <!--        <n-button quaternary :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>-->
         <n-button quaternary @click="openUrl(update_url)"
                   :render-icon="renderIcon(CodeFilled)"/>
@@ -56,6 +56,9 @@ import {CheckUpdate} from '../../wailsjs/go/system/Update'
 import {openUrl, renderIcon} from "../utils/common";
 import {GetAppName, GetVersion} from "../../wailsjs/go/config/AppConfig";
 import emitter from "../utils/eventBus";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 // defineProps(['options', 'value']);
 
@@ -75,7 +78,7 @@ let version = ref({
   body: "",
 })
 
-const desc = "更人性化的 Kafka GUI "
+let desc = `${t('header.desc')}`
 const subtitle = ref("")
 
 const notification = useNotification()
@@ -96,7 +99,7 @@ onMounted(async () => {
 })
 
 const selectNode = (node) => {
-  subtitle.value = "当前集群：【" + node.name + "】"
+  subtitle.value = `${t('header.c_node')}：【` + node.name + "】"
 }
 
 const checkForUpdates = async () => {
@@ -105,12 +108,12 @@ const checkForUpdates = async () => {
     const v = await GetVersion()
     const resp = await CheckUpdate()
     if (!resp) {
-      check_msg.value = "无法连接github，请检查网络"
+      check_msg.value = `${t('header.netErr')}`
     } else if (resp.tag_name !== v) {
-      check_msg.value = '发现新版本 ' + resp.tag_name
+      check_msg.value = `${t('header.newVersion')} ` + resp.tag_name
       version.value.body = resp.body
       const n = notification.success({
-        title: '发现新版本 ' + resp.tag_name,
+        title: check_msg.value,
         content: resp.body,
         action: () =>
               h(NFlex, {justify: "flex-end" }, () => [
@@ -121,7 +124,7 @@ const checkForUpdates = async () => {
                       secondary: true,
                       onClick: () => BrowserOpenURL(update_url),
                     },
-                    () => "立即下载",
+                    () => t('header.down'),
                 ),
                 h(
                     NButton,
@@ -131,7 +134,7 @@ const checkForUpdates = async () => {
                         n.destroy()
                       },
                     },
-                    () => "取消",
+                    () => t('common.cancel'),
                 ),
             ]),
         onPositiveClick: () => BrowserOpenURL(update_url),

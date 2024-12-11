@@ -1,48 +1,50 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">Consumer</h2>
-      <p>一个简单消费者客户端，查看Topic消息。</p>
+      <h2 style="max-width: 200px;">{{ t('consumer.title') }}</h2>
+      <p>{{ t('consumer.desc') }}</p>
     </n-flex>
     <!-- 查询条件区域 -->
     <n-flex align="center">
-      必选：Topic：
+      {{ t('consumer.requiredTopic') }}：
       <n-select
           v-model:value="selectedTopic"
           :options="topic_data"
-          placeholder="选择或搜索Kafka Topic"
+          :placeholder="t('consumer.topicPlaceholder')"
           filterable
           clearable
           style="width: 300px"
       />
 
-      必选：消费数量：
+      {{ t('consumer.requiredMessagesCount') }}：
       <n-input-number
           v-model:value="maxMessages"
           :min="1"
-          placeholder="消费消息数量"
+          :placeholder="t('consumer.messagesCountPlaceholder')"
           style="width: 160px"
       />
-      poll超时时间：默认10s。如异常或无可消费消息，则会超时
+      {{ t('consumer.pollTimeoutDescription') }}
       <n-input-number
           v-model:value="timeout"
           :min="1"
-          placeholder="poll超时时间"
+          :placeholder="t('consumer.pollTimeoutPlaceholder')"
           style="width: 160px"
       />
     </n-flex>
     <n-flex align="center">
-      可选：Group（一旦选择，消费时会自动提交Offset。支持创建新Group）
+      {{ t('consumer.optionalGroup') }}
       <n-select
           v-model:value="selectedGroup"
           :options="group_data"
-          placeholder="选择或创建Consumer Group"
+          :placeholder="t('consumer.groupPlaceholder')"
           filterable
           clearable
           tag
           style="width: 300px"
       />
-      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">消费消息</n-button>
+      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
+        {{ t('consumer.consumeMessage') }}
+      </n-button>
     </n-flex>
 
     <!-- 消息列表 -->
@@ -55,7 +57,6 @@
     />
   </n-flex>
 </template>
-
 <script setup>
 import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
@@ -63,6 +64,9 @@ import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
 import {NButton, NDataTable, NFlex, useMessage} from 'naive-ui'
 import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const message = useMessage()
 const topic_data = ref([]);
@@ -220,7 +224,7 @@ const columns = [
 // 获取消息
 const consume = async () => {
   if (!selectedTopic.value) {
-    message.error('请选择Topic')
+    message.error(t('message.selectTopic'))
     return
   }
 
@@ -231,7 +235,7 @@ const consume = async () => {
       message.error(result.err)
     } else {
       messages.value = result.results
-      message.success('获取成功')
+      message.success(t('message.fetchSuccess'))
     }
   } catch (error) {
     console.error(error)

@@ -183,7 +183,7 @@ func (k *Service) GetBrokers() *types.ResultResp {
 	result := &types.ResultResp{}
 
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -215,7 +215,7 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	result := &types.ResultsResp{}
 
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -245,7 +245,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 	result := &types.ResultsResp{}
 
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -301,7 +301,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -328,7 +328,7 @@ func (k *Service) GetTopicOffsets(topics []string, groupID string) *types.Result
 	result := &types.ResultResp{}
 
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -381,7 +381,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	if k.groups != nil && len(k.groups) > 0 {
@@ -411,7 +411,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -454,7 +454,7 @@ func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -481,7 +481,7 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -504,7 +504,7 @@ func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -522,7 +522,7 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -546,7 +546,7 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ac := []kadm.AlterConfig{
@@ -573,7 +573,7 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ac := []kadm.AlterConfig{
@@ -599,7 +599,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
@@ -636,7 +636,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
 	if k.kac == nil {
-		result.Err = "请先选择连接"
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 
@@ -700,7 +700,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 	log.Println("提交offset...")
 	if group != "" {
 		if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
-			result.Err = "提交offsets失败: " + err.Error()
+			result.Err = "Failed to submit offsets: " + err.Error()
 			return result
 		}
 	}

@@ -90,3 +90,4 @@ Apache-2.0 license
 - wails：https://wails.io/docs/gettingstarted/installation
 - naive ui：https://www.naiveui.com/
 - franz-go：https://github.com/twmb/franz-go/
+- xicons：https://xicons.org/#/

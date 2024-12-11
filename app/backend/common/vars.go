@@ -26,3 +26,7 @@ var (
 	ISSUES_URL       = fmt.Sprintf("https://github.com/%s/issues", Project)
 	ISSUES_API_URL   = fmt.Sprintf("https://api.github.com/repos/%s/issues?state=open", Project)
 )
+
+const (
+	PleaseSelectErr = "Please select a connection first"
+)

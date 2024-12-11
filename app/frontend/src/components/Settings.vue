@@ -19,12 +19,12 @@
                   :style="{ maxWidth: '120px' }"/>
       </n-form-item>
 
-      <n-form-item :label="t('settings.theme')">
+      <n-form-item :label="t('settings.theme')" >
         <n-button circle :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>
       </n-form-item>
 
       <n-form-item>
-        <n-button @click="saveConfig" strong type="primary">保存设置</n-button>
+        <n-button @click="saveConfig" strong type="primary">{{ t('common.save')}}</n-button>
       </n-form-item>
 
       <n-form-item label="">
@@ -55,13 +55,15 @@ let MoonOrSunnyOutline = shallowRef(WbSunnyOutlined)
 const config = ref({
   width: 1248,
   height: 768,
-  language: 'zh-CN',
+  language: 'en-US',
   theme: theme.name,
 })
 const languageOptions = [
   {label: '中文', value: 'zh-CN'},
   {label: 'English', value: 'en-US'},
   {label: '日本語', value: 'ja-JP'},
+  {label: '한국인', value: 'ko-KR'},
+  {label: 'рускі', value: 'ru-RU'},
 ]
 
 onMounted(async () => {
@@ -81,7 +83,7 @@ const saveConfig = async () => {
   config.value.theme = theme.name
   const err = await SaveConfig(config.value)
   if (err !== "") {
-    message.error("保存失败：" + err)
+    message.error(t('message.saveErr') + "：" + err)
     return
   }
 
@@ -89,7 +91,7 @@ const saveConfig = async () => {
 
   emitter.emit('update_theme', theme)
   // 可以添加保存成功的提示
-  message.success("保存成功")
+  message.success(t('message.saveSuccess'))
   config.value = await GetConfig()
 
 }

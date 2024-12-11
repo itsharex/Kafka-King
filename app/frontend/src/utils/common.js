@@ -1,4 +1,3 @@
-
 // 渲染图标给菜单
 import {h} from "vue";
 import {NIcon} from "naive-ui";
@@ -102,4 +101,19 @@ export function formatDate(date){
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+export function getCurrentDateTime() {
+  const now = new Date();
+
+  // 获取年份、月份、日期、小时、分钟、秒钟
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从0开始，所以要加1
+  const date = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  // 返回格式化的日期时间字符串
+  return `${year}.${month}.${date}-${hours}.${minutes}.${seconds}`;
 }

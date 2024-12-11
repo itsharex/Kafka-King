@@ -85,14 +85,17 @@ import Consumer from "./components/Consumer.vue";
 import Monitor from "./components/Monitor.vue";
 import About from "./components/About.vue";
 import {useI18n} from 'vue-i18n'
+import koKR from "./i18n/ko-KR";
+import ruRU from "./i18n/ru-RU";
 
 const { t, locale } = useI18n()
 
 let headerClass = shallowRef('lightTheme')
 let naive_language = shallowRef(zhCN)
 let Theme = shallowRef(lightTheme)
+
 // 左侧菜单
-const sideMenuOptions = [
+const sideMenuOptions = shallowRef([
   {
     label: t('aside.cluster'),
     key: 'cluster',
@@ -143,14 +146,15 @@ const sideMenuOptions = [
     component: Settings
   },
   {
-    label: "关于",
+    label: t('about.title'),
     key: "about",
     icon: renderIcon(InfoOutlined),
     component: About
   },
 
-]
-const activeItem = shallowRef(sideMenuOptions[0])
+])
+
+const activeItem = shallowRef(sideMenuOptions.value[0])
 
 onMounted(async () => {
   // 从后端加载配置
@@ -176,7 +180,7 @@ onMounted(async () => {
 // 切换菜单
 function handleMenuSelect(key) {
   // 根据key寻找item
-  activeItem.value = sideMenuOptions.find(item => item.key === key)
+  activeItem.value = sideMenuOptions.value.find(item => item.key === key)
 }
 
 
@@ -191,7 +195,9 @@ function handleLanguageChange(language){
   const languageMap = {
     'zh-CN': zhCN,
     'en-US': enUS,
-    'ja-JP': jaJP
+    'ja-JP': jaJP,
+    'ko-KR': koKR,
+    'ru-RU': ruRU,
   }
   locale.value = language
   naive_language.value = languageMap[language]

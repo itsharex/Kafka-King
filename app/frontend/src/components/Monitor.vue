@@ -1,52 +1,52 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">巡检</h2>
-      <p>巡检Kafka积压情况。</p>
+      <h2 style="max-width: 200px;">{{ t('inspection.title') }}</h2>
+      <p>{{ t('inspection.desc') }}</p>
     </n-flex>
     <n-flex align="center">
-      Topics:
+      {{ t('inspection.topicsLabel') }}:
       <n-select
           v-model:value="selectedTopics"
           @update:value="clear_offset"
           :options="topic_data"
-          placeholder="选择或搜索Kafka Topic"
+          :placeholder="t('inspection.topicPlaceholder')"
           filterable
           clearable
           multiple
           style="width: 600px"
       />
-      Group：
+      {{ t('inspection.groupLabel') }}：
       <n-select
           v-model:value="selectedGroup"
           @update:value="clear_offset"
           :options="group_data"
-          placeholder="选择或创建Consumer Group"
+          :placeholder="t('inspection.groupPlaceholder')"
           filterable
           clearable
           tag
           style="width: 300px"
       />
-      <n-button @click="fetchData" :loading="loading" :render-icon="renderIcon(MessageOutlined)">开始巡检</n-button>
-      每5分钟自动抓取一次数据
+      <n-button @click="fetchData" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
+        {{ t('inspection.startInspection') }}
+      </n-button>
+      {{ t('inspection.autoFetch') }}
 
     </n-flex>
 
     <n-flex vertical>
-<!--      <n-flex align="center">-->
-<!--        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>-->
-<!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
-<!--      </n-flex>-->
-      积压 = 终末offset - 提交offset。
+      <!--      <n-flex align="center">-->
+      <!--        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>-->
+      <!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
+      <!--      </n-flex>-->
+      {{ t('inspection.lagFormula') }}
       <div ref="lag_chartRef" style="width: 98%; height: 440px"></div>
       <div ref="commit_chartRef" style="width: 98%; height: 440px"></div>
       <div ref="end_chartRef" style="width: 98%; height: 440px"></div>
     </n-flex>
 
   </n-flex>
-
 </template>
-
 <script setup>
 import {onMounted, ref, shallowRef} from 'vue'
 import * as echarts from 'echarts/core';
@@ -60,6 +60,9 @@ import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Se
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const message = useMessage()
 const topic_data = ref([]);
@@ -148,7 +151,7 @@ const initChart = () => {
   const option = {
     backgroundColor: 'transparent', // 设置背景色为透明
     title: {
-      text: 'Kafka Offset监控',
+      text: 'Kafka Offset Monitor',
     },
     tooltip: {
       trigger: 'axis',
@@ -241,7 +244,7 @@ const updateChart = () => {
 let timer = null
 const fetchData = async () => {
   if (selectedTopics.value.length === 0 || !selectedGroup.value) {
-    message.warning('请选择Topic和Group')
+    message.warning(t('message.selectTopicGroup'))
     return
   }
   loading.value = true

@@ -1,12 +1,12 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">消费者组</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">刷新</n-button>
-      <n-text>共计{{ group_data.length }}个</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">导出为csv</n-button>
+      <h2 style="max-width: 200px;">{{t('group.title')}}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
+      <n-text>{{t('common.count')}}：{{ group_data.length }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
     </n-flex>
-    <n-spin :show="loading" description="Connecting...">
+    <n-spin :show="loading" :description="t('common.connecting')">
       <n-data-table
           :columns="columns"
           :data="group_data"
@@ -19,7 +19,7 @@
   </n-flex>
 
   <n-drawer v-model:show="showDrawer" :width="800">
-    <n-drawer-content title="创建Topic配置">
+    <n-drawer-content :title="t('group.member')">
       <n-data-table
           :columns="members_columns"
           :data="members_data"
@@ -37,6 +37,9 @@ import {NButton, NButtonGroup, NDataTable, NIcon, NPopconfirm, NTag, NText, useM
 import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DeleteForeverTwotone, DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {DeleteGroup, GetGroupMembers, GetGroups} from "../../wailsjs/go/service/Service";
+import {useI18n} from "vue-i18n";
+
+const {t} = useI18n()
 
 const group_data = ref([])
 const members_data = ref([])
@@ -88,7 +91,7 @@ const getMembers = async (group) => {
         let data0 = res.results[0]
         members_data.value = data0['Members']
       }else {
-        message.warning("没有找到成员")
+        message.warning(t('message.noMemberFound'))
       }
     }
 
@@ -139,7 +142,7 @@ const columns = [
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}}
   },
   {
-    title: '操作',
+    title: t('common.action'),
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
     resizable: true,
@@ -160,7 +163,7 @@ const columns = [
                     showDrawer.value = true
                   }
                 },
-                {default: () => '查看成员', icon: () => h(NIcon, null, {default: () => h(SettingsTwotone)})}
+                {default: () => t('group.member'), icon: () => h(NIcon, null, {default: () => h(SettingsTwotone)})}
             ),
             h(
                 NPopconfirm,
@@ -177,12 +180,12 @@ const columns = [
                                 type: 'error'
                               },
                               {
-                                default: () => '删除',
+                                default: () => t('common.delete'),
                                 icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
                               }
                           )
                   ,
-                  default: () => `确认删除${row["Group"]}?`
+                  default: () => `${t('common.deleteOk')} Group: ${row["Group"]}?`
                 }
             ),
           ]
@@ -206,7 +209,7 @@ const deleteGroups = async (group) => {
     if (res.err !== "") {
       message.error(res.err)
     } else {
-      message.success("删除成功")
+      message.success(t('common.deleteFinish'))
       await getData()
     }
   } catch (e) {
