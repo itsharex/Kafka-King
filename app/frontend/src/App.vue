@@ -92,7 +92,31 @@ const { t, locale } = useI18n()
 
 let headerClass = shallowRef('lightTheme')
 let naive_language = shallowRef(zhCN)
+
 let Theme = shallowRef(lightTheme)
+
+onMounted(async () => {
+
+  // =====================注册事件监听=====================
+  // 主题切换
+  emitter.on('update_theme', themeChange)
+  // 菜单切换
+  emitter.on('menu_select', handleMenuSelect)
+  // 语言切换
+  emitter.on('language_change', handleLanguageChange)
+
+  // 从后端加载配置
+  const loadedConfig = await GetConfig()
+  if (loadedConfig) {
+    // 设置窗口大小
+    await WindowSetSize(loadedConfig.width, loadedConfig.height)
+    // 设置主题
+    themeChange(loadedConfig.theme === darkTheme.name ? darkTheme : lightTheme)
+    // 语言切换
+    handleLanguageChange(loadedConfig.language)
+  }
+
+})
 
 // 左侧菜单
 const sideMenuOptions = shallowRef([
@@ -156,26 +180,7 @@ const sideMenuOptions = shallowRef([
 
 const activeItem = shallowRef(sideMenuOptions.value[0])
 
-onMounted(async () => {
-  // 从后端加载配置
-  const loadedConfig = await GetConfig()
-  if (loadedConfig) {
-    // 设置窗口大小
-    await WindowSetSize(loadedConfig.width, loadedConfig.height)
-    // 设置主题
-    themeChange(loadedConfig.theme === darkTheme.name ? darkTheme:lightTheme)
-    // 语言切换
-    handleLanguageChange(loadedConfig.language)
-  }
 
-  // =====================注册事件监听=====================
-  // 主题切换
-  emitter.on('update_theme', themeChange)
-  // 菜单切换
-  emitter.on('menu_select', handleMenuSelect)
-  // 语言切换
-  emitter.on('language_change', handleLanguageChange)
-})
 
 // 切换菜单
 function handleMenuSelect(key) {

@@ -74,7 +74,13 @@ onMounted(async () => {
   console.log(loadedConfig)
   if (loadedConfig) {
     config.value = loadedConfig
-    MoonOrSunnyOutline.value = loadedConfig.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
+    if (loadedConfig.theme === lightTheme.name){
+      theme = lightTheme
+      MoonOrSunnyOutline.value = WbSunnyOutlined
+    }else {
+      theme = darkTheme
+      MoonOrSunnyOutline.value = NightlightRoundFilled
+    }
   }
 })
 
