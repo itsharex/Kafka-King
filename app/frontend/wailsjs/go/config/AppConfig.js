@@ -14,6 +14,10 @@ export function GetVersion() {
   return window['go']['config']['AppConfig']['GetVersion']();
 }
 
+export function OpenFileDialog(arg1) {
+  return window['go']['config']['AppConfig']['OpenFileDialog'](arg1);
+}
+
 export function SaveConfig(arg1) {
   return window['go']['config']['AppConfig']['SaveConfig'](arg1);
 }
