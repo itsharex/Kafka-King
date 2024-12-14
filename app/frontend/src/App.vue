@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import {onMounted, shallowRef} from 'vue'
+import {computed, onMounted, shallowRef} from 'vue'
 import {
   darkTheme,
   enUS,
@@ -97,13 +97,6 @@ let Theme = shallowRef(lightTheme)
 
 onMounted(async () => {
 
-  // =====================注册事件监听=====================
-  // 主题切换
-  emitter.on('update_theme', themeChange)
-  // 菜单切换
-  emitter.on('menu_select', handleMenuSelect)
-  // 语言切换
-  emitter.on('language_change', handleLanguageChange)
 
   // 从后端加载配置
   const loadedConfig = await GetConfig()
@@ -115,11 +108,18 @@ onMounted(async () => {
     // 语言切换
     handleLanguageChange(loadedConfig.language)
   }
+  // =====================注册事件监听=====================
+  // 主题切换
+  emitter.on('update_theme', themeChange)
+  // 菜单切换
+  emitter.on('menu_select', handleMenuSelect)
+  // 语言切换
+  emitter.on('language_change', handleLanguageChange)
 
 })
 
 // 左侧菜单
-const sideMenuOptions = shallowRef([
+const sideMenuOptions = computed(() =>[
   {
     label: t('aside.cluster'),
     key: 'cluster',
