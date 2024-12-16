@@ -10,7 +10,7 @@
       <n-tooltip>
         <template #trigger>
           <n-tag :type=title_tag v-if="subtitle">{{subtitle}}</n-tag>
-          <n-p v-else>{{desc}}</n-p>
+          <n-p v-else>{{t('header.desc')}}</n-p>
         </template>
       </n-tooltip>
     </template>
@@ -69,7 +69,6 @@ const app_name = ref("");
 const title_tag = ref("success");
 const MaxMinIcon = shallowRef(CropSquareFilled)
 const update_url = "https://github.com/Bronya0/Kafka-King/releases"
-const qq_url = "https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz"
 const update_loading = ref(false)
 // let theme = lightTheme
 
@@ -78,7 +77,6 @@ let version = ref({
   body: "",
 })
 
-let desc = `${t('header.desc')}`
 const subtitle = ref("")
 
 const notification = useNotification()
@@ -94,7 +92,7 @@ onMounted(async () => {
   // MoonOrSunnyOutline.value = config.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
   const v = await GetVersion()
   version.value.tag_name = v
-  subtitle.value = desc + v
+  subtitle.value = t('header.desc') + v
   await checkForUpdates()
 })
 

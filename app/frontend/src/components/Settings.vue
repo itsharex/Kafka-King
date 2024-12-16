@@ -15,7 +15,7 @@
         <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
       </n-form-item>
       <n-form-item :label="t('settings.lang')">
-        <n-select v-model:value="config.language" :options="languageOptions" @update:value="changeLang"
+        <n-select v-model:value="config.language" :options="languageOptions"
                   :style="{ maxWidth: '120px' }"/>
       </n-form-item>
 
@@ -103,9 +103,9 @@ const saveConfig = async () => {
 }
 
 // 语言变更
-const changeLang = (value) => {
-  emitter.emit('language_change', value)
-}
+// const changeLang = (value) => {
+//   emitter.emit('language_change', value)
+// }
 
 const changeTheme = () => {
   MoonOrSunnyOutline.value = MoonOrSunnyOutline.value === NightlightRoundFilled ? WbSunnyOutlined : NightlightRoundFilled;

@@ -8,6 +8,12 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/jcmturner/gokrb5/v8/client"
 	krbConfig "github.com/jcmturner/gokrb5/v8/config"
 	"github.com/jcmturner/gokrb5/v8/keytab"
@@ -16,11 +22,6 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/kerberos"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
-	"log"
-	"os"
-	"strings"
-	"sync"
-	"time"
 )
 
 type TopicConfig struct {
@@ -156,7 +157,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		return result
 	}
 	//正式切换节点，赋值并清理缓存
-	if isTest == false {
+	if !isTest {
 		k.connectName = connectName
 		k.kac = admin
 		k.client = cl
@@ -249,7 +250,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 		return result
 	}
 
-	if k.topics != nil && len(k.topics) > 0 {
+	if len(k.topics) > 0 {
 		result.Results = k.topics
 		return result
 	}
@@ -384,7 +385,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
-	if k.groups != nil && len(k.groups) > 0 {
+	if len(k.groups) > 0 {
 		result.Results = k.groups
 		return result
 	}
@@ -625,7 +626,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 	//同步发送
 	k.client.ProduceSync(ctx, records...)
 
-	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+	fmt.Printf("耗时：%.4f秒\n", time.Since(st).Seconds())
 
 	return result
 }
@@ -694,7 +695,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 	}
 	result.Results = res
 
-	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+	fmt.Printf("耗时：%.4f秒\n", time.Since(st).Seconds())
 	fmt.Println(topic, group, num)
 
 	log.Println("提交offset...")

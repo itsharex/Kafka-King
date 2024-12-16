@@ -39,6 +39,7 @@ func (a *AppConfig) GetConfig() *types.Config {
 	if err != nil {
 		return defaultConfig
 	}
+	fmt.Println("config", defaultConfig)
 	return defaultConfig
 }
 
