@@ -44,13 +44,16 @@
 # 下载
 右侧下载，或者点[下载地址](https://github.com/Bronya0/Kafka-King/releases)，展开【Assets】，选择自己的平台下载，支持windows、macos、linux。
 
-> **使用前请检查kafka集群配置的`advertised.listeners`，如果未配置，或配置的是域名，那么在King中填写连接地址时，请提前在本机电脑的hosts文件中添加对应域名解析，否则会因为无法解析域名而无法连接**
-> 
-> **如果你的连接需要SSL，那么勾选TLS并勾选忽略验证（有证书的话就下下来，开启tls验证，填入证书路径）。**
-> 
-> **对于SASL机制用户需要勾选开启SASL，并选择SASL协议（通常是plain），并填入用户名密码。**
+`必看 注意事项：`
 
-如果遇到webview2运行时错误，从微软官网下载重装运行时即可：https://developer.microsoft.com/zh-cn/microsoft-edge/webview2
+> 1、**使用前请检查kafka集群配置的`advertised.listeners`，如果未配置，或配置的是域名，那么在King中填写连接地址时，请提前在本机电脑的hosts文件中添加对应域名解析，否则会因为无法解析域名而无法连接，哪怕你在king输入框里填的是ip也一样**
+> 
+> 2、**如果你的连接需要SSL，那么勾选TLS并勾选忽略验证（有证书的话就下下来，开启tls验证，填入证书路径）。**
+> 
+> 3、**对于SASL机制用户需要勾选开启SASL，并选择SASL协议（通常是plain），并填入用户名密码。**
+>
+> 4、**如果遇到webview2运行时错误，从微软官网下载重装运行时即可：https://developer.microsoft.com/zh-cn/microsoft-edge/webview2**
+
 
 # 功能截图
 offset巡检，v0.33版本上线，最直观的方式查看消息积压情况
