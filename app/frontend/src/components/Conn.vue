@@ -59,11 +59,11 @@
           </n-form-item>
           {{ t('conn.tip') }}
           <n-form-item :label="t('conn.tls')" path="tls">
-            <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
 
           <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
-            <n-switch checked-value="enable" unchecked-value="disable" value="enable"
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" value="enable"
                       v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
@@ -104,7 +104,7 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.use_sasl')" path="sasl">
-            <n-switch checked-value="enable" unchecked-value="disable" v-model:value="currentNode.sasl"/>
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.sasl"/>
           </n-form-item>
 
           <n-form-item :label="t('conn.sasl_mechanism')" path="sasl_mechanism">
