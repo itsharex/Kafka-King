@@ -145,18 +145,19 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 
 	cl, err := kgo.NewClient(config...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "NewClient Error：" + err.Error()
 		return result
 	}
 	admin := kadm.NewClient(cl)
 	ctx := context.Background()
-	_, err = admin.ListTopics(ctx)
+	topics, err := admin.ListTopics(ctx)
 	if err != nil {
 		log.Println("连接集群失败", err)
-		result.Err = err.Error()
+		result.Err = "ListTopics Error：" + err.Error()
 		return result
 	}
-	//正式切换节点，赋值并清理缓存
+
+	//正式切换节点，赋值并清理缓存，并更新缓存
 	if !isTest {
 		k.connectName = connectName
 		k.kac = admin
@@ -164,6 +165,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		k.config = config
 		k.bootstrapServers = bootstrapServers
 		k.clearCache()
+		k.topics = k.buildTopicsResp(topics)
 	}
 
 	return result
@@ -190,7 +192,7 @@ func (k *Service) GetBrokers() *types.ResultResp {
 	ctx := context.Background()
 	brokers, err := k.kac.ListBrokers(ctx)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "ListBrokers Error：" + err.Error()
 		return result
 	}
 
@@ -223,7 +225,7 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 
 	configs, err := k.kac.DescribeBrokerConfigs(ctx, brokerID)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "DescribeBrokerConfigs Error：" + err.Error()
 		return result
 	}
 	cfg := configs[0].Configs
@@ -234,6 +236,42 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 			"Value":     config.Value,
 			"Source":    config.Source.String(),
 			"Sensitive": config.Sensitive,
+		})
+	}
+	return result
+}
+
+func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
+	var result []any
+	for topicName, topicDetail := range topics {
+		var partitions []any
+		for _, partition := range topicDetail.Partitions {
+			errMsg := ""
+			if partition.Err != nil {
+				errMsg = partition.Err.Error()
+			}
+			partitions = append(partitions, map[string]any{
+				"partition":       partition.Partition,
+				"leader":          partition.Leader,
+				"replicas":        partition.Replicas,
+				"isr":             partition.ISR,
+				"err":             errMsg,
+				"LeaderEpoch":     partition.LeaderEpoch,
+				"OfflineReplicas": partition.OfflineReplicas,
+			})
+		}
+		resultErrMsg := ""
+		if topicDetail.Err != nil {
+			resultErrMsg = topicDetail.Err.Error()
+		}
+		result = append(result, map[string]any{
+			"ID":                 topicDetail.ID,
+			"topic":              topicName,
+			"partition_count":    len(topicDetail.Partitions),
+			"replication_factor": len(topicDetail.Partitions[0].Replicas),
+			"IsInternal":         topicDetail.IsInternal,
+			"Err":                resultErrMsg,
+			"partitions":         partitions,
 		})
 	}
 	return result
@@ -259,41 +297,11 @@ func (k *Service) GetTopics() *types.ResultsResp {
 
 	topics, err := k.kac.ListTopics(ctx)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "ListTopics Error：" + err.Error()
 		return result
 	}
+	result.Results = k.buildTopicsResp(topics)
 
-	for topicName, topicDetail := range topics {
-		var partitions []any
-		for _, partition := range topicDetail.Partitions {
-			errMsg := ""
-			if partition.Err != nil {
-				errMsg = partition.Err.Error()
-			}
-			partitions = append(partitions, map[string]any{
-				"partition":       partition.Partition,
-				"leader":          partition.Leader,
-				"replicas":        partition.Replicas,
-				"isr":             partition.ISR,
-				"err":             errMsg,
-				"LeaderEpoch":     partition.LeaderEpoch,
-				"OfflineReplicas": partition.OfflineReplicas,
-			})
-		}
-		resultErrMsg := ""
-		if topicDetail.Err != nil {
-			resultErrMsg = topicDetail.Err.Error()
-		}
-		result.Results = append(result.Results, map[string]any{
-			"ID":                 topicDetail.ID,
-			"topic":              topicName,
-			"partition_count":    len(topicDetail.Partitions),
-			"replication_factor": len(topicDetail.Partitions[0].Replicas),
-			"IsInternal":         topicDetail.IsInternal,
-			"Err":                resultErrMsg,
-			"partitions":         partitions,
-		})
-	}
 	k.topics = result.Results
 	return result
 }
@@ -336,20 +344,20 @@ func (k *Service) GetTopicOffsets(topics []string, groupID string) *types.Result
 	ctx := context.Background()
 	startOffsets, err := k.kac.ListStartOffsets(ctx, topics...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "ListStartOffsets Error：" + err.Error()
 		return result
 	}
 
 	endOffsets, err := k.kac.ListEndOffsets(ctx, topics...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "ListEndOffsets Error：" + err.Error()
 		return result
 	}
 
 	//读取offset
 	committedOffsets, err := k.kac.FetchOffsetsForTopics(ctx, groupID, topics...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "FetchOffsetsForTopics Error：" + err.Error()
 		return result
 	}
 
@@ -392,7 +400,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 	ctx := context.Background()
 	groups, err := k.kac.ListGroups(ctx)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "ListGroups Error：" + err.Error()
 		return result
 	}
 
@@ -418,7 +426,7 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 	ctx := context.Background()
 	groups, err := k.kac.DescribeGroups(ctx, groupLst...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "DescribeGroups Error：" + err.Error()
 		return result
 	}
 	//map[g1:{Group:g1 Coordinator:{NodeID:0 Port:9092 Host:DESKTOP-7QTQFHC.mshome.net Rack:<nil> _:{}} State:Stable ProtocolType:consumer Protocol:cooperative-sticky
@@ -470,7 +478,7 @@ func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor
 	ctx := context.Background()
 	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), pointerMap, topics...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "CreateTopics Error：" + err.Error()
 		return result
 	}
 	return result
@@ -492,7 +500,7 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 	for _, topic := range topics {
 		_, err := k.kac.DeleteTopic(ctx, topic)
 		if err != nil {
-			result.Err = err.Error()
+			result.Err = "DeleteTopic Error：" + err.Error()
 			return result
 		}
 	}
@@ -511,7 +519,7 @@ func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
 	ctx := context.Background()
 	_, err := k.kac.DeleteGroups(ctx, groups...)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "DeleteGroups Error：" + err.Error()
 		return result
 	}
 	return result
@@ -533,7 +541,7 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 	for _, topic := range topics {
 		_, err := k.kac.CreatePartitions(ctx, count, topic)
 		if err != nil {
-			result.Err = err.Error()
+			result.Err = "CreatePartitions Error：" + err.Error()
 			return result
 		}
 	}
@@ -561,7 +569,7 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 	ctx := context.Background()
 	_, err := k.kac.AlterTopicConfigs(ctx, ac, topic)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "AlterTopicConfigs Error：" + err.Error()
 		return result
 	}
 	k.clearCache()
@@ -588,7 +596,7 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 	ctx := context.Background()
 	_, err := k.kac.AlterBrokerConfigs(ctx, ac, nodeId)
 	if err != nil {
-		result.Err = err.Error()
+		result.Err = "AlterBrokerConfigs Error：" + err.Error()
 		return result
 	}
 	return result
