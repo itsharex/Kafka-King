@@ -18,14 +18,19 @@
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
 <!--        <n-button quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>-->
 <!--        <n-button quaternary :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>-->
-        <n-button quaternary @click="openUrl(update_url)"
-                  :render-icon="renderIcon(CodeFilled)"/>
+        <n-tooltip placement="bottom" trigger="hover">
+          <template #trigger>
+            <n-button quaternary @click="openUrl(update_url)" :render-icon="renderIcon(CodeFilled)"/>
+          </template>
+          <span>Source Code</span>
+        </n-tooltip>
+
         <n-tooltip placement="bottom" trigger="hover">
           <template #trigger>
             <n-button quaternary :focusable="false" :loading="update_loading" @click="checkForUpdates"
                       :render-icon="renderIcon(SystemUpdateAltSharp)"/>
           </template>
-          <span> 检查版本：{{ version.tag_name }} {{ check_msg }}</span>
+          <span> Check Version：{{ version.tag_name }} {{ check_msg }}</span>
         </n-tooltip>
         <n-button quaternary :focusable="false" @click="minimizeWindow" :render-icon="renderIcon(RemoveOutlined)"/>
         <n-button quaternary :focusable="false" @click="resizeWindow" :render-icon="renderIcon(MaxMinIcon)"/>
