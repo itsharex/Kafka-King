@@ -30,9 +30,9 @@
                   />
 
                 </n-layout-sider>
-                <n-layout-content style="padding: 0 16px;" >
+                <n-layout-content style="padding: 0 16px;">
                   <keep-alive>
-                    <component  :is="activeItem.component"></component>
+                    <component :is="activeItem.component"></component>
                   </keep-alive>
                 </n-layout-content>
               </n-layout>
@@ -88,7 +88,7 @@ import {useI18n} from 'vue-i18n'
 import koKR from "./i18n/ko-KR";
 import ruRU from "./i18n/ru-RU";
 
-const { t, locale } = useI18n()
+const {t, locale} = useI18n()
 
 let headerClass = shallowRef('lightTheme')
 let naive_language = shallowRef(zhCN)
@@ -119,7 +119,7 @@ onMounted(async () => {
 })
 
 // 左侧菜单
-const sideMenuOptions = computed(() =>[
+const sideMenuOptions = computed(() => [
   {
     label: t('aside.cluster'),
     key: 'cluster',
@@ -181,7 +181,6 @@ const sideMenuOptions = computed(() =>[
 const activeItem = shallowRef(sideMenuOptions.value[0])
 
 
-
 // 切换菜单
 function handleMenuSelect(key) {
   // 根据key寻找item
@@ -196,7 +195,7 @@ function themeChange(newTheme) {
 }
 
 // 语言切换
-function handleLanguageChange(language){
+function handleLanguageChange(language) {
   const languageMap = {
     'zh-CN': zhCN,
     'en-US': enUS,
