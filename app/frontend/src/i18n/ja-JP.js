@@ -124,7 +124,10 @@ export default {
         groupPlaceholder: "コンシューマグループを選択または作成",
         startInspection: "巡回を開始",
         autoFetch: "5分ごとにデータを自動取得",
-        lagFormula: "遅延 = 終端オフセット - 提出オフセット。"
+        lagFormula: "遅延 = 終端オフセット - 提出オフセット。",
+        lag: 'ラグ',
+        commit: 'コミットされたオフセット',
+        end: '終了オフセット',
     },
     settings: {
         title: "設定",

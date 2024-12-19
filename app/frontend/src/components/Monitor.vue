@@ -55,12 +55,13 @@ import {LineChart} from 'echarts/charts';
 import {UniversalTransition} from 'echarts/features';
 import {CanvasRenderer} from 'echarts/renderers';
 
-import {NButton, NFlex, useMessage} from "naive-ui";
+import {lightTheme, NButton, NFlex, useMessage} from "naive-ui";
 import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Service";
 import emitter from "../utils/eventBus";
 import {renderIcon} from "../utils/common";
 import {MessageOutlined} from "@vicons/material";
 import {useI18n} from "vue-i18n";
+import {GetConfig} from "../../wailsjs/go/config/AppConfig";
 
 const {t} = useI18n()
 
@@ -109,14 +110,22 @@ const selectNode = async (node) => {
   await getData()
 }
 
+let echarts_theme = 'dark'
+
 onMounted(async () => {
   emitter.on('selectNode', selectNode)
   emitter.on('refreshTopic', refreshTopic)
 
+  const loadedConfig = await GetConfig()
+  if (loadedConfig) {
+    echarts_theme = loadedConfig.theme === lightTheme.name ? 'light': 'dark'
+  }
+
   await getData()
+
   initChart()
   // await fetchData()
-  timer = setInterval(fetchData, 5 * 60 * 1000) // 定时更新一次
+  setInterval(fetchData, 5 * 60 * 1000) // 定时更新一次
 
   // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
@@ -174,18 +183,18 @@ const initChart = () => {
   }
 
   const lag_option = {...option}
-  lag_option.title.text = '积压量'
-  lag_chart.value = echarts.init(lag_chartRef.value, 'dark')
+  lag_option.title.text = t('inspection.lag')
+  lag_chart.value = echarts.init(lag_chartRef.value, echarts_theme)
   lag_chart.value.setOption({...lag_option})
 
   const commit_option = {...option}
-  commit_option.title.text = '提交 offset'
-  commit_chart.value = echarts.init(commit_chartRef.value, 'dark')
+  commit_option.title.text = t('inspection.commit')
+  commit_chart.value = echarts.init(commit_chartRef.value, echarts_theme)
   commit_chart.value.setOption({...commit_option})
 
   const end_option = {...option}
-  end_option.title.text = '终末 offset'
-  end_chart.value = echarts.init(end_chartRef.value, 'dark')
+  end_option.title.text = t('inspection.end')
+  end_chart.value = echarts.init(end_chartRef.value, echarts_theme)
   end_chart.value.setOption({...end_option})
 
 }
@@ -241,7 +250,6 @@ const updateChart = () => {
 }
 
 // 定时获取数据
-let timer = null
 const fetchData = async () => {
   if (selectedTopics.value.length === 0 || !selectedGroup.value) {
     message.warning(t('message.selectTopicGroup'))

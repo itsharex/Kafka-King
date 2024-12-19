@@ -124,7 +124,10 @@ export default {
         groupPlaceholder: "컨슈머 그룹 선택 또는 생성",
         startInspection: "점검 시작",
         autoFetch: "데이터를 5분마다 자동으로 가져오기",
-        lagFormula: "지연 = 최종 오프셋 - 제출된 오프셋."
+        lagFormula: "지연 = 최종 오프셋 - 제출된 오프셋.",
+        lag: '지연',
+        commit: '커밋된 오프셋',
+        end: '종료 오프셋',
     },
     settings: {
         title: "설정",
@@ -147,7 +150,7 @@ export default {
         editOk: "편집 완료, 설정 새로 고침",
         mustFill: "모든 필수 필드를 채워주세요",
         saveErr: "저장 실패",
-        pleaseInput: "메시지 내용을 입력해 주세요"
+        pleaseInput: "메시지 내용을 입력해 주세요",
     },
     about: {
         title: "정보",

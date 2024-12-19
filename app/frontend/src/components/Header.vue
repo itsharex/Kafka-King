@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import {NAvatar, NButton, NFlex, useMessage, useNotification} from 'naive-ui'
+import {NAvatar, NButton, NFlex, useNotification} from 'naive-ui'
 import {
   CloseFilled,
   CodeFilled,
@@ -85,7 +85,6 @@ let version = ref({
 const subtitle = ref("")
 
 const notification = useNotification()
-const message = useMessage()
 
 onMounted(async () => {
   emitter.on('selectNode', selectNode)
@@ -97,7 +96,7 @@ onMounted(async () => {
   // MoonOrSunnyOutline.value = config.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled
   const v = await GetVersion()
   version.value.tag_name = v
-  subtitle.value = t('header.desc') + v
+  subtitle.value = t('header.desc') + " " + v
   await checkForUpdates()
 })
 

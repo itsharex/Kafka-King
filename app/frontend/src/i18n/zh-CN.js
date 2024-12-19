@@ -124,7 +124,10 @@ export default {
         groupPlaceholder: "选择或创建Consumer Group",
         startInspection: "开始巡检",
         autoFetch: "每5分钟自动抓取一次数据",
-        lagFormula: "积压 = 终末offset - 提交offset。"
+        lagFormula: "积压 = 终末offset - 提交offset。",
+        lag: '积压量',
+        commit: '提交 offset',
+        end: '终末 offset',
     },
     settings:{
         title: '设置',

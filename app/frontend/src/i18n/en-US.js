@@ -124,7 +124,10 @@ export default {
         groupPlaceholder: "Select or create Consumer Group",
         startInspection: "Start Inspection",
         autoFetch: "Automatically fetch data every 5 minutes",
-        lagFormula: "Lag = End offset - Committed offset."
+        lagFormula: "Lag = End offset - Committed offset.",
+        lag: 'Lag',
+        commit: 'Committed offset',
+        end: 'End offset',
     },
     settings: {
         title: "Settings",
