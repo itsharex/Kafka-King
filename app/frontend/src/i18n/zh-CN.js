@@ -159,7 +159,8 @@ export default {
         esClient: "同款 ES 客户端",
         esKing: "ES-King",
         technicalGroup: "技术交流群",
-        qqGroup: "QQ交流群"
+        qqGroup: "QQ交流群",
+        translate: '翻译有问题？报告或参与翻译',
     },
     header:{
         desc: '更人性化的 Kafka GUI',

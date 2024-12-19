@@ -124,6 +124,7 @@ onMounted(async () => {
   await getData()
 
   initChart()
+
   // await fetchData()
   setInterval(fetchData, 5 * 60 * 1000) // 定时更新一次
 

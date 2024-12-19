@@ -76,16 +76,16 @@ func main() {
 			kafkaService,
 		},
 		Windows: &windows.Options{
-			WebviewIsTransparent:              false,
-			WindowIsTranslucent:               false,
-			DisableFramelessWindowDecorations: false,
-			ResizeDebounceMS:                  2,
+			//WebviewIsTransparent:              false,
+			//WindowIsTranslucent:               false,
+			//DisableFramelessWindowDecorations: false,
+			ResizeDebounceMS: 2,
 		},
 		Linux: &linux.Options{
-			ProgramName:         common.AppName,
-			Icon:                icon,
-			WebviewGpuPolicy:    linux.WebviewGpuPolicyOnDemand,
-			WindowIsTranslucent: true,
+			ProgramName:      common.AppName,
+			Icon:             icon,
+			WebviewGpuPolicy: linux.WebviewGpuPolicyOnDemand,
+			//WindowIsTranslucent: false,
 		},
 		// Mac platform specific options
 		Mac: &mac.Options{
@@ -95,8 +95,8 @@ func main() {
 				Message: "",
 				Icon:    icon,
 			},
-			WebviewIsTransparent: false,
-			WindowIsTranslucent:  false,
+			//WebviewIsTransparent: false,
+			//WindowIsTranslucent:  false,
 		},
 	})
 

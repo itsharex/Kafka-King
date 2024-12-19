@@ -8,6 +8,9 @@ import jaJP from "./i18n/ja-JP";
 import koKR from "./i18n/ko-KR";
 import ruRU from "./i18n/ru-RU";
 
+// 获取用户的本地语言
+const userLanguage = navigator.language;
+
 const i18n = createI18n({
     legacy: false, // 使用Composition API
     locale: 'zh-CN', // 默认语言

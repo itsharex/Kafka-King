@@ -22,6 +22,11 @@
           {{ t('about.qqGroup') }}
         </n-button>
       </n-form-item>
+      <n-form-item :label="t('about.translate')">
+        <n-button :focusable="false" @click="openUrl(kafka_home_url)">
+          {{ t('about.kafkaKing') }}
+        </n-button>
+      </n-form-item>
     </n-form>
   </n-flex>
 </template>

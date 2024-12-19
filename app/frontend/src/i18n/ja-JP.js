@@ -159,7 +159,8 @@ export default {
         esClient: "同様のESクライアント",
         esKing: "ES-King",
         technicalGroup: "技術交流グループ",
-        qqGroup: "QQ交流グループ"
+        qqGroup: "QQ交流グループ",
+        translate: '「翻訳に問題がありますか?」報告するか翻訳に参加する',
     },
     header: {
         desc: "よりユーザーフレンドリーなKafka GUI",

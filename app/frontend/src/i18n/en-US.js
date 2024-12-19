@@ -159,7 +159,8 @@ export default {
         esClient: "Matching ES Client",
         esKing: "ES-King",
         technicalGroup: "Technical Exchange Group",
-        qqGroup: "QQ Exchange Group"
+        qqGroup: "QQ Exchange Group",
+        translate: 'Are there any problems with the translation? Report it or participate in the translation',
     },
     header: {
         desc: "A more user-friendly Kafka GUI",

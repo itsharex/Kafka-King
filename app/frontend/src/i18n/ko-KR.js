@@ -159,7 +159,8 @@ export default {
         esClient: "동일한 ES 클라이언트",
         esKing: "ES-King",
         technicalGroup: "기술 교류 그룹",
-        qqGroup: "QQ 교류 그룹"
+        qqGroup: "QQ 교류 그룹",
+        translate: "번역: '번역에 문제가 있나요? 신고 또는 번역 참여'",
     },
     header: {
         desc: "더 사용자 친화적인 Kafka GUI",
