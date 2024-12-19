@@ -72,16 +72,9 @@ onMounted(async () => {
   // 从后端加载配置
   const loadedConfig = await GetConfig()
   console.log(loadedConfig)
-  if (loadedConfig) {
-    config.value = loadedConfig
-    if (loadedConfig.theme === lightTheme.name){
-      theme = lightTheme
-      MoonOrSunnyOutline.value = WbSunnyOutlined
-    }else {
-      theme = darkTheme
-      MoonOrSunnyOutline.value = NightlightRoundFilled
-    }
-  }
+  config.value = loadedConfig
+  theme = loadedConfig.theme === lightTheme.name ? lightTheme : darkTheme
+  MoonOrSunnyOutline.value = loadedConfig.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled;
 })
 
 

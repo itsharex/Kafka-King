@@ -117,3 +117,8 @@ export function getCurrentDateTime() {
   // 返回格式化的日期时间字符串
   return `${year}.${month}.${date}-${hours}.${minutes}.${seconds}`;
 }
+
+// 获取本地语言
+export function getLocalLanguage() {
+  return navigator.language;
+}

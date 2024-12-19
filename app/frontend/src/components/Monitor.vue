@@ -117,9 +117,7 @@ onMounted(async () => {
   emitter.on('refreshTopic', refreshTopic)
 
   const loadedConfig = await GetConfig()
-  if (loadedConfig) {
-    echarts_theme = loadedConfig.theme === lightTheme.name ? 'light': 'dark'
-  }
+  echarts_theme = loadedConfig.theme === lightTheme.name ? 'light': 'dark'
 
   await getData()
 

@@ -71,9 +71,9 @@ import {
 } from '@vicons/material'
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
-import {GetConfig} from "../wailsjs/go/config/AppConfig";
+import {GetConfig, SaveConfig} from "../wailsjs/go/config/AppConfig";
 import {WindowSetSize} from "../wailsjs/runtime";
-import {renderIcon} from "./utils/common";
+import {getLocalLanguage, renderIcon} from "./utils/common";
 import Aside from "./components/Aside.vue";
 import Conn from "./components/Conn.vue";
 import Nodes from "./components/Nodes.vue";
@@ -94,20 +94,18 @@ let headerClass = shallowRef('lightTheme')
 let naive_language = shallowRef(zhCN)
 
 let Theme = shallowRef(lightTheme)
+let config = {}
 
 onMounted(async () => {
 
-
   // 从后端加载配置
-  const loadedConfig = await GetConfig()
-  if (loadedConfig) {
-    // 设置窗口大小
-    await WindowSetSize(loadedConfig.width, loadedConfig.height)
-    // 设置主题
-    themeChange(loadedConfig.theme === darkTheme.name ? darkTheme : lightTheme)
-    // 语言切换
-    handleLanguageChange(loadedConfig.language)
-  }
+  config = await GetConfig()
+  // 设置窗口大小
+  await WindowSetSize(config.width, config.height)
+  // 设置主题
+  themeChange(config.theme === darkTheme.name ? darkTheme : lightTheme)
+  // 初始化语言
+  await handleLanguageChange(config.language)
   // =====================注册事件监听=====================
   // 主题切换
   emitter.on('update_theme', themeChange)
@@ -194,17 +192,34 @@ function themeChange(newTheme) {
   headerClass = newTheme === lightTheme ? "lightTheme" : "darkTheme"
 }
 
+// naive ui language
+const languageMap = {
+  'zh-CN': zhCN,
+  'en-US': enUS,
+  'ja-JP': jaJP,
+  'ko-KR': koKR,
+  'ru-RU': ruRU,
+}
+
 // 语言切换
-function handleLanguageChange(language) {
-  const languageMap = {
-    'zh-CN': zhCN,
-    'en-US': enUS,
-    'ja-JP': jaJP,
-    'ko-KR': koKR,
-    'ru-RU': ruRU,
+// 未配置语言时，检查本地语言，合法则使用；否则使用默认语言
+async function handleLanguageChange(language) {
+  console.info("language配置：" + language);
+
+  const DEFAULT_LANGUAGE = 'en-US';
+  const localLanguage = getLocalLanguage();
+  const supportedLanguages = Object.keys(languageMap);
+
+  if (language === "" || language === null || language === undefined){
+    language =  supportedLanguages.includes(localLanguage) ? localLanguage : DEFAULT_LANGUAGE
+    config.language = language;
+    console.info("未配置语言，使用本地语言并保存配置：" + language);
+    await SaveConfig(config);
   }
-  locale.value = language
-  naive_language.value = languageMap[language]
+
+  console.info("selectedLanguage：" + language);
+  locale.value = language;
+  naive_language.value = languageMap[language];
 }
 
 </script>
