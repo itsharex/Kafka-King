@@ -2,9 +2,9 @@
   <div>
     <n-flex vertical>
       <n-flex align="center">
-        <h2 style="max-width: 200px;">{{ t('conn.title') }}</h2>
+        <h2>{{ t('conn.title') }}</h2>
         <n-text>{{t('common.count')}}：{{ Nodes.length }}</n-text>
-        <n-button @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{ t('conn.add') }}</n-button>
+        <n-button tertiary type="primary" @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{ t('conn.add') }}</n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
 
@@ -169,7 +169,7 @@
         </n-form>
         <template #footer>
           <n-space justify="end">
-            <n-button @click="test_connect" :loading="test_connect_loading">{{ t('conn.test') }}</n-button>
+            <n-button tertiary type="primary" @click="test_connect" :loading="test_connect_loading">{{ t('conn.test') }}</n-button>
             <n-button @click="showEditDrawer = false">{{ t('common.cancel') }}</n-button>
             <n-button type="primary" @click="saveNode">{{ t('common.save') }}</n-button>
           </n-space>

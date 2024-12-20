@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{t('node.title')}}</h2>
+      <h2>{{t('node.title')}}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
       <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>

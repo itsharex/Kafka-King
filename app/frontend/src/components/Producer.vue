@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{ t('producer.title') }}</h2>
+      <h2>{{ t('producer.title') }}</h2>
       <p>{{ t('producer.desc') }}</p>
     </n-flex>
 
@@ -57,7 +57,7 @@
       />
     </n-flex>
     <n-flex align="center">
-      <n-button @click="produce" :loading="loading" :render-icon="renderIcon(SendTwotone)">
+      <n-button tertiary type="primary" @click="produce" :loading="loading" :render-icon="renderIcon(SendTwotone)">
         {{ t('producer.sendMessage') }}
       </n-button>
     </n-flex>
@@ -68,7 +68,7 @@
 
 import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
-import {useMessage} from "naive-ui";
+import {NButton, useMessage} from "naive-ui";
 import {renderIcon} from "../utils/common";
 import {SendTwotone} from "@vicons/material";
 import {GetTopics, Produce} from "../../wailsjs/go/service/Service";

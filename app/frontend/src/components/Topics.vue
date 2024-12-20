@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{t('topic.title')}}</h2>
+      <h2>{{t('topic.title')}}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
       <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
@@ -404,7 +404,6 @@ const columns = [
   {
     title: t('topic.lag'),
     key: 'lag',
-    sorter: 'default',
     width: 50,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
@@ -412,6 +411,15 @@ const columns = [
       if (row.EndOffset !=null && row.CommittedOffset != null){
         return row.EndOffset - row.CommittedOffset
       }
+    },
+    sorter: (row1, row2) => {
+      const lag1 = row1.EndOffset != null && row1.CommittedOffset != null
+          ? row1.EndOffset - row1.CommittedOffset
+          : 0;
+      const lag2 = row2.EndOffset != null && row2.CommittedOffset != null
+          ? row2.EndOffset - row2.CommittedOffset
+          : 0;
+      return lag1 - lag2;
     }
   },
   {

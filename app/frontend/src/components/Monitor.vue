@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{ t('inspection.title') }}</h2>
+      <h2>{{ t('inspection.title') }}</h2>
       <p>{{ t('inspection.desc') }}</p>
     </n-flex>
     <n-flex align="center">

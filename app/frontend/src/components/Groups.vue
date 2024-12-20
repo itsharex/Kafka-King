@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{t('group.title')}}</h2>
+      <h2 >{{t('group.title')}}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
       <n-text>{{t('common.count')}}：{{ group_data.length }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
@@ -72,6 +72,7 @@ const getData = async () => {
       if (res.results) {
         res.results.sort((a, b) => a['Group'] > b['Group'] ? 1 : -1)
         group_data.value = res.results
+        console.log(res.results)
       }
     }
   } catch (e) {
@@ -119,19 +120,19 @@ const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
       group_data.value, columns
   )
-  download_file(csvContent, '导出.csv', 'text/csv;charset=utf-8;')
+  download_file(csvContent, 'kafka-group.csv', 'text/csv;charset=utf-8;')
 }
 
 
 const columns = [
-  {title: 'Group', key: 'Group', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'Group', key: 'Group', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
   {
-    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 50, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
   },
   {
     title: 'State', key: 'State', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
-    render: (row) => h(NTag, {type: "success"}, {default: () => row['State']}),
+    render: (row) => h(NTag, {type: "success"}, {default: () => row['State'] || 'unknown'}),
   },
   {
     title: 'ProtocolType',

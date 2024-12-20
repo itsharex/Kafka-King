@@ -1,7 +1,7 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 style="max-width: 200px;">{{ t('consumer.title') }}</h2>
+      <h2>{{ t('consumer.title') }}</h2>
       <p>{{ t('consumer.desc') }}</p>
     </n-flex>
     <!-- 查询条件区域 -->
@@ -42,7 +42,7 @@
           tag
           style="width: 300px"
       />
-      <n-button @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
+      <n-button tertiary type="primary" @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
         {{ t('consumer.consumeMessage') }}
       </n-button>
     </n-flex>
@@ -172,14 +172,14 @@ const columns = [
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
-    title: '消息内容',
+    title: 'Value',
     key: 'Value',
     width: 40,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
   },
   {
-    title: '时间戳',
+    title: 'Timestamp',
     key: 'Timestamp',
     width: 20,
     resizable: true,

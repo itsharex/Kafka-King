@@ -674,7 +674,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 
 	//超时错误
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		result.Err = "Consume Timeout"
+		result.Err = "Consume Timeout, Maybe No Message"
 		return result
 	}
 	if errs := fetches.Errors(); len(errs) > 0 {

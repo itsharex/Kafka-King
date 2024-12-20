@@ -4,7 +4,7 @@
       <n-avatar :src="logo"/>
     </template>
     <template #title>
-      <div style="font-weight: 800">{{app_name}}</div>
+      <div>{{app_name}}</div>
     </template>
     <template #subtitle>
       <n-tooltip>
