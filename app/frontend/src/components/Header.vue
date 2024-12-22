@@ -112,7 +112,7 @@ const checkForUpdates = async () => {
     if (!resp) {
       check_msg.value = `${t('header.netErr')}`
     } else if (resp.tag_name !== v) {
-      check_msg.value = `${t('header.newVersion')} ` + resp.tag_name
+      check_msg.value = `${t('header.newVersion')}: ` + resp.name
       version.value.body = resp.body
       const n = notification.success({
         title: check_msg.value,
