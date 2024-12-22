@@ -481,7 +481,7 @@ const handleMenuSelect = async (key, row) => {
 const partitions_columns = [
   {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
   {
-    title: '分区故障',
+    title: 'Health',
     key: 'err',
     sorter: 'default',
     width: 20,
@@ -514,7 +514,7 @@ const partitions_columns = [
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
   {
-    title: '积压',
+    title: 'Lag',
     key: '积压',
     sorter: 'default',
     width: 15,
@@ -526,11 +526,11 @@ const partitions_columns = [
       }
     }
   },
-  {title: 'Leader ID', key: 'leader', sorter: 'default', width: 15, resizable: true},
+  {title: 'LeaderID', key: 'leader', sorter: 'default', width: 15, resizable: true},
   {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
-  {title: '托管此分区的副本ID集', key: 'replicas', sorter: 'default', width: 15, resizable: true},
-  {title: 'ISR副本ID集', key: 'isr', sorter: 'default', width: 15, resizable: true},
-  {title: '离线副本ID集', key: 'OfflineReplicas', sorter: 'default', width: 15, resizable: true},
+  {title: 'Replicas', key: 'replicas', sorter: 'default', width: 15, resizable: true},
+  {title: 'ISR', key: 'isr', sorter: 'default', width: 15, resizable: true},
+  {title: 'ErrorReplicas', key: 'OfflineReplicas', sorter: 'default', width: 15, resizable: true},
 ]
 
 const config_columns = [
