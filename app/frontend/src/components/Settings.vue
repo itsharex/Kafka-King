@@ -95,10 +95,6 @@ const saveConfig = async () => {
 
 }
 
-// 语言变更
-// const changeLang = (value) => {
-//   emitter.emit('language_change', value)
-// }
 
 const changeTheme = () => {
   MoonOrSunnyOutline.value = MoonOrSunnyOutline.value === NightlightRoundFilled ? WbSunnyOutlined : NightlightRoundFilled;

@@ -116,7 +116,7 @@ const checkForUpdates = async () => {
       version.value.body = resp.body
       const n = notification.success({
         title: check_msg.value,
-        content: resp.body,
+        // content: resp.body,
         action: () =>
               h(NFlex, {justify: "flex-end" }, () => [
                 h(
@@ -167,11 +167,7 @@ const resizeWindow = () => {
 const closeWindow = () => {
   Quit()
 }
-// const changeTheme = () => {
-//   MoonOrSunnyOutline.value = MoonOrSunnyOutline.value === NightlightRoundFilled ? WbSunnyOutlined : NightlightRoundFilled;
-//   theme = MoonOrSunnyOutline.value === NightlightRoundFilled ? darkTheme : lightTheme
-//   emitter.emit('update_theme', theme)
-// }
+
 </script>
 
 <style scoped>

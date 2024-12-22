@@ -32,7 +32,6 @@
 </template>
 
 <script setup>
-import {onMounted} from 'vue'
 import {NButton, NForm, NFormItem, useMessage,} from 'naive-ui'
 import {BrowserOpenURL} from "../../wailsjs/runtime";
 import {openUrl, renderIcon} from "../utils/common";
@@ -45,12 +44,6 @@ const es_home_url = "https://github.com/Bronya0/ES-King"
 const es_translation_url = "https://github.com/Bronya0/Kafka-King/issues/51"
 const kafka_home_url = "https://github.com/Bronya0/kafka-King"
 const qq_url = "https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz"
-
-const message = useMessage()
-
-onMounted(async () => {
-
-})
 
 
 

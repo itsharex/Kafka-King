@@ -455,42 +455,6 @@ const columns = [
           }
       )
     }
-    //
-    // render: (row) => h(
-    //     NButtonGroup,
-    //     {
-    //       vertical: false,
-    //     },
-    //     {
-    //       default: () => [
-    //         h(
-    //             NPopconfirm,
-    //             {
-    //               onPositiveClick: () => deleteTopic(row["topic"])
-    //             },
-    //             {
-    //               trigger: () =>
-    //                   row['IsInternal'] === false ?
-    //                       h(
-    //                           NButton,
-    //                           {
-    //                             strong: true,
-    //                             secondary: true,
-    //                             type: 'error'
-    //                           },
-    //                           {
-    //                             default: () => '删除',
-    //                             icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
-    //                           }
-    //                       )
-    //                       : h(NButton, {disabled: true}, {default: () => '不可删除'})
-    //               ,
-    //               default: () => `确认删除${row["topic"]}?`
-    //             }
-    //         ),
-    //       ]
-    //     }
-    // )
   },
 ]
 
