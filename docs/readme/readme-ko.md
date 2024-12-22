@@ -20,7 +20,6 @@
 카프카를 더욱 편리하게 사용하세요, make kafka great again!
 
 이 프로젝트는 각종 시스템을 지원하는 카프카 GUI 클라이언트입니다. 작성자님의 열심히 공개한 소스를 지원해주시려면 스타를 눌러주세요. 감사합니다❤❤
-작성자와 함께 소통할 수 있는 채팅방에 참여하세요: <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz">연구 개발 기술 교류 채팅방: 964440643</a>
 
 > 유사하게 편리한 엘라스틱서치 클라이언트 `ES-King`도 함께 저장해두시면 좋습니다: https://github.com/Bronya0/ES-King
 

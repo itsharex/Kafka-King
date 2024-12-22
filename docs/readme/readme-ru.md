@@ -18,7 +18,6 @@
 Сделайте работу с Kafka проще, make kafka great again!
 
 Этот проект представляет собой графический интерфейсный (GUI) клиент для Kafka, поддерживающий различные операционные системы. Поставьте звезду, чтобы поддержать автора за его усердие в рамках открытого исходного кода. Спасибо❤❤
-Присоединяйтесь к группе для общения с автором: <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz">Группа для обмена опытом по разработке: 964440643</a>
 
 > Аналогичный удобный клиент для Elasticsearch `ES-King`, можно сохранить вместе: https://github.com/Bronya0/ES-King
 
