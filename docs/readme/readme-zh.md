@@ -13,7 +13,6 @@
 
 <h3 align="center">一个现代、实用的kafka GUI客户端 </h3>
 
-<strong></strong>
 </div>
 
 让kafka更好用，make kafka great again!
