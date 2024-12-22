@@ -14,7 +14,6 @@ const (
 	Theme      = "dark"
 	ConfigDir  = ".kafka-king"
 	ConfigPath = "config.yaml"
-	Language   = "zh-CN"
 	PingUrl    = "https://ysboke.cn/api/kingTool/ping"
 )
 

@@ -4,8 +4,10 @@ import (
 	"app/backend/common"
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"runtime"
+	"runtime/debug"
 )
 
 // App struct
@@ -28,13 +30,21 @@ func (a *App) Start(ctx context.Context) {
 func (a *App) domReady(ctx context.Context) {
 
 	// 统计版本使用情况
-	client := resty.New().SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-	body := map[string]any{
-		"name":     "Kafka-King",
-		"version":  common.Version,
-		"platform": runtime.GOOS,
-	}
-	_, _ = client.R().SetBody(body).Post(common.PingUrl)
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println(string(debug.Stack()))
+			}
+		}()
+		client := resty.New().SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+		body := map[string]any{
+			"name":     common.AppName,
+			"version":  common.Version,
+			"platform": runtime.GOOS,
+		}
+		_, _ = client.R().SetBody(body).Post(common.PingUrl)
+
+	}()
 
 }
 
