@@ -18,13 +18,9 @@ English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/re
 
 </div>
 
-Enhancing the usability of Kafka.
-
 This project is a cross-platform Kafka GUI client. A star would be appreciated to support the open-source effort by the author. Thank you!
 
-For discussions and exchanges with the author: [Join the QQ Group for Technical Exchange](https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz)
-
-> Discover a similarly powerful Elasticsearch client `ES-King` and consider bookmarking it as well: https://github.com/Bronya0/ES-King
+> A similarly powerful Elasticsearch client `ES-King` : https://github.com/Bronya0/ES-King
 
 
 # Features of Kafka-King
@@ -51,17 +47,12 @@ Download from the right side or visit the [release page](https://github.com/Bron
 
 # Screenshots
 Offset inspection feature introduced in v0.33 offers an intuitive view of message backlog.
-[](docs/snap/img_5.png)
+![](docs/snap/img_5.png)
 Topic list with various operation options.
-[](docs/snap/img.png)
+![](docs/snap/img.png)
 Message viewing interface.
-[](docs/snap/img_3.png)
+![](docs/snap/img_3.png)
 
-
-# Donation
-If feasible, please support the project's development by buying the author a coffee. Your support is greatly appreciated!
-
-[image](https://github.com/user-attachments/assets/da6d46da-4e24-41e3-843d-495c6cd32065)
 
 # Build
 Manual build is only necessary for those who wish to study the source code.
@@ -70,15 +61,8 @@ cd app
 
 wails dev
 
-## QQ Group for Discussion
-[Join the QQ Group for Technical Exchange](https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz)
-
-[](assets/qq.jpg)
-
-
 # Star History
-[[Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
-
+[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
 
 # License
 Apache-2.0 license
@@ -88,3 +72,8 @@ Apache-2.0 license
 - naive ui: https://www.naiveui.com/
 - franz-go: https://github.com/twmb/franz-go/
 - xicons: https://xicons.org/#/
+
+# TransLate
+Support Chinese, Japanese, English, Korean, Russian and other languages
+
+Fix or add new language：https://github.com/Bronya0/Kafka-King/issues/51

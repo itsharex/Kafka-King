@@ -66,3 +66,8 @@ Apache-2.0ライセンス
 - naive ui: https://www.naiveui.com/
 - franz-go: https://github.com/twmb/franz-go/
 - xicons: https://xicons.org/#/
+
+# 翻訳する
+中国語、日本語、英語、韓国語、ロシア語などの言語をサポート
+
+新しい言語の修正または追加：https://github.com/Bronya0/Kafka-King/issues/51

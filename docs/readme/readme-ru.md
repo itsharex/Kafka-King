@@ -72,3 +72,8 @@ wails dev
 - naive ui：https://www.naiveui.com/
 - franz-go：https://github.com/twmb/franz-go/
 - xicons：https://xicons.org/#/
+
+# TransLate
+Поддержка китайского, японского, английского, корейского, русского и других языков
+
+Исправить или добавить новый язык: https://github.com/Bronya0/Kafka-King/issues/51
