@@ -8,11 +8,12 @@ English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/re
 </h4>
 <div align="center">
 
+
+![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
+![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King.svg?style=flat-square)
+![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King.svg?style=flat-square)
 ![License](https://img.shields.io/github/license/Bronya0/Kafka-King)
 ![GitHub release](https://img.shields.io/github/release/Bronya0/Kafka-King)
-![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
-![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King)
-![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King)
 
 <h3 align="center">A modern, practical Kafka GUI client </h3>
 
