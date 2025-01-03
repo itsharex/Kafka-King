@@ -106,3 +106,15 @@ func (a *AppConfig) GetAppName() string {
 func (a *AppConfig) OpenFileDialog(options runtime.OpenDialogOptions) (string, error) {
 	return runtime.OpenFileDialog(a.ctx, options)
 }
+func (a *AppConfig) LogErrToFile(message string) {
+	file, err := os.OpenFile(common.ErrLogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println("Failed to open log file:", err)
+		return
+	}
+	defer file.Close()
+
+	if _, err := file.WriteString(message); err != nil {
+		log.Println("Failed to write to log file:", err)
+	}
+}

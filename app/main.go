@@ -9,11 +9,9 @@ import (
 	"embed"
 	"fmt"
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
-	"log"
-
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
@@ -101,6 +99,6 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		appConfig.LogErrToFile(err.Error())
 	}
 }

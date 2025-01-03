@@ -218,16 +218,22 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	result := &types.ResultsResp{}
 
 	if k.kac == nil {
-		result.Err = common.PleaseSelectErr
+		result.Err = common.PleaseSelectErr // 确保 common.PleaseSelectErr 是一个有效的错误变量
 		return result
 	}
 	ctx := context.Background()
 
 	configs, err := k.kac.DescribeBrokerConfigs(ctx, brokerID)
 	if err != nil {
-		result.Err = "DescribeBrokerConfigs Error：" + err.Error()
+		result.Err = fmt.Sprintf("DescribeBrokerConfigs Error：%s", err.Error())
 		return result
 	}
+
+	if len(configs) == 0 {
+		result.Err = "No configurations found for the given broker ID"
+		return result
+	}
+
 	cfg := configs[0].Configs
 	// 转换为map格式
 	for _, config := range cfg {
@@ -244,11 +250,13 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 	var result []any
 	for topicName, topicDetail := range topics {
+		partitionErrs := ""
 		var partitions []any
 		for _, partition := range topicDetail.Partitions {
 			errMsg := ""
 			if partition.Err != nil {
 				errMsg = partition.Err.Error()
+				partitionErrs += fmt.Sprintf("partition %d: %s\n", partition.Partition, errMsg)
 			}
 			partitions = append(partitions, map[string]any{
 				"partition":       partition.Partition,
@@ -260,17 +268,21 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 				"OfflineReplicas": partition.OfflineReplicas,
 			})
 		}
-		resultErrMsg := ""
 		if topicDetail.Err != nil {
-			resultErrMsg = topicDetail.Err.Error()
+			partitionErrs = topicDetail.Err.Error() + "\n" + partitionErrs
+		}
+		// 检查分区列表是否为空，避免访问空切片的第一个元素
+		replicationFactor := 0
+		if len(topicDetail.Partitions) > 0 {
+			replicationFactor = len(topicDetail.Partitions[0].Replicas)
 		}
 		result = append(result, map[string]any{
 			"ID":                 topicDetail.ID,
 			"topic":              topicName,
 			"partition_count":    len(topicDetail.Partitions),
-			"replication_factor": len(topicDetail.Partitions[0].Replicas),
+			"replication_factor": replicationFactor,
 			"IsInternal":         topicDetail.IsInternal,
-			"Err":                resultErrMsg,
+			"Err":                partitionErrs,
 			"partitions":         partitions,
 		})
 	}
@@ -297,7 +309,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 
 	topics, err := k.kac.ListTopics(ctx)
 	if err != nil {
-		result.Err = "ListTopics Error：" + err.Error()
+		result.Err = fmt.Sprintf("ListTopics Error：%v", err.Error())
 		return result
 	}
 	result.Results = k.buildTopicsResp(topics)
@@ -318,6 +330,10 @@ func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
 	res, err := k.kac.DescribeTopicConfigs(ctx, topic)
 	if err != nil {
 		result.Err = err.Error()
+		return result
+	}
+	if len(res) == 0 {
+		result.Err = "No configurations found for the given topic"
 		return result
 	}
 	cfg := res[0].Configs
