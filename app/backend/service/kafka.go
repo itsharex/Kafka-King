@@ -543,7 +543,7 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 }
 
 // DeleteGroup 删除Group
-func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
+func (k *Service) DeleteGroup(group string) *types.ResultResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
@@ -551,10 +551,13 @@ func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
+
+	k.clearCache()
+
 	ctx := context.Background()
-	_, err := k.kac.DeleteGroups(ctx, groups...)
+	_, err := k.kac.DeleteGroup(ctx, group)
 	if err != nil {
-		result.Err = "DeleteGroups Error：" + err.Error()
+		result.Err = "DeleteGroup Error：" + err.Error()
 		return result
 	}
 	return result
@@ -607,7 +610,6 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 		result.Err = "AlterTopicConfigs Error：" + err.Error()
 		return result
 	}
-	k.clearCache()
 
 	return result
 }

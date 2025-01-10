@@ -225,7 +225,7 @@ const members_columns = [
 const deleteGroups = async (group) => {
   loading.value = true
   try {
-    const res = await DeleteGroup([group])
+    const res = await DeleteGroup(group)
     if (res.err !== "") {
       message.error(res.err)
     } else {
