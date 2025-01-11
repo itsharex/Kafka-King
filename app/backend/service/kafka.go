@@ -1,3 +1,22 @@
+/*
+ *
+ *  * Copyright (c) 2025 Bronya0 <tangssst@163.com>. All rights reserved.
+ *  * Original source: https://github.com/Bronya0
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *    http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
 package service
 
 import (
@@ -524,7 +543,7 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 }
 
 // DeleteGroup 删除Group
-func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
+func (k *Service) DeleteGroup(group string) *types.ResultResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
@@ -532,10 +551,13 @@ func (k *Service) DeleteGroup(groups []string) *types.ResultResp {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
+
+	k.clearCache()
+
 	ctx := context.Background()
-	_, err := k.kac.DeleteGroups(ctx, groups...)
+	_, err := k.kac.DeleteGroup(ctx, group)
 	if err != nil {
-		result.Err = "DeleteGroups Error：" + err.Error()
+		result.Err = "DeleteGroup Error：" + err.Error()
 		return result
 	}
 	return result
@@ -588,7 +610,6 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 		result.Err = "AlterTopicConfigs Error：" + err.Error()
 		return result
 	}
-	k.clearCache()
 
 	return result
 }
