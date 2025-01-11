@@ -67,10 +67,10 @@
                       v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
-          <n-form-item label="TLS certFile" path="tls_cert_file">
-
+          <n-form-item label="TLS Cert File" path="tls_cert_file">
+<!--客户端或服务器证书用于验证客户端或服务器的身份。-->
             <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem')">.crt;.pem</n-button>
+              <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_cert_file">
                 <p style="color: gray;">{{ currentNode.tls_cert_file }}</p>
                 <n-button size="tiny" @click="currentNode.tls_cert_file=''" :render-icon="renderIcon(CloseFilled)"/>
@@ -79,10 +79,10 @@
 
           </n-form-item>
 
-          <n-form-item label="TLS keyFile" path="tls_key_file">
-
+          <n-form-item label="TLS Key File" path="tls_key_file">
+<!--私钥文件用于加密和解密数据，必须妥善保管。-->
             <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_key_file','*.key')">.key</n-button>
+              <n-button @click="SelectFile('tls_key_file','*.key;*.pem;*.der')">.key/pem/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_key_file">
                 <p style="color: gray;">{{ currentNode.tls_key_file }}</p>
                 <n-button size="tiny" @click="currentNode.tls_key_file=''" :render-icon="renderIcon(CloseFilled)"/>
@@ -91,10 +91,10 @@
 
           </n-form-item>
 
-          <n-form-item label="TLS caFile" path="tls_ca_file">
-
+          <n-form-item label="TLS CA File" path="tls_ca_file">
+<!--CA 证书是用于验证服务器或客户端证书的根证书或中间证书。-->
             <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem')">.crt;.pem</n-button>
+              <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_ca_file">
                 <p style="color: gray;">{{ currentNode.tls_ca_file }}</p>
                 <n-button size="tiny" @click="currentNode.tls_ca_file=''" :render-icon="renderIcon(CloseFilled)"/>
