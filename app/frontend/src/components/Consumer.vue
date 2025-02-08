@@ -20,6 +20,7 @@
     <n-flex align="center">
       <h2>{{ t('consumer.title') }}</h2>
       <p>{{ t('consumer.desc') }}</p>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
     </n-flex>
     <!-- 查询条件区域 -->
     <n-flex align="center">
@@ -77,8 +78,8 @@
 <script setup>
 import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
-import {renderIcon} from "../utils/common";
-import {MessageOutlined} from "@vicons/material";
+import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
 import {NButton, NDataTable, NFlex, useMessage} from 'naive-ui'
 import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
@@ -180,6 +181,7 @@ const columns = [
     key: 'Offset',
     width: 20,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    sorter: 'default'
   },
   {
     title: 'Key',
@@ -187,6 +189,7 @@ const columns = [
     width: 20,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    sorter: 'default'
   },
   {
     title: 'Value',
@@ -194,6 +197,7 @@ const columns = [
     width: 40,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    sorter: 'default'
   },
   {
     title: 'Timestamp',
@@ -201,17 +205,26 @@ const columns = [
     width: 20,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
-  },
-  {
-    title: 'Partition',
-    key: 'Partition',
-    width: 10,
+    sorter: (rowA, rowB) => {
+      const dateA = new Date(rowA['Timestamp']);
+      const dateB = new Date(rowB['Timestamp']);
+      return dateA - dateB;
+    }
   },
   {
     title: 'Topic',
     key: 'Topic',
     width: 20,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    resizable: true,
+    sorter: 'default'
+  },
+  {
+    title: 'Partition',
+    key: 'Partition',
+    width: 10,
+    resizable: true,
+    sorter: 'default'
   },
   {
     title: 'Headers',
@@ -219,21 +232,24 @@ const columns = [
     width: 20,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    sorter: 'default'
   },
-  {
-    title: 'LeaderEpoch',
-    key: 'LeaderEpoch',
-    width: 10,
-  },
-  {
-    title: 'ProducerEpoch',
-    key: 'ProducerEpoch',
-    width: 10,
-  },
+  // {
+  //   title: 'LeaderEpoch',
+  //   key: 'LeaderEpoch',
+  //   width: 10,
+  // },
+  // {
+  //   title: 'ProducerEpoch',
+  //   key: 'ProducerEpoch',
+  //   width: 10,
+  // },
   {
     title: 'ProducerID',
     key: 'ProducerID',
     width: 10,
+    resizable: true,
+    sorter: 'default'
   }
 ]
 
@@ -259,6 +275,13 @@ const consume = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const downloadAllDataCsv = async () => {
+  const csvContent = createCsvContent(
+      messages.value, columns
+  )
+  download_file(csvContent, 'messages.csv', 'text/csv;charset=utf-8;')
 }
 
 // 保存为文本文件
