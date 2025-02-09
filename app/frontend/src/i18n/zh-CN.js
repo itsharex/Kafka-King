@@ -150,7 +150,7 @@ export default {
         title: '设置',
         width: '窗口宽度',
         height: '窗口高度',
-        lang: '语言',
+        lang: '语言（需要重启）',
         theme: '主题',
     },
     message:{

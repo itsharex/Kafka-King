@@ -150,7 +150,7 @@ export default {
         title: "設定",
         width: "ウィンドウ幅",
         height: "ウィンドウ高さ",
-        lang: "言語",
+        lang: "言語 (再起動が必要です)",
         theme: "テーマ"
     },
     message: {
