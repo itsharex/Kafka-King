@@ -45,5 +45,5 @@ var (
 )
 
 const (
-	PleaseSelectErr = "Please select a connection first"
+	PleaseSelectErr = "Please select a connection in the cluster"
 )
