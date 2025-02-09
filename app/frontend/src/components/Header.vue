@@ -33,13 +33,14 @@
     </template>
     <template #extra>
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
-<!--        <n-button quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>-->
-<!--        <n-button quaternary :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>-->
+
+        <n-button v-if="locale === 'zh-CN'" quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>
+
         <n-tooltip placement="bottom" trigger="hover">
           <template #trigger>
-            <n-button quaternary @click="openUrl(update_url)" :render-icon="renderIcon(CodeFilled)"/>
+            <n-button quaternary @click="openUrl(update_url)" :render-icon="renderIcon(HouseOutlined)"/>
           </template>
-          <span>Source Code</span>
+          <span>HomePage</span>
         </n-tooltip>
 
         <n-tooltip placement="bottom" trigger="hover">
@@ -65,7 +66,7 @@
 import {NAvatar, NButton, NFlex, useNotification} from 'naive-ui'
 import {
   CloseFilled,
-  CodeFilled,
+  HouseOutlined,
   ContentCopyFilled,
   CropSquareFilled,
   RemoveOutlined,
@@ -80,7 +81,7 @@ import {GetAppName, GetVersion} from "../../wailsjs/go/config/AppConfig";
 import emitter from "../utils/eventBus";
 import {useI18n} from "vue-i18n";
 
-const {t} = useI18n()
+const {t, locale} = useI18n()
 
 // defineProps(['options', 'value']);
 
@@ -93,6 +94,7 @@ const MaxMinIcon = shallowRef(CropSquareFilled)
 const update_url = "https://github.com/Bronya0/Kafka-King/releases"
 const update_loading = ref(false)
 // let theme = lightTheme
+const qq_url = "https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz"
 
 let version = ref({
   tag_name: "",
