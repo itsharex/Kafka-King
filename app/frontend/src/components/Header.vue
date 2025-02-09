@@ -34,7 +34,7 @@
     <template #extra>
       <n-flex justify="flex-end" style="--wails-draggable:no-drag" class="right-section">
 
-        <n-button v-if="locale === 'zh-CN'" quaternary :focusable="false" @click="openUrl(qq_url)">交流群</n-button>
+        <n-button v-if="locale === 'zh-CN'" quaternary :focusable="false" @click="openUrl(qq_url)">技术交流群</n-button>
 
         <n-tooltip placement="bottom" trigger="hover">
           <template #trigger>
