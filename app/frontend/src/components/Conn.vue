@@ -80,8 +80,7 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
-            <n-switch :round="false" checked-value="enable" unchecked-value="disable" value="enable"
-                      v-model:value="currentNode.skipTLSVerify"/>
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
           <n-form-item label="TLS Cert File" path="tls_cert_file">
