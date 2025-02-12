@@ -3,12 +3,8 @@
 </p>
 <h1 align="center">Kafka King </h1>
 
-<h4 align="center">
-English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/readme/readme-ja.md">日本語</a> |  <a href="docs/readme/readme-ru.md">рускі</a> | <a href="docs/readme/readme-ko.md">한국인</a>  
-</h4>
 <div align="center">
-
-
+  
 ![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
 ![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King.svg?style=flat-square)
 ![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King.svg?style=flat-square)
@@ -18,6 +14,10 @@ English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/re
 <h3 align="center">A modern, practical Kafka GUI client </h3>
 
 </div>
+<h4 align="center">
+English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/readme/readme-ja.md">日本語</a> |  <a href="docs/readme/readme-ru.md">рускі</a> | <a href="docs/readme/readme-ko.md">한국인</a>  
+</h4>
+
 
 This project is a cross-platform Kafka GUI client. A star would be appreciated to support the open-source effort by the author. Thank you!
 
