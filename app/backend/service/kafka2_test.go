@@ -19,21 +19,24 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"log"
 	"testing"
+	"time"
 )
 
 // 引入 testing 包
 
 func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	seeds := []string{"localhost:9092"}
+	//seeds := []string{"localhost:9092"}
+	seeds := []string{"192.168.1.100:9092"}
 
 	// 2. 自定义TLS配置
 	// 加载CA证书
@@ -49,14 +52,18 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//}
 
 	//创建客户端
+	//配置千万不能冲突
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
-		kgo.SASL(plain.Auth{
-			User: "admin",
-			Pass: "admin-secret",
-		}.AsMechanism()),
-		kgo.ProducerBatchCompression(kgo.GzipCompression()),
-		kgo.ConsumerGroup("g1"),
+		//kgo.SASL(plain.Auth{
+		//	User: "admin",
+		//	Pass: "admin-secret",
+		//}.AsMechanism()),
+		//kgo.ProducerBatchCompression(kgo.GzipCompression()),
+		kgo.ConsumeTopics("1"),
+		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
+		//kgo.ConsumerGroup("1"),
+		//kgo.Balancers(kgo.CooperativeStickyBalancer()),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +71,7 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//包装admin客户端
 	admin := kadm.NewClient(client)
 	defer client.Close()
-
+	defer admin.Close()
 	//生产消息
 	//st := time.Now()
 	//for i := 0; i < 10; i++ {
@@ -76,20 +83,31 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
 
 	////消费消息。订阅也可以在创建客户端的时候做
-	client.AddConsumeTopics("1")
-	fetches := client.PollRecords(context.Background(), 100)
+	//client.AddConsumeTopics("1")
+
+	// 必须关闭client
+	fetches := client.PollRecords(ctx, 10)
+
+	if fetches.IsClientClosed() {
+		panic("Client Closed")
+	}
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		panic("Consume Timeout")
+	}
 	if errs := fetches.Errors(); len(errs) > 0 {
 		panic(fmt.Sprint(errs))
 	}
-	for _, _ = range fetches.Records() {
-		//fmt.Printf("%+v\n", string(record.Value))
+	for _, record := range fetches.Records() {
+		fmt.Println(record.Offset, string(record.Value))
 	}
-
-	////提交offset
-	//if err := admin.CommitAllOffsets(ctx, "g1", kadm.OffsetsFromFetches(fetches)); err != nil {
+	//提交offset
+	//if err := client.CommitUncommittedOffsets(ctx); err != nil {
 	//	log.Fatalf("提交offsets失败: %v", err)
 	//}
-	//
+
+	client.Close()
+	admin.Close()
+
 	////读取offset
 	//res2, err := admin.FetchOffsetsForTopics(ctx, "g1", "1")
 	//if err != nil {
@@ -150,6 +168,6 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 
 	//map[g1:{Group:g1 Coordinator:{NodeID:0 Port:9092 Host:DESKTOP-7QTQFHC.mshome.net Rack:<nil> _:{}} State:Stable ProtocolType:consumer Protocol:cooperative-sticky
 	//Members:[{MemberID:kgo-eb77103b-d127-4f0d-9159-6bdc92030cd1 InstanceID:<nil> ClientID:kgo ClientHost:/192.168.160.1 Join:{i:0xc000032960} Assigned:{i:0xc000284000}}] Err:<nil>}]
-	res, _ := admin.DescribeGroups(ctx, "g1")
-	fmt.Printf("%+v\n", res)
+	//res, _ := admin.DescribeGroups(ctx, "g1")
+	//fmt.Printf("%+v\n", res)
 }

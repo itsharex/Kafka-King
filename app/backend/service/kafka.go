@@ -53,6 +53,7 @@ type Service struct {
 	config           []kgo.Opt
 	kac              *kadm.Client
 	client           *kgo.Client
+	consumer         []any
 	mutex            sync.Mutex
 	topics           []any
 	groups           []any
@@ -64,6 +65,17 @@ func (k *Service) ptr(s string) *string {
 
 func NewKafkaService() *Service {
 	return &Service{}
+}
+
+func (k *Service) Close(ctx context.Context) bool {
+	// 关闭连接,return false表示允许关闭
+	k.client.Close()
+	k.kac.Close()
+	if k.consumer != nil && len(k.consumer) == 2 {
+		k.consumer[2].(*kgo.Client).Close()
+	}
+	fmt.Println("关闭连接")
+	return false
 }
 
 func (k *Service) SetConnect(connectName string, conn map[string]any, isTest bool) *types.ResultResp {
@@ -144,11 +156,12 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 				client.DisablePAFXFAST(true),    // 禁用PA-FX-FAST，提高兼容性
 			)
 			// 创建GSSAPI认证
-			config = append(config, kgo.SASL(kerberos.Auth{
-				Client:           kerberosClient,
-				Service:          conn["kerberos_service_name"].(string),
-				PersistAfterAuth: true, // 保留上下文
-			}.AsMechanism()))
+			config = append(config,
+				kgo.SASL(kerberos.Auth{
+					Client:           kerberosClient,
+					Service:          conn["kerberos_service_name"].(string),
+					PersistAfterAuth: true, // 保留上下文
+				}.AsMechanism()))
 
 		default:
 			log.Println("不支持的SASL机制", mechanism)
@@ -158,7 +171,10 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 	}
 	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
 
-	config = append(config, kgo.SeedBrokers(bootstrapServers...))
+	config = append(
+		config,
+		kgo.SeedBrokers(bootstrapServers...),
+	)
 
 	cl, err := kgo.NewClient(config...)
 	if err != nil {
@@ -180,6 +196,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		k.kac = admin
 		k.client = cl
 		k.config = config
+		k.consumer = nil
 		k.bootstrapServers = bootstrapServers
 		k.clearCache()
 		k.topics = k.buildTopicsResp(topics)
@@ -646,7 +663,8 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 		result.Err = common.PleaseSelectErr
 		return result
 	}
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	st := time.Now()
 	headers2 := make([]kgo.RecordHeader, len(headers))
 	for i := 0; i < len(headers); i++ {
@@ -667,7 +685,11 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 	}
 
 	//同步发送
-	k.client.ProduceSync(ctx, records...)
+	res := k.client.ProduceSync(ctx, records...)
+	if err := res.FirstErr(); err != nil {
+		result.Err = "Produce Error：" + err.Error()
+		return result
+	}
 
 	fmt.Printf("耗时：%.4f秒\n", time.Since(st).Seconds())
 
@@ -675,7 +697,8 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 }
 
 // Consumer 消费消息
-func (k *Service) Consumer(topic string, group string, num, timeout int) *types.ResultsResp {
+// 参考：https://github.com/twmb/franz-go/blob/master/examples/group_consuming/main.go
+func (k *Service) Consumer(topic string, group string, num, timeout int, isCommit bool) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
@@ -683,31 +706,51 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 		result.Err = common.PleaseSelectErr
 		return result
 	}
-
 	st := time.Now()
 
-	log.Println("消费消息。订阅也可以在创建客户端的时候做...")
-
-	currentTopics := k.client.GetConsumeTopics()
-	if len(currentTopics) == 1 && currentTopics[0] == topic {
-		log.Println("当前消费主题和订阅主题一致，无需切换")
-	} else {
-		if len(currentTopics) > 0 {
-			// 1. 清除所有当前正在消费的topics
-			k.client.PurgeTopicsFromConsuming(currentTopics...)
+	var _client *kgo.Client
+	if k.consumer == nil || (k.consumer != nil && (k.consumer[0] != group || k.consumer[1] != topic)) {
+		// 看看缓存的有没有，没有则关闭之前的，新缓存；有则用
+		fmt.Println("创建新的consumer", k.consumer)
+		if k.consumer != nil && len(k.consumer) == 3 {
+			k.consumer[2].(*kgo.Client).Close()
 		}
-		// 2. 添加新的topics
-		k.client.AddConsumeTopics(topic)
-		//k.client.ResumeFetchTopics(topic)
+		conf := append(k.config,
+			kgo.ConsumeTopics(topic),
+			kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
+		)
+		if group != "" {
+			conf = append(conf, kgo.ConsumerGroup(group), kgo.DisableAutoCommit())
+		}
+
+		cl, err := kgo.NewClient(
+			conf...,
+		)
+		if err != nil {
+			result.Err = "Consumer Error：" + err.Error()
+			return result
+		}
+		_client = cl
+		k.consumer = []any{group, topic, _client}
+		// 要等待重平衡成功。
+		fmt.Println("创建新的consumer完成", k.consumer)
+	} else {
+		fmt.Println("使用缓存的consumer", k.consumer)
+		_client = k.consumer[2].(*kgo.Client)
 	}
 
 	log.Println("开始poll...")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 
-	fetches := k.client.PollRecords(ctx, num)
+	fetches := _client.PollRecords(ctx, num)
 
-	//超时错误
+	// 客户端此时已经被关闭
+	if fetches.IsClientClosed() {
+		k.consumer = nil
+		result.Err = "Client Closed, Please Retry"
+		return result
+	}
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		result.Err = "Consume Timeout, Maybe No Message"
 		return result
@@ -716,8 +759,9 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 		result.Err = fmt.Sprint(errs)
 		return result
 	}
-	res := make([]any, 0)
 	log.Println("poll完成...", len(fetches.Records()))
+
+	res := make([]any, 0)
 	for i, v := range fetches.Records() {
 		if v == nil {
 			continue
@@ -741,9 +785,9 @@ func (k *Service) Consumer(topic string, group string, num, timeout int) *types.
 	fmt.Printf("耗时：%.4f秒\n", time.Since(st).Seconds())
 	fmt.Println(topic, group, num)
 
-	log.Println("提交offset...")
-	if group != "" {
-		if err := k.kac.CommitAllOffsets(context.Background(), group, kadm.OffsetsFromFetches(fetches)); err != nil {
+	if group != "" && isCommit {
+		log.Println("提交offset...")
+		if err := _client.CommitUncommittedOffsets(context.Background()); err != nil {
 			result.Err = "Failed to submit offsets: " + err.Error()
 			return result
 		}

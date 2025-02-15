@@ -1,70 +1,109 @@
 <!--
-  - Copyright 2025 Bronya0 <tangssst@163.com>.
-  - Author Github: https://github.com/Bronya0
-  -
-  - Licensed under the Apache License, Version 2.0 (the "License");
-  - you may not use this file except in compliance with the License.
-  - You may obtain a copy of the License at
-  -
-  -     https://www.apache.org/licenses/LICENSE-2.0
-  -
-  - Unless required by applicable law or agreed to in writing, software
-  - distributed under the License is distributed on an "AS IS" BASIS,
-  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  - See the License for the specific language governing permissions and
-  - limitations under the License.
-  -->
+ - Copyright 2025 Bronya0 <tangssst@163.com>.
+ - Author Github: https://github.com/Bronya0
+ -
+ - Licensed under the Apache License, Version 2.0 (the "License");
+ - you may not use this file except in compliance with the License.
+ - You may obtain a copy of the License at
+ -
+ -     https://www.apache.org/licenses/LICENSE-2.0
+ -
+ - Unless required by applicable law or agreed to in writing, software
+ - distributed under the License is distributed on an "AS IS" BASIS,
+ - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ - See the License for the specific language governing permissions and
+ - limitations under the License.
+ -->
 
 <template>
   <n-flex vertical>
     <n-flex align="center">
       <h2>{{ t('consumer.title') }}</h2>
       <p>{{ t('consumer.desc') }}</p>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
-    </n-flex>
-    <!-- 查询条件区域 -->
-    <n-flex align="center">
-      {{ t('consumer.requiredTopic') }}：
-      <n-select
-          v-model:value="selectedTopic"
-          :options="topic_data"
-          :placeholder="t('consumer.topicPlaceholder')"
-          filterable
-          clearable
-          style="width: 300px"
-      />
-
-      {{ t('consumer.requiredMessagesCount') }}：
-      <n-input-number
-          v-model:value="maxMessages"
-          :min="1"
-          :placeholder="t('consumer.messagesCountPlaceholder')"
-          style="width: 160px"
-      />
-      {{ t('consumer.pollTimeoutDescription') }}
-      <n-input-number
-          v-model:value="timeout"
-          :min="1"
-          :placeholder="t('consumer.pollTimeoutPlaceholder')"
-          style="width: 160px"
-      />
-    </n-flex>
-    <n-flex align="center">
-      {{ t('consumer.optionalGroup') }}
-      <n-select
-          v-model:value="selectedGroup"
-          :options="group_data"
-          :placeholder="t('consumer.groupPlaceholder')"
-          filterable
-          clearable
-          tag
-          style="width: 300px"
-      />
-      <n-button tertiary type="primary" @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
-        {{ t('consumer.consumeMessage') }}
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
       </n-button>
     </n-flex>
+    <!-- 查询条件区域 -->
+    <n-form
+        ref="formRef"
+        :model="select"
+        inline
+        label-placement="top"
+        style="text-align: left;"
+        label-width="auto"
+        :rules="{
+              selectedTopic: {required: true, trigger: 'blur'},
+              maxMessages: {required: true, type: 'number',trigger: 'blur'},
+            }"
+    >
 
+      <n-form-item label="Topic" path="selectedTopic">
+        <n-select
+            v-model:value="select.selectedTopic"
+            :options="topic_data"
+            :placeholder="t('consumer.requiredTopic')"
+            filterable
+            clearable
+        />
+      </n-form-item>
+      <n-form-item label="Num" path="maxMessages" style="width: 100px">
+        <n-tooltip>
+          <template #trigger>
+            <n-input-number
+                v-model:value="select.maxMessages"
+                :min="1"
+            />
+          </template>
+          {{t('consumer.messagesCountPlaceholder')}}
+        </n-tooltip>
+      </n-form-item>
+
+      <n-form-item label="ConsumerGroup" path="selectedGroup">
+        <n-tooltip>
+          <template #trigger>
+            <n-select
+                v-model:value="select.selectedGroup"
+                :options="group_data"
+                filterable
+                clearable
+                tag
+            />
+          </template>
+          {{t('consumer.optionalGroup')}}
+        </n-tooltip>
+      </n-form-item>
+
+      <n-form-item label="Timeout">
+        <n-tooltip>
+          <template #trigger>
+            <n-input-number
+                v-model:value="select.timeout"
+                :min="1"
+                style="max-width: 100px"
+            />
+          </template>
+          {{t('consumer.pollTimeoutPlaceholder')}}
+        </n-tooltip>
+      </n-form-item>
+
+      <n-form-item label="CommitOffset" path="isCommit">
+        <n-tooltip>
+          <template #trigger>
+            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isCommit"/>
+          </template>
+          {{t('consumer.commitOffsetTooltip')}}
+        </n-tooltip>
+      </n-form-item>
+
+      <n-form-item>
+
+        <n-button tertiary type="primary" @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
+          {{ t('consumer.consumeMessage') }}
+        </n-button>
+      </n-form-item>
+
+
+    </n-form>
     <!-- 消息列表 -->
     <n-data-table
         :columns="columns"
@@ -85,6 +124,7 @@ import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
 
 const {t} = useI18n()
+const formRef = ref(null)
 
 const message = useMessage()
 const topic_data = ref([]);
@@ -92,10 +132,14 @@ const group_data = ref([]);
 const messages = ref([])
 
 // 表单数据
-const selectedTopic = ref()
-const selectedGroup = ref()
-const maxMessages = ref(10)
-const timeout = ref(10)
+const select = ref({
+  selectedTopic: null,
+  selectedGroup: null,
+  maxMessages: 10,
+  timeout: 10,
+  isCommit: false,
+})
+
 const loading = ref(false)
 
 const refreshTopic = async () => {
@@ -105,8 +149,8 @@ const selectNode = async (node) => {
   topic_data.value = []
   group_data.value = []
   messages.value = []
-  selectedTopic.value = null
-  selectedGroup.value = null
+  select.value.selectedTopic = null
+  select.value.selectedGroup = null
   loading.value = false
   await getData()
 }
@@ -124,7 +168,7 @@ const getData = async () => {
     const res = await GetTopics()
     const res2 = await GetGroups()
     if (res.err !== "" || res2.err !== "") {
-      message.error(res.err === res2.err? res.err : res.err + res2.err)
+      message.error(res.err === res2.err ? res.err : res.err + res2.err)
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -180,7 +224,7 @@ const columns = [
     title: 'Offset',
     key: 'Offset',
     width: 20,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
   },
   {
@@ -188,7 +232,7 @@ const columns = [
     key: 'Key',
     width: 20,
     resizable: true,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
   },
   {
@@ -196,7 +240,7 @@ const columns = [
     key: 'Value',
     width: 40,
     resizable: true,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
   },
   {
@@ -204,7 +248,7 @@ const columns = [
     key: 'Timestamp',
     width: 20,
     resizable: true,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: (rowA, rowB) => {
       const dateA = new Date(rowA['Timestamp']);
       const dateB = new Date(rowB['Timestamp']);
@@ -215,7 +259,7 @@ const columns = [
     title: 'Topic',
     key: 'Topic',
     width: 20,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     resizable: true,
     sorter: 'default'
   },
@@ -231,7 +275,7 @@ const columns = [
     key: 'Headers',
     width: 20,
     resizable: true,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
   },
   // {
@@ -256,14 +300,15 @@ const columns = [
 
 // 获取消息
 const consume = async () => {
-  if (!selectedTopic.value) {
+  if (!select.value.selectedTopic) {
     message.error(t('message.selectTopic'))
     return
   }
 
   loading.value = true
   try {
-    const result = await Consumer(selectedTopic.value, selectedGroup.value, maxMessages.value, timeout.value)
+    const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
+        select.value.maxMessages, select.value.timeout, select.value.isCommit)
     if (result.err !== "") {
       message.error(result.err)
     } else {

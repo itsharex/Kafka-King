@@ -125,6 +125,7 @@ export default {
         pollTimeoutPlaceholder: "Poll timeout",
         optionalGroup: "Optional: Group (Once selected, offsets will be committed automatically during consumption. Supports creating new groups)",
         groupPlaceholder: "Select or create Consumer Group",
+        commitOffsetTooltip: "Whether to commit Offset after consumption",
         consumeMessage: "Consume Messages"
     },
     group: {

@@ -125,6 +125,7 @@ export default {
         pollTimeoutPlaceholder: "poll 타임아웃",
         optionalGroup: "선택 사항: 그룹 (한번 선택하면 소비 시 오프셋이 자동으로 제출됩니다. 새로운 그룹 생성도 지원)",
         groupPlaceholder: "컨슈머 그룹 선택 또는 생성",
+        commitOffsetTooltip: "소비 후 오프셋 제출 여부",
         consumeMessage: "메시지 소비"
     },
     group: {

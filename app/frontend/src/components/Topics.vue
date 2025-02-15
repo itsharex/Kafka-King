@@ -18,10 +18,11 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2>{{t('topic.title')}}</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
-      <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
+      <h2>{{ t('topic.title') }}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{ t('common.refresh') }}</n-button>
+      <n-text>{{ t('common.count') }}：{{ data.length }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
+      </n-button>
 
     </n-flex>
     <n-spin :show="loading" :description="t('common.connecting')">
@@ -32,7 +33,7 @@
             <n-icon>
               <LibraryBooksOutlined/>
             </n-icon>
-            {{t('topic.title')}}
+            {{ t('topic.title') }}
           </template>
           <n-flex vertical>
             <!--          搜索框、新增按钮-->
@@ -40,8 +41,9 @@
               <n-input v-model:value="searchText" @keydown.enter="getData" :placeholder="t('topic.add_name')" clearable
                        style="width: 300px"/>
               <n-button @click="getData" :render-icon="renderIcon(SearchOutlined)"></n-button>
-              <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">{{t('topic.add')}}</n-button>
-              <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Topic</n-button>
+              <n-button @click="showDrawer=true" :render-icon="renderIcon(AddFilled)">{{ t('topic.add') }}</n-button>
+              <n-button @click="getData" :render-icon="renderIcon(RefreshOutlined)">{{ t('common.read') }} Topic
+              </n-button>
               <!--              <n-dropdown :options="group_data"  @select="getTopicsOffsets"><n-button :render-icon="renderIcon(RefreshOutlined)">刷新 Offsets</n-button></n-dropdown>-->
               <n-select
                   v-model:value="selectedGroup"
@@ -51,7 +53,9 @@
                   clearable
                   style="width: 250px"
               />
-              <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Offsets</n-button>
+              <n-button @click="getTopicsOffsets" :render-icon="renderIcon(RefreshOutlined)">{{ t('common.read') }}
+                Offsets
+              </n-button>
             </n-flex>
             <n-data-table
                 :columns="columns"
@@ -72,7 +76,7 @@
             <n-icon>
               <AddRoadOutlined/>
             </n-icon>
-            {{t('topic.partition')}}
+            {{ t('topic.partition') }}
           </template>
 
           <n-flex vertical>
@@ -81,7 +85,8 @@
               <n-tag type="success">
                 {{ activeDetailTopic }}
               </n-tag>
-              <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">{{t('topic.add_partition')}}</n-button>
+              <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">{{ t('topic.add_partition') }}
+              </n-button>
               <n-select
                   v-model:value="selectedGroup"
                   :options="group_data"
@@ -90,7 +95,9 @@
                   clearable
                   style="width: 250px"
               />
-              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">{{t('common.read')}} Offsets</n-button>
+              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">{{ t('common.read') }}
+                Offsets
+              </n-button>
             </n-flex>
             <n-data-table
                 :columns="partitions_columns"
@@ -107,7 +114,7 @@
             <n-icon>
               <SettingsRound/>
             </n-icon>
-            {{t('common.config')}}
+            {{ t('common.config') }}
           </template>
 
           <n-flex vertical>
@@ -118,7 +125,8 @@
                 {{ activeConfigTopic }}
               </n-tag>
 
-              <n-button @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}
+              <n-button @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">
+                {{ t('common.refresh') }}
               </n-button>
 
             </n-flex>
@@ -179,8 +187,8 @@
 
       <template #footer>
         <n-space>
-          <n-button @click="showDrawer = false">{{t('common.cancel')}}</n-button>
-          <n-button type="primary" @click="addTopic">{{t('common.enter')}}</n-button>
+          <n-button @click="showDrawer = false">{{ t('common.cancel') }}</n-button>
+          <n-button type="primary" @click="addTopic">{{ t('common.enter') }}</n-button>
         </n-space>
       </template>
     </n-drawer-content>
@@ -197,8 +205,8 @@
       </n-form-item>
       <n-flex>
 
-        <n-button @click="showModal = false">{{t('common.cancel')}}</n-button>
-        <n-button type="primary" @click="addTopicPartition">{{t('common.enter')}}</n-button>
+        <n-button @click="showModal = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="addTopicPartition">{{ t('common.enter') }}</n-button>
       </n-flex>
     </n-form>
 
@@ -391,7 +399,11 @@ const columns = [
     sorter: 'default',
     width: 40,
     resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    ellipsis: {
+      tooltip: {
+        scrollable: true,
+      }
+    },
     render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "health" : row['Err']}),
   },
   {
@@ -425,7 +437,7 @@ const columns = [
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => {
-      if (row.EndOffset !=null && row.CommittedOffset != null){
+      if (row.EndOffset != null && row.CommittedOffset != null) {
         return row.EndOffset - row.CommittedOffset
       }
     },
@@ -503,7 +515,7 @@ const partitions_columns = [
     sorter: 'default',
     width: 20,
     resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    ellipsis: {tooltip: {scrollable: true,}},
     render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "health" : row['err']}),
   },
   {
@@ -538,7 +550,7 @@ const partitions_columns = [
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => {
-      if (row.EndOffset !=null && row.CommittedOffset != null){
+      if (row.EndOffset != null && row.CommittedOffset != null) {
         return row.EndOffset - row.CommittedOffset
       }
     }
