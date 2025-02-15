@@ -54,7 +54,7 @@
                 :min="1"
             />
           </template>
-          {{t('consumer.messagesCountPlaceholder')}}
+          {{ t('consumer.messagesCountPlaceholder') }}
         </n-tooltip>
       </n-form-item>
 
@@ -69,7 +69,7 @@
                 tag
             />
           </template>
-          {{t('consumer.optionalGroup')}}
+          {{ t('consumer.optionalGroup') }}
         </n-tooltip>
       </n-form-item>
 
@@ -82,8 +82,20 @@
                 style="max-width: 100px"
             />
           </template>
-          {{t('consumer.pollTimeoutPlaceholder')}}
+          {{ t('consumer.pollTimeoutPlaceholder') }}
         </n-tooltip>
+      </n-form-item>
+
+      <n-form-item label="Decompress" path="decompress">
+        <n-select
+            v-model:value="select.decompress"
+            :options="[
+              {label: 'gzip', value: 'gzip'},
+            ]"
+            filterable
+            clearable
+            style="width: 100px"
+        />
       </n-form-item>
 
       <n-form-item label="CommitOffset" path="isCommit">
@@ -91,13 +103,15 @@
           <template #trigger>
             <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isCommit"/>
           </template>
-          {{t('consumer.commitOffsetTooltip')}}
+          {{ t('consumer.commitOffsetTooltip') }}
         </n-tooltip>
       </n-form-item>
 
+
       <n-form-item>
 
-        <n-button tertiary type="primary" @click="consume" :loading="loading" :render-icon="renderIcon(MessageOutlined)">
+        <n-button tertiary type="primary" @click="consume" :loading="loading"
+                  :render-icon="renderIcon(MessageOutlined)">
           {{ t('consumer.consumeMessage') }}
         </n-button>
       </n-form-item>
@@ -138,6 +152,7 @@ const select = ref({
   maxMessages: 10,
   timeout: 10,
   isCommit: false,
+  decompress: null,
 })
 
 const loading = ref(false)
@@ -230,7 +245,7 @@ const columns = [
   {
     title: 'Key',
     key: 'Key',
-    width: 20,
+    width: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
@@ -308,7 +323,8 @@ const consume = async () => {
   loading.value = true
   try {
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
-        select.value.maxMessages, select.value.timeout, select.value.isCommit)
+        select.value.maxMessages, select.value.timeout, select.value.decompress,
+        select.value.isCommit)
     if (result.err !== "") {
       message.error(result.err)
     } else {

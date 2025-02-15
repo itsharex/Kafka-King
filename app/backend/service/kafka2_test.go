@@ -18,6 +18,8 @@
 package service
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -73,14 +75,19 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	defer client.Close()
 	defer admin.Close()
 	//生产消息
-	//st := time.Now()
-	//for i := 0; i < 10; i++ {
-	//	client.Produce(ctx, &kgo.Record{
-	//		Topic: "1",
-	//		Value: []byte(time.Now().Format(time.DateTime)),
-	//	}, nil)
-	//}
-	//fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
+	st := time.Now()
+	datas := make([]*kgo.Record, 0)
+	for i := 0; i < 1000; i++ {
+		bt, _ := gzipCompress([]byte(time.Now().Format(time.DateTime)))
+		datas = append(datas, &kgo.Record{
+			Topic: "gzip",
+			//Value: []byte(time.Now().Format(time.DateTime)),
+			Value: bt,
+		})
+	}
+	client.ProduceSync(ctx, datas...)
+
+	fmt.Printf("耗时：%.4f秒\n", time.Now().Sub(st).Seconds())
 
 	////消费消息。订阅也可以在创建客户端的时候做
 	//client.AddConsumeTopics("1")
@@ -170,4 +177,20 @@ func TestNewKafkaService2(t *testing.T) { // 功能测试以 `Test` 前缀命名
 	//Members:[{MemberID:kgo-eb77103b-d127-4f0d-9159-6bdc92030cd1 InstanceID:<nil> ClientID:kgo ClientHost:/192.168.160.1 Join:{i:0xc000032960} Assigned:{i:0xc000284000}}] Err:<nil>}]
 	//res, _ := admin.DescribeGroups(ctx, "g1")
 	//fmt.Printf("%+v\n", res)
+}
+func gzipCompress(data []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	gzipWriter := gzip.NewWriter(&buf) // Create a gzip writer that writes to the buffer
+
+	_, err := gzipWriter.Write(data) // Write the data to the gzip writer
+	if err != nil {
+		return nil, fmt.Errorf("gzip write error: %w", err)
+	}
+
+	err = gzipWriter.Close() // Important: Close the writer to flush and finalize the gzip stream
+	if err != nil {
+		return nil, fmt.Errorf("gzip close error: %w", err)
+	}
+
+	return buf.Bytes(), nil // Return the compressed data from the buffer
 }

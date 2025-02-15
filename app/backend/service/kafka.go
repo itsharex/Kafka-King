@@ -698,7 +698,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 
 // Consumer 消费消息
 // 参考：https://github.com/twmb/franz-go/blob/master/examples/group_consuming/main.go
-func (k *Service) Consumer(topic string, group string, num, timeout int, isCommit bool) *types.ResultsResp {
+func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit bool) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
@@ -766,11 +766,26 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, isCommi
 		if v == nil {
 			continue
 		}
+
+		var data []byte
+		var err error
+
+		switch decompress {
+		case "gzip":
+			data, err = common.GzipDecompress(v.Value)
+		default:
+			data = v.Value
+		}
+		if err != nil {
+			result.Err = "Failed to decompress data: " + err.Error()
+			return result
+		}
+
 		res = append(res, map[string]any{
 			"ID":            i,
 			"Offset":        v.Offset,
 			"Key":           string(v.Key),
-			"Value":         string(v.Value),
+			"Value":         string(data),
 			"Timestamp":     v.Timestamp.Format(time.DateTime),
 			"Partition":     v.Partition,
 			"Topic":         v.Topic,
@@ -793,4 +808,5 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, isCommi
 		}
 	}
 	return result
+
 }
