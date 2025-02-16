@@ -86,7 +86,7 @@ jobs:
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           brew install mitchellh/gon/gon
           cd ${{ env.APP_WORKING_DIRECTORY }}
-          wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
+          wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform ${{ matrix.build.platform }} -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
           ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.app.zip
 
