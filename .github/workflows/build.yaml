@@ -18,6 +18,7 @@ jobs:
       matrix:
         build:
           - platform: 'windows/amd64'
+          - platform: 'windows/arm64'
 
     steps:
       - name: Checkout
@@ -41,13 +42,14 @@ jobs:
 
       - name: Build & Compress
         run: |
+          $PLATFORM_NAME = '${{ matrix.build.platform }}'.Replace('/', '-')
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           cd ${{ env.APP_WORKING_DIRECTORY }}
           wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform ${{ matrix.build.platform }} -o ${{ env.APP_NAME }}.exe
           cd ..
           copy readme.md app\build\bin\
           copy LICENSE app\build\bin\
-          & "C:\Program Files\7-Zip\7z.exe" a -t7z "${{ env.APP_NAME }}-${{ github.ref_name }}-windows-amd64.7z" ".\app\build\bin\*" -r
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z "${{ env.APP_NAME }}-${{ github.ref_name }}-$PLATFORM_NAME.7z" ".\app\build\bin\*" -r
           
       - name: Upload
         uses: softprops/action-gh-release@v1
@@ -62,7 +64,8 @@ jobs:
     strategy:
       matrix:
         build:
-          - platform: 'darwin/universal'
+          - platform: 'darwin/amd64'
+          - platform: 'darwin/arm64'
 
     steps:
       - name: Checkout
@@ -83,12 +86,13 @@ jobs:
 
       - name: Build & Compress
         run: |
+          PLATFORM_NAME=$(echo "${{ matrix.build.platform }}" | sed 's/\//-/g')
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           brew install mitchellh/gon/gon
           cd ${{ env.APP_WORKING_DIRECTORY }}
           wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform ${{ matrix.build.platform }} -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.app.zip
+          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-$PLATFORM_NAME.app.zip
 
       - name: Upload
         uses: softprops/action-gh-release@v1
@@ -104,6 +108,7 @@ jobs:
       matrix:
         build:
           - platform: 'linux/amd64'
+          - platform: 'linux/arm64'
 
     steps:
       - name: Checkout
@@ -124,6 +129,7 @@ jobs:
 
       - name: Build & Compress
         run: |
+          PLATFORM_NAME=$(echo "${{ matrix.build.platform }}" | sed 's/\//-/g')
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
           cd ${{ env.APP_WORKING_DIRECTORY }}
@@ -135,8 +141,8 @@ jobs:
           cp -r ${{ env.APP_WORKING_DIRECTORY }}/build/bin/* _temp_dist/
           chmod +x _temp_dist/*
           cd _temp_dist/
-          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-amd64.tar.gz *
-          mv ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-amd64.tar.gz ..
+          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$PLATFORM_NAME.tar.gz *
+          mv ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$PLATFORM_NAME.tar.gz ..
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
