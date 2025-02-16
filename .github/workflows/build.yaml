@@ -63,9 +63,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]  # macos-13是amd64，macos-latest是m1芯片
-    env:
-      GOARCH: "universal"  # 不给出这个会有问题
+        os: [macos-13, macos-latest]  # macos-13是amd64，macos-latest是m1芯片
 
     steps:
       - name: Checkout
@@ -90,9 +88,9 @@ jobs:
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           brew install mitchellh/gon/gon
           cd ${{ env.APP_WORKING_DIRECTORY }}
-          wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
+          wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos-universal.app.zip
+          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos-$ARCH.app.zip
 
       - name: Upload
         uses: softprops/action-gh-release@v1
