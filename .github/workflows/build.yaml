@@ -92,7 +92,7 @@ jobs:
           cd ${{ env.APP_WORKING_DIRECTORY }}
           wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos-$ARCH.app.zip
+          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}-macos-universal.app.zip
 
       - name: Upload
         uses: softprops/action-gh-release@v1
