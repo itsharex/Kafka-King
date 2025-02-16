@@ -33,7 +33,9 @@ export default {
         config: "Configuration",
         csv: "Export as CSV",
         connecting: "Connecting...",
-        action: "Action"
+        action: "Action",
+        compress: 'Compress',
+        decompress: 'Decompress',
     },
     aside: {
         cluster: "Cluster",

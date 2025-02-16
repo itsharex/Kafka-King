@@ -46,7 +46,7 @@
             clearable
         />
       </n-form-item>
-      <n-form-item label="Num" path="maxMessages" style="width: 100px">
+      <n-form-item label="Number" path="maxMessages" style="width: 100px">
         <n-tooltip>
           <template #trigger>
             <n-input-number
@@ -58,7 +58,7 @@
         </n-tooltip>
       </n-form-item>
 
-      <n-form-item label="ConsumerGroup" path="selectedGroup">
+      <n-form-item label="Consumer Group" path="selectedGroup">
         <n-tooltip>
           <template #trigger>
             <n-select
@@ -69,11 +69,11 @@
                 tag
             />
           </template>
-          {{ t('consumer.optionalGroup') }}
+          support create
         </n-tooltip>
       </n-form-item>
 
-      <n-form-item label="Timeout">
+      <n-form-item label="Poll Timeout">
         <n-tooltip>
           <template #trigger>
             <n-input-number
@@ -86,7 +86,7 @@
         </n-tooltip>
       </n-form-item>
 
-      <n-form-item label="Decompress" path="decompress">
+      <n-form-item :label="t('common.decompress')" path="decompress">
         <n-select
             v-model:value="select.decompress"
             :options="[

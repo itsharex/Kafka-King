@@ -33,7 +33,9 @@ export default {
         config: "설정",
         csv: "CSV로 내보내기",
         connecting: "연결 중...",
-        action: "동작"
+        action: "동작",
+        compress: '압축',
+        decompress: '압축 해제',
     },
     aside: {
         cluster: "클러스터",

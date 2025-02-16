@@ -34,6 +34,8 @@ export default {
         csv: '导出为csv',
         connecting: '连接中...',
         action: '操作',
+        compress: '压缩',
+        decompress: '解压',
     },
     aside: {
         cluster: '集群',

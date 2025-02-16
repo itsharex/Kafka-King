@@ -33,7 +33,9 @@ export default {
         config: "Настройки",
         csv: "Экспортировать в CSV",
         connecting: "Подключение...",
-        action: "Действие"
+        action: "Действие",
+        compress: 'кампрэсія',
+        decompress: 'Распакуйце',
     },
     aside: {
         cluster: "Кластер",

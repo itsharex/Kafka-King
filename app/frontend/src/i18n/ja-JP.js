@@ -33,7 +33,9 @@ export default {
         config: "設定",
         csv: "CSVとしてエクスポート",
         connecting: "接続中...",
-        action: "操作"
+        action: "操作",
+        compress: '圧縮',
+        decompress: '解凍',
     },
     aside: {
         cluster: "クラスタ",

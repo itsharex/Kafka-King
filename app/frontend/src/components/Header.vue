@@ -135,7 +135,7 @@ const checkForUpdates = async () => {
       version.value.body = resp.body
       const n = notification.success({
         title: check_msg.value,
-        // content: resp.body,
+        content: resp.body,
         action: () =>
               h(NFlex, {justify: "flex-end" }, () => [
                 h(

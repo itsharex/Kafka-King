@@ -72,7 +72,7 @@
           :placeholder="t('producer.sendTimesPlaceholder')"
           style="width: 160px"
       />
-      Compress:
+      {{t('common.compress')}}
         <n-select
             v-model:value="compress"
             :options="[
