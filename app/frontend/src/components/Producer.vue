@@ -72,6 +72,20 @@
           :placeholder="t('producer.sendTimesPlaceholder')"
           style="width: 160px"
       />
+      Compress:
+        <n-select
+            v-model:value="compress"
+            :options="[
+              {label: 'gzip', value: 'gzip'},
+              {label: 'lz4', value: 'lz4'},
+              {label: 'zstd', value: 'zstd'},
+              {label: 'snappy', value: 'snappy'},
+            ]"
+            filterable
+            clearable
+            style="width: 100px"
+        />
+
     </n-flex>
     <n-flex align="center">
       <n-button tertiary type="primary" @click="produce" :loading="loading" :render-icon="renderIcon(SendTwotone)">
@@ -103,6 +117,7 @@ const headers = ref([])
 const nums = ref(1)
 const partition = ref(0)
 const loading = ref(false)
+const compress = ref()
 
 const refreshTopic = async () => {
   await getData()
@@ -176,7 +191,7 @@ const produce = async () => {
   }
   loading.value = true
   try {
-    const res = await Produce(selectedTopic.value, messageKey.value, messageContent.value, partition.value, nums.value, headers.value)
+    const res = await Produce(selectedTopic.value, messageKey.value, messageContent.value, partition.value, nums.value, headers.value, compress.value)
     if (res.err !== "") {
       message.error(res.err)
     } else {

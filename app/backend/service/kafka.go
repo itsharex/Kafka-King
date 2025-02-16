@@ -656,7 +656,7 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 }
 
 // Produce 生产消息
-func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string) *types.ResultsResp {
+func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string, compressMethod string) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
@@ -674,11 +674,30 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 			Value: []byte(headers[i]["value"]),
 		}
 	}
+
+	var data []byte
+	var err error
+	switch compressMethod {
+	case "gzip":
+		data, err = compress.Gzip([]byte(value))
+	case "lz4":
+		data, err = compress.Lz4([]byte(value))
+	case "zstd":
+		data, err = compress.Zstd([]byte(value))
+	case "snappy":
+		data, err = compress.Snappy([]byte(value))
+	default:
+		data = []byte(value)
+	}
+	if err != nil {
+		result.Err = "Failed to compress data: " + err.Error()
+		return result
+	}
 	var records []*kgo.Record
 	for i := 0; i < num; i++ {
 		records = append(records, &kgo.Record{
 			Topic:     topic,
-			Value:     []byte(value),
+			Value:     data,
 			Key:       []byte(key),
 			Headers:   headers2,
 			Partition: int32(partition),
@@ -770,7 +789,6 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 
 		var data []byte
 		var err error
-
 		switch decompress {
 		case "gzip":
 			data, err = compress.GzipDecompress(v.Value)
