@@ -43,7 +43,7 @@ jobs:
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           cd ${{ env.APP_WORKING_DIRECTORY }}
-          wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -o ${{ env.APP_NAME }}.exe
+          wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform ${{ matrix.build.platform }} -o ${{ env.APP_NAME }}.exe
           cd ..
           copy readme.md app\build\bin\
           copy LICENSE app\build\bin\
@@ -127,7 +127,7 @@ jobs:
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
           cd ${{ env.APP_WORKING_DIRECTORY }}
-          wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -o ${{ env.APP_NAME }}
+          wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform ${{ matrix.build.platform }} -o ${{ env.APP_NAME }}
           cd ..
           mkdir _temp_dist
           cp readme.md _temp_dist/

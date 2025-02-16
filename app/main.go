@@ -117,5 +117,6 @@ func main() {
 
 	if err != nil {
 		appConfig.LogErrToFile(err.Error())
+		panic(err)
 	}
 }

@@ -70,8 +70,12 @@ func NewKafkaService() *Service {
 
 func (k *Service) Close(ctx context.Context) bool {
 	// 关闭连接,return false表示允许关闭
-	k.client.Close()
-	k.kac.Close()
+	if k.client != nil {
+		k.client.Close()
+	}
+	if k.kac != nil {
+		k.kac.Close()
+	}
 	if k.consumer != nil && len(k.consumer) == 2 {
 		k.consumer[2].(*kgo.Client).Close()
 	}
