@@ -20,6 +20,7 @@ package service
 import (
 	"app/backend/common"
 	"app/backend/types"
+	"app/backend/utils/compress"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -772,7 +773,13 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 
 		switch decompress {
 		case "gzip":
-			data, err = common.GzipDecompress(v.Value)
+			data, err = compress.GzipDecompress(v.Value)
+		case "lz4":
+			data, err = compress.Lz4Decompress(v.Value)
+		case "zstd":
+			data, err = compress.ZstdDecompress(v.Value)
+		case "snappy":
+			data, err = compress.SnappyDecompress(v.Value)
 		default:
 			data = v.Value
 		}

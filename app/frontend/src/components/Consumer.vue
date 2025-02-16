@@ -91,6 +91,9 @@
             v-model:value="select.decompress"
             :options="[
               {label: 'gzip', value: 'gzip'},
+              {label: 'lz4', value: 'lz4'},
+              {label: 'zstd', value: 'zstd'},
+              {label: 'snappy', value: 'snappy'},
             ]"
             filterable
             clearable
