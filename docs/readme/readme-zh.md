@@ -42,6 +42,8 @@
 - 方法1：右侧下载，或者点[下载地址](https://github.com/Bronya0/Kafka-King/releases)，展开【Assets】，选择自己的平台下载，支持windows、macos、linux（一般用不到）。
 - 方法2：【qq群高速下载】：964440643
 
+对于macos，“M1”、“M2”通常是ARM64架构，“Intel”是AMD64架构
+
 `必看 注意事项：`
 
 > 1、**使用前请检查kafka集群配置的`advertised.listeners`，如果未配置，或配置的是域名，那么在King中填写连接地址时，请提前在本机电脑的hosts文件中添加对应域名解析，否则会因为无法解析域名而无法连接，哪怕你在king输入框里填的是ip也一样**
