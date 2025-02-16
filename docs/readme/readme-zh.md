@@ -39,9 +39,8 @@
 - [x] offset巡检报表
 
 # 下载
-右侧下载，或者点[下载地址](https://github.com/Bronya0/Kafka-King/releases)，展开【Assets】，选择自己的平台下载，支持windows、macos、linux。
-
-【qq群高速下载】：964440643
+方法1：右侧下载，或者点[下载地址](https://github.com/Bronya0/Kafka-King/releases)，展开【Assets】，选择自己的平台下载，支持windows、macos、linux。
+方法2：【qq群高速下载】：964440643
 
 `必看 注意事项：`
 
