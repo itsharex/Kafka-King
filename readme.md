@@ -28,6 +28,7 @@ This project is a cross-platform Kafka GUI client. A star would be appreciated t
 - [x] View the list of cluster nodes, dynamically configure broker and topic settings.
 - [x] Support for consumer clients to consume messages from specified topics with group, size, and timeout parameters, displaying message details in tabular form.
 - [x] Support for PLAIN, SSL, SASL, Kerberos, sasl_plaintext, etc.
+- [x] Support gzip、lz4、snappy、zstd compress and decompress
 - [x] Create (supports batch operations) and delete topics, specifying replicas and partitions.
 - [x] Statistics on each topic's total message count, committed offset, and lag for each consumer group.
 - [x] Detailed information about topic partitions (offsets), with support for adding additional partitions.
