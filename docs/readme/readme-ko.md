@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/snap/icon.ico" alt="이미지 제목">
+  <img src="../snap/icon.ico" alt="이미지 제목">
 </p>
 <h1 align="center">Kafka King </h1>
 
