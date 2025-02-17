@@ -9,7 +9,7 @@
 ![GitHub release](https://img.shields.io/github/release/Bronya0/Kafka-King)
 ![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
 ![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King)
-![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King)
+![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King.svg?style=flat-square)
 
 <h3 align="center">現代的で実用的なKafka GUIクライアント</h3>
 
