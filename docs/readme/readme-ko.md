@@ -6,11 +6,11 @@
 
 <div align="center">
 
-![라이선스](https://img.shields.io/github/license/Bronya0/Kafka-King)
-![GitHub 릴리스](https://img.shields.io/github/release/Bronya0/Kafka-King)
-![GitHub 모든 릴리스](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
-![GitHub 스타](https://img.shields.io/github/stars/Bronya0/Kafka-King)
-![GitHub 포크](https://img.shields.io/github/forks/Bronya0/Kafka-King)
+![License](https://img.shields.io/github/license/Bronya0/Kafka-King)
+![GitHub release](https://img.shields.io/github/release/Bronya0/Kafka-King)
+![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
+![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King)
+![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King.svg?style=flat-square)
 
 <h3 align="center">현대적이고 실용적인 카프카 GUI 클라이언트 </h3>
 
