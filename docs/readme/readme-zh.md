@@ -30,6 +30,7 @@
 - [x] 查看集群节点列表，支持动态配置broker、topic的配置项
 - [x] 支持消费者客户端，按照指定的group进行指定topic、size、timeout的消费，以表格的形式展示消息的各个维度信息
 - [x] 支持PLAIN、SSL、SASL、kerberos、sasl_plaintext等等
+- [x] 支持消息gzip、lz4、snappy、zstd压缩和解压缩
 - [x] 创建主题（支持批量）、删除主题，指定副本、分区
 - [x] 支持根据消费者组统计每个topic的消息总量、提交总量、积压量
 - [x] 支持查看topic的分区的详细信息（offset），并支持添加额外的分区
