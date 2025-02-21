@@ -49,7 +49,7 @@
     <!-- Dynamic addition of headers -->
     <n-flex vertical>
       <n-flex align="center">
-        <span>{{ t('producer.headersTitle') }}:</span>
+        <span>{{ t('producer.headersTitle') }}</span>
         <n-button size="small" @click="addHeader">
           {{ t('producer.addHeader') }}
         </n-button>

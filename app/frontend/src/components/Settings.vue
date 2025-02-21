@@ -37,7 +37,19 @@
       </n-form-item>
 
       <n-form-item :label="t('settings.theme')" >
-        <n-button circle :focusable="false" @click="changeTheme" :render-icon="renderIcon(MoonOrSunnyOutline)"/>
+        <n-switch
+            :checked-value="darkTheme"
+            :unchecked-value="lightTheme"
+            v-model:value="theme"
+            @update-value="changeTheme"
+        >
+          <template #checked-icon>
+            <n-icon :component="NightlightRoundFilled" />
+          </template>
+          <template #unchecked-icon>
+            <n-icon :component="WbSunnyOutlined" />
+          </template>
+        </n-switch>
       </n-form-item>
 
       <n-form-item>
@@ -54,11 +66,10 @@
 </template>
 
 <script setup>
-import {onMounted, ref, shallowRef} from 'vue'
+import {onMounted, ref} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
 import {WindowSetSize} from "../../wailsjs/runtime";
-import {renderIcon} from "../utils/common";
 import {NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
 import {useI18n} from "vue-i18n";
@@ -67,7 +78,6 @@ const {t} = useI18n()
 
 const message = useMessage()
 let theme = lightTheme
-let MoonOrSunnyOutline = shallowRef(WbSunnyOutlined)
 
 const config = ref({
   width: 1248,
@@ -91,7 +101,6 @@ onMounted(async () => {
   console.log(loadedConfig)
   config.value = loadedConfig
   theme = loadedConfig.theme === lightTheme.name ? lightTheme : darkTheme
-  MoonOrSunnyOutline.value = loadedConfig.theme === lightTheme.name ? WbSunnyOutlined : NightlightRoundFilled;
 })
 
 
@@ -114,8 +123,6 @@ const saveConfig = async () => {
 
 
 const changeTheme = () => {
-  MoonOrSunnyOutline.value = MoonOrSunnyOutline.value === NightlightRoundFilled ? WbSunnyOutlined : NightlightRoundFilled;
-  theme = MoonOrSunnyOutline.value === NightlightRoundFilled ? darkTheme : lightTheme
   emitter.emit('update_theme', theme)
 }
 
