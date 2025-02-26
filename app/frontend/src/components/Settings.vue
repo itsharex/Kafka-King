@@ -112,7 +112,7 @@ const saveConfig = async () => {
     return
   }
 
-  await WindowSetSize(config.value.width, config.value.height)
+  WindowSetSize(config.value.width, config.value.height)
 
   emitter.emit('update_theme', theme)
   // 可以添加保存成功的提示

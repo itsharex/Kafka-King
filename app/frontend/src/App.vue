@@ -118,7 +118,7 @@ onMounted(async () => {
   // 从后端加载配置
   config = await GetConfig()
   // 设置窗口大小
-  await WindowSetSize(config.width, config.height)
+  WindowSetSize(config.width, config.height)
   // 设置主题
   themeChange(config.theme === darkTheme.name ? darkTheme : lightTheme)
   // 初始化语言
