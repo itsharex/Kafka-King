@@ -10,7 +10,7 @@ require (
 	github.com/twmb/franz-go v1.18.1
 	github.com/twmb/franz-go/pkg/kadm v1.15.0
 	github.com/twmb/franz-go/pkg/sasl/kerberos v1.1.0
-	github.com/wailsapp/wails/v2 v2.10.0
+	github.com/wailsapp/wails/v2 v2.10.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 

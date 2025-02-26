@@ -112,19 +112,21 @@
 
 
       <n-form-item>
-
         <n-button tertiary type="primary" @click="consume" :loading="loading"
                   :render-icon="renderIcon(MessageOutlined)">
           {{ t('consumer.consumeMessage') }}
         </n-button>
       </n-form-item>
 
+      <n-form-item>
+        <n-input v-model:value="searchText" @input="searchData" placeholder="local search" clearable />
+      </n-form-item>
 
     </n-form>
     <!-- 消息列表 -->
     <n-data-table
         :columns="columns"
-        :data="messages"
+        :data="filter_messages"
         :pagination="pagination"
         :bordered="true"
         striped
@@ -136,7 +138,7 @@ import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
 import {createCsvContent, download_file, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
-import {NButton, NDataTable, NFlex, useMessage} from 'naive-ui'
+import {NButton, NDataTable, NFlex, NInput, useMessage} from 'naive-ui'
 import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
 
@@ -146,7 +148,9 @@ const formRef = ref(null)
 const message = useMessage()
 const topic_data = ref([]);
 const group_data = ref([]);
-const messages = ref([])
+let messages = []
+const filter_messages = ref([])
+const searchText = ref(null)
 
 // 表单数据
 const select = ref({
@@ -166,7 +170,8 @@ const refreshTopic = async () => {
 const selectNode = async (node) => {
   topic_data.value = []
   group_data.value = []
-  messages.value = []
+  messages = []
+  filter_messages.value = []
   select.value.selectedTopic = null
   select.value.selectedGroup = null
   loading.value = false
@@ -331,7 +336,8 @@ const consume = async () => {
     if (result.err !== "") {
       message.error(result.err)
     } else {
-      messages.value = result.results
+      messages = result.results
+      searchData()
       message.success(t('message.fetchSuccess'))
     }
   } catch (error) {
@@ -343,7 +349,7 @@ const consume = async () => {
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
-      messages.value, columns
+      filter_messages, columns
   )
   download_file(csvContent, 'messages.csv', 'text/csv;charset=utf-8;')
 }
@@ -366,4 +372,13 @@ const saveMessageAsBinary = (message) => {
   const blob = new Blob([bytes], {type: 'application/octet-stream'})
   // saveAs(blob, `message-${message.offset}.bin`)
 }
+
+const searchData = () => {
+  if (searchText.value) {
+    filter_messages.value = messages.filter(message => message.Value.includes(searchText.value))
+  } else {
+    filter_messages.value = messages
+  }
+}
+
 </script>
