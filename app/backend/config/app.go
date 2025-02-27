@@ -30,6 +30,13 @@ import (
 	"sync"
 )
 
+var defaultConfig = &types.Config{
+	Width:    common.Width,
+	Height:   common.Height,
+	Theme:    common.Theme,
+	Connects: make([]types.Connect, 0),
+}
+
 type AppConfig struct {
 	ctx context.Context
 	mu  sync.Mutex
@@ -41,17 +48,11 @@ func (a *AppConfig) Start(ctx context.Context) {
 
 func (a *AppConfig) GetConfig() *types.Config {
 	configPath := a.getConfigPath()
-	defaultConfig := &types.Config{
-		Width:    common.Width,
-		Height:   common.Height,
-		Theme:    common.Theme,
-		Connects: make([]types.Connect, 0),
-	}
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return defaultConfig
 	}
-	err = yaml.Unmarshal(data, &defaultConfig)
+	err = yaml.Unmarshal(data, defaultConfig)
 	if err != nil {
 		return defaultConfig
 	}
