@@ -23,6 +23,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/go-resty/resty/v2"
+	"log"
 	"runtime"
 	"runtime/debug"
 )
@@ -39,12 +40,14 @@ func NewApp() *App {
 
 // Start is called at application startup
 func (a *App) Start(ctx context.Context) {
-	// Perform your setup here
 	a.ctx = ctx
+	log.Println("===注意，此时前端执行onMounted，后端初始化必须在此处完成===")
+
 }
 
 // domReady is called after front-end resources have been loaded
 func (a *App) domReady(ctx context.Context) {
+	log.Println("===最后一步，页面即将显示……可以执行后端异步任务===")
 
 	// 统计版本使用情况
 	go func() {
