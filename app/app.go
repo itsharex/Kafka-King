@@ -41,8 +41,7 @@ func NewApp() *App {
 // Start is called at application startup
 func (a *App) Start(ctx context.Context) {
 	a.ctx = ctx
-	log.Println("===注意，此时前端执行onMounted，后端初始化必须在此处完成===")
-
+	log.Println("===注意，接下来前端执行onMounted，后端初始化必须在此处完成===")
 }
 
 // domReady is called after front-end resources have been loaded
