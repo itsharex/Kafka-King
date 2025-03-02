@@ -89,7 +89,6 @@ import {
 import Header from './components/Header.vue'
 import Settings from './components/Settings.vue'
 import {GetConfig, SaveConfig} from "../wailsjs/go/config/AppConfig";
-import {WindowSetSize} from "../wailsjs/runtime";
 import {getLocalLanguage, renderIcon} from "./utils/common";
 import Aside from "./components/Aside.vue";
 import Conn from "./components/Conn.vue";
@@ -118,7 +117,7 @@ onMounted(async () => {
   // 从后端加载配置
   config = await GetConfig()
   // 设置主题
-  themeChange(config.theme === darkTheme.name ? darkTheme : lightTheme)
+  themeChange(config.theme)
   // 初始化语言
   await handleLanguageChange(config.language)
   // =====================注册事件监听=====================
@@ -203,8 +202,8 @@ function handleMenuSelect(key) {
 
 // 主题切换
 function themeChange(newTheme) {
-  Theme.value = newTheme
-  headerClass = newTheme === lightTheme ? "lightTheme" : "darkTheme"
+  Theme.value = newTheme === lightTheme.name ? lightTheme : darkTheme
+  headerClass = newTheme === lightTheme.name ? "lightTheme" : "darkTheme"
 }
 
 // naive ui language

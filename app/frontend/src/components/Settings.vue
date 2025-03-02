@@ -38,8 +38,8 @@
 
       <n-form-item :label="t('settings.theme')" >
         <n-switch
-            :checked-value="darkTheme"
-            :unchecked-value="lightTheme"
+            :checked-value="darkTheme.name"
+            :unchecked-value="lightTheme.name"
             v-model:value="theme"
             @update-value="changeTheme"
         >
@@ -77,13 +77,13 @@ import {useI18n} from "vue-i18n";
 const {t} = useI18n()
 
 const message = useMessage()
-let theme = lightTheme
+let theme = lightTheme.name
 
 const config = ref({
   width: 1248,
   height: 768,
   language: 'en-US',
-  theme: theme.name,
+  theme: theme,
 })
 const languageOptions = [
   {label: '中文', value: 'zh-CN'},
@@ -100,12 +100,12 @@ onMounted(async () => {
   const loadedConfig = await GetConfig()
   console.log(loadedConfig)
   config.value = loadedConfig
-  theme = loadedConfig.theme === lightTheme.name ? lightTheme : darkTheme
+  theme = loadedConfig.theme
 })
 
 
 const saveConfig = async () => {
-  config.value.theme = theme.name
+  config.value.theme = theme
   const err = await SaveConfig(config.value)
   if (err !== "") {
     message.error(t('message.saveErr') + "：" + err)
