@@ -304,10 +304,10 @@ const selectNode = async (node) => {
   await getGroups()
 }
 
-onMounted(async () => {
+onMounted(() => {
   emitter.on('selectNode', selectNode)
-  await getData()
-  await getGroups()
+  getData()
+  getGroups()
 })
 
 // 读取topic及分区信息

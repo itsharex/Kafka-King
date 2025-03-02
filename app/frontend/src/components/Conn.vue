@@ -258,8 +258,8 @@ const drawerTitle = computed(() => isEditing.value ? t('conn.edit') : t('conn.ad
 
 const formRef = ref(null)
 
-onMounted(async () => {
-  await refreshNodeList()
+onMounted(() => {
+  refreshNodeList()
 })
 
 const refreshNodeList = async () => {

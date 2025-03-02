@@ -178,10 +178,10 @@ const selectNode = async (node) => {
   await getData()
 }
 
-onMounted(async () => {
+onMounted(() => {
   emitter.on('selectNode', selectNode)
   emitter.on('refreshTopic', refreshTopic)
-  await getData()
+  getData()
 })
 
 
