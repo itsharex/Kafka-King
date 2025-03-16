@@ -9,7 +9,7 @@ env:
   APP_NAME: 'Kafka-King'
   APP_WORKING_DIRECTORY: 'app'
   GO_VERSION: '1.24'
-  NODE_VERSION: "20.x"
+  NODE_VERSION: "22.x"
 
 # https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
 jobs:
