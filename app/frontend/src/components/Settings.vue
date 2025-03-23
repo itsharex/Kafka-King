@@ -16,59 +16,65 @@
   -->
 
 <template>
-  <n-flex vertical>
-    <n-flex align="center">
-      <h2>{{ t('settings.title') }}</h2>
-    </n-flex>
-  </n-flex>
-  <n-flex align="center">
+  <n-grid :x-gap="12" :cols="2" style="padding: 16px 0">
+    <n-gi>
+        <h2 style="text-align: left">{{ t('settings.title') }}</h2>
+        <n-form :model="config" label-placement="top" style="text-align: left;">
 
-    <n-form :model="config" label-placement="top" style="text-align: left;">
+          <n-form-item :label="t('settings.width')">
+            <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
+          </n-form-item>
+          <n-form-item :label="t('settings.height')">
+            <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
+          </n-form-item>
+          <n-form-item :label="t('settings.lang')">
+            <n-select v-model:value="config.language" :options="languageOptions"
+                      :style="{ maxWidth: '120px' }"/>
+          </n-form-item>
 
-      <n-form-item :label="t('settings.width')" >
-        <n-input-number v-model:value="config.width" :min="800" :max="1920" :style="{ maxWidth: '120px' }"/>
-      </n-form-item>
-      <n-form-item :label="t('settings.height')">
-        <n-input-number v-model:value="config.height" :min="600" :max="1080" :style="{ maxWidth: '120px' }"/>
-      </n-form-item>
-      <n-form-item :label="t('settings.lang')">
-        <n-select v-model:value="config.language" :options="languageOptions"
-                  :style="{ maxWidth: '120px' }"/>
-      </n-form-item>
+          <n-form-item :label="t('settings.theme')">
+            <n-switch
+                :checked-value="darkTheme.name"
+                :unchecked-value="lightTheme.name"
+                v-model:value="theme"
+                @update-value="changeTheme"
+            >
+              <template #checked-icon>
+                <n-icon :component="NightlightRoundFilled"/>
+              </template>
+              <template #unchecked-icon>
+                <n-icon :component="WbSunnyOutlined"/>
+              </template>
+            </n-switch>
+          </n-form-item>
 
-      <n-form-item :label="t('settings.theme')" >
-        <n-switch
-            :checked-value="darkTheme.name"
-            :unchecked-value="lightTheme.name"
-            v-model:value="theme"
-            @update-value="changeTheme"
-        >
-          <template #checked-icon>
-            <n-icon :component="NightlightRoundFilled" />
-          </template>
-          <template #unchecked-icon>
-            <n-icon :component="WbSunnyOutlined" />
-          </template>
-        </n-switch>
-      </n-form-item>
+          <n-form-item>
+            <n-button @click="saveConfig" strong type="primary">{{ t('common.save') }}</n-button>
+          </n-form-item>
 
-      <n-form-item>
-        <n-button @click="saveConfig" strong type="primary">{{ t('common.save')}}</n-button>
-      </n-form-item>
+          <n-form-item label="">
+          </n-form-item>
+          <n-form-item label="">
+          </n-form-item>
 
-      <n-form-item label="">
-      </n-form-item>
-      <n-form-item label="">
-      </n-form-item>
-
-    </n-form>
-  </n-flex>
+        </n-form>
+    </n-gi>
+    <n-gi>
+        <n-flex vertical justify="start" style="text-align: left">
+          <h2>ProcessInfo</h2>
+          <n-p style="white-space: pre-wrap">{{ sys_info }}</n-p>
+          <n-button @click="getSysInfo()" style="width: 100px">Refresh</n-button>
+        </n-flex>
+    </n-gi>
+  </n-grid>
 </template>
 
 <script setup>
 import {onMounted, ref} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
+import {GetProcessInfo} from '../../wailsjs/go/system/Update'
+
 import {WindowSetSize} from "../../wailsjs/runtime";
 import {NightlightRoundFilled, WbSunnyOutlined} from '@vicons/material'
 import emitter from "../utils/eventBus";
@@ -78,6 +84,7 @@ const {t} = useI18n()
 
 const message = useMessage()
 let theme = lightTheme.name
+const sys_info = ref("")
 
 const config = ref({
   width: 1248,
@@ -93,6 +100,10 @@ const languageOptions = [
   {label: 'рускі', value: 'ru-RU'},
 ]
 
+const getSysInfo = async () => {
+  sys_info.value = await GetProcessInfo()
+}
+
 onMounted(async () => {
   console.info("初始化settings……")
 
@@ -101,6 +112,8 @@ onMounted(async () => {
   console.log(loadedConfig)
   config.value = loadedConfig
   theme = loadedConfig.theme
+
+  await getSysInfo()
 })
 
 
