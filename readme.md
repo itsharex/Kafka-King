@@ -56,12 +56,12 @@ Message viewing interface.
 ![](docs/snap/img_3.png)
 
 
-# Build
-Manual build is only necessary for those who wish to study the source code.
-
+# Participate in development
+Install golang, node.js, npm, and run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install Wails CLI.
+```
 cd app
-
 wails dev
+```
 
 # Star History
 [![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
