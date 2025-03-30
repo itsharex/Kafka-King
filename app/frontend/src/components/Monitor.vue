@@ -48,120 +48,94 @@
         {{ t('inspection.startInspection') }}
       </n-button>
       {{ t('inspection.autoFetch') }}
-
     </n-flex>
 
     <n-flex vertical>
-      <!--      <n-flex align="center">-->
-      <!--        <div ref="commit_chartRef" style="width: 48%; height: 500px"></div>-->
-      <!--        <div ref="end_chartRef" style="width: 48%; height: 500px"></div>-->
-      <!--      </n-flex>-->
-      {{ t('inspection.lagFormula') }}
-      <div ref="lag_chartRef" style="width: 98%; height: 440px"></div>
-      <div ref="commit_chartRef" style="width: 98%; height: 440px"></div>
-      <div ref="end_chartRef" style="width: 98%; height: 440px"></div>
+      <n-flex align="center">
+        <div ref="lag_chartRef" style="width: 48%; height: 440px"></div>
+        <div ref="commit_chartRef" style="width: 48%; height: 440px"></div>
+      </n-flex>
+      <n-flex align="center">
+        <div ref="end_chartRef" style="width: 48%; height: 440px"></div>
+        <div ref="productionSpeed_chartRef" style="width: 48%; height: 440px"></div>
+      </n-flex>
+      <n-flex align="center">
+        <div ref="consumptionSpeed_chartRef" style="width: 48%; height: 440px"></div>
+      </n-flex>
     </n-flex>
-
   </n-flex>
 </template>
+
 <script setup>
-import {onMounted, ref, shallowRef} from 'vue'
+import { onMounted, ref, shallowRef } from 'vue';
 import * as echarts from 'echarts/core';
-import {GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent} from 'echarts/components';
-import {LineChart} from 'echarts/charts';
-import {UniversalTransition} from 'echarts/features';
-import {CanvasRenderer} from 'echarts/renderers';
+import { GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent } from 'echarts/components';
+import { LineChart } from 'echarts/charts';
+import { UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+import { lightTheme, NButton, NFlex, useMessage } from 'naive-ui';
+import { GetGroups, GetTopicOffsets, GetTopics } from '../../wailsjs/go/service/Service';
+import emitter from '../utils/eventBus';
+import { renderIcon } from '../utils/common';
+import { MessageOutlined } from '@vicons/material';
+import { useI18n } from 'vue-i18n';
+import { GetConfig } from '../../wailsjs/go/config/AppConfig';
 
-import {lightTheme, NButton, NFlex, useMessage} from "naive-ui";
-import {GetGroups, GetTopicOffsets, GetTopics} from "../../wailsjs/go/service/Service";
-import emitter from "../utils/eventBus";
-import {renderIcon} from "../utils/common";
-import {MessageOutlined} from "@vicons/material";
-import {useI18n} from "vue-i18n";
-import {GetConfig} from "../../wailsjs/go/config/AppConfig";
-
-const {t} = useI18n()
-
-const message = useMessage()
+const { t } = useI18n();
+const message = useMessage();
 const topic_data = ref([]);
 const group_data = ref([]);
-const selectedTopics = ref([])
-const selectedGroup = ref(null)
+const selectedTopics = ref([]);
+const selectedGroup = ref(null);
 
-const commit_chartRef = shallowRef(null)
-const lag_chartRef = shallowRef(null)
-const end_chartRef = shallowRef(null)
+const lag_chartRef = shallowRef(null);
+const commit_chartRef = shallowRef(null);
+const end_chartRef = shallowRef(null);
+const productionSpeed_chartRef = shallowRef(null);
+const consumptionSpeed_chartRef = shallowRef(null);
 
-const lag_chart = shallowRef(null)
-const commit_chart = shallowRef(null)
-const end_chart = shallowRef(null)
+const lag_chart = shallowRef(null);
+const commit_chart = shallowRef(null);
+const end_chart = shallowRef(null);
+const productionSpeed_chart = shallowRef(null);
+const consumptionSpeed_chart = shallowRef(null);
 
 const offsetData = ref({
   lag: {},
   commit: {},
   end: {},
-})
-const loading = ref(false)
+  productionSpeed: {},
+  consumptionSpeed: {},
+});
+const loading = ref(false);
 
-const selectNode = async (node) => {
-  topic_data.value = []
-  group_data.value = []
-  selectedTopics.value = []
-  selectedGroup.value = null
-
-  lag_chartRef.value = null
-  commit_chartRef.value = null
-  end_chartRef.value = null
-
-  lag_chart.value = null
-  commit_chart.value = null
-  end_chart.value = null
-
-  offsetData.value = {
-    lag: {},
-    commit: {},
-    end: {},
-  }
-  loading.value = false
-
-  await getData()
-}
-
-let echarts_theme = 'dark'
+let echarts_theme = 'dark';
 
 onMounted(async () => {
-  emitter.on('selectNode', selectNode)
-  emitter.on('refreshTopic', refreshTopic)
+  emitter.on('selectNode', selectNode);
+  emitter.on('refreshTopic', refreshTopic);
 
-  const loadedConfig = await GetConfig()
-  echarts_theme = loadedConfig.theme === lightTheme.name ? 'light': 'dark'
+  const loadedConfig = await GetConfig();
+  echarts_theme = loadedConfig.theme === lightTheme.name ? 'light' : 'dark';
 
-  await getData()
+  await getData();
+  initChart();
+  setInterval(fetchData, 5 * 60 * 1000); // Update every 5 minutes
 
-  initChart()
-
-  // await fetchData()
-  setInterval(fetchData, 5 * 60 * 1000) // 定时更新一次
-
-  // 监听窗口大小变化
-  window.addEventListener('resize', handleResize)
-})
+  window.addEventListener('resize', handleResize);
+});
 
 const refreshTopic = async () => {
-  await getData()
-}
+  await getData();
+};
 
 const handleResize = () => {
-  for (const chartRef of [lag_chartRef.value, commit_chart.value, end_chart.value]) {
-    if (chartRef) {
-      chartRef.resize()
-    }
-  }
-}
+  [lag_chart, commit_chart, end_chart, productionSpeed_chart, consumptionSpeed_chart].forEach(chart => {
+    if (chart.value) chart.value.resize();
+  });
+};
 
-// 初始化图表
 const initChart = () => {
-
   echarts.use([
     TitleComponent,
     TooltipComponent,
@@ -170,220 +144,180 @@ const initChart = () => {
     LineChart,
     CanvasRenderer,
     UniversalTransition,
-    ToolboxComponent
+    ToolboxComponent,
   ]);
 
   const option = {
-    backgroundColor: 'transparent', // 设置背景色为透明
-    title: {
-      text: 'Kafka Offset Monitor',
-    },
-    tooltip: {
-      trigger: 'axis',
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      splitLine: {
-        show: true
-      },
-      data: []
-    },
-    yAxis: {
-      type: 'value'
-    },
-    legend: {
-      data: []
-    },
-    series: []
-  }
+    backgroundColor: 'transparent',
+    title: { text: '' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', boundaryGap: false, splitLine: { show: true }, data: [] },
+    yAxis: { type: 'value' },
+    legend: { data: [] },
+    series: [],
+  };
 
-  const lag_option = {...option}
-  lag_option.title.text = t('inspection.lag')
-  lag_chart.value = echarts.init(lag_chartRef.value, echarts_theme)
-  lag_chart.value.setOption({...lag_option})
+  lag_chart.value = echarts.init(lag_chartRef.value, echarts_theme);
+  lag_chart.value.setOption({ ...option, title: { text: t('inspection.lag') } });
 
-  const commit_option = {...option}
-  commit_option.title.text = t('inspection.commit')
-  commit_chart.value = echarts.init(commit_chartRef.value, echarts_theme)
-  commit_chart.value.setOption({...commit_option})
+  commit_chart.value = echarts.init(commit_chartRef.value, echarts_theme);
+  commit_chart.value.setOption({ ...option, title: { text: t('inspection.commit') } });
 
-  const end_option = {...option}
-  end_option.title.text = t('inspection.end')
-  end_chart.value = echarts.init(end_chartRef.value, echarts_theme)
-  end_chart.value.setOption({...end_option})
+  end_chart.value = echarts.init(end_chartRef.value, echarts_theme);
+  end_chart.value.setOption({ ...option, title: { text: t('inspection.end') } });
 
-}
+  productionSpeed_chart.value = echarts.init(productionSpeed_chartRef.value, echarts_theme);
+  productionSpeed_chart.value.setOption({ ...option, title: { text: 'ProduceSpeed(msg/s)' } });
 
-// 当选择了新的topic或group后，清空之前的数据
-const clear_offset = (value, option) => {
-  offsetData.value = {
-    lag: {},
-    commit: {},
-    end: {},
-  }
-}
+  consumptionSpeed_chart.value = echarts.init(consumptionSpeed_chartRef.value, echarts_theme);
+  consumptionSpeed_chart.value.setOption({ ...option, title: { text: 'ConsumeSpeed(msg/s)' } });
+};
 
-// 更新图表数据
+const clear_offset = () => {
+  offsetData.value = { lag: {}, commit: {}, end: {}, productionSpeed: {}, consumptionSpeed: {} };
+};
+
 const updateChart = () => {
-
   const chart_map = {
     lag: lag_chart.value,
     commit: commit_chart.value,
-    end: end_chart.value
-  }
+    end: end_chart.value,
+    productionSpeed: productionSpeed_chart.value,
+    consumptionSpeed: consumptionSpeed_chart.value,
+  };
 
-  // 把offsetData的数据渲染到图表上
   for (const k in offsetData.value) {
-    let series = []
-    let legendData = []
+    let series = [];
+    let legendData = [];
+    let xs = [];
 
-    // 迭代每个topic
-    let xs = []
     Object.entries(offsetData.value[k]).forEach(([topic, data]) => {
-      // data是对象列表，item是time和offset
-      legendData.push(topic)
+      legendData.push(topic);
       series.push({
         name: topic,
         type: 'line',
         symbol: 'circle',
-        data: data.map(item => item.offset)
-      })
-      xs = data.map(item => item.time)
-    })
+        data: data.map(item => (k === 'productionSpeed' || k === 'consumptionSpeed' ? item.speed : item.offset)),
+      });
+      xs = data.map(item => {
+        const date = new Date(item.time);
+        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+      });
+    });
 
     chart_map[k].setOption({
-      xAxis: {
-        data: xs
-      },
-      legend: {
-        data: legendData
-      },
-      series: series
-    })
+      xAxis: { data: xs },
+      legend: { data: legendData },
+      series,
+    });
   }
+};
 
-}
-
-// 定时获取数据
 const fetchData = async () => {
   if (selectedTopics.value.length === 0 || !selectedGroup.value) {
-    message.warning(t('message.selectTopicGroup'))
-    return
+    message.warning(t('message.selectTopicGroup'));
+    return;
   }
-  loading.value = true
+  loading.value = true;
 
   try {
-    const res = await GetTopicOffsets(selectedTopics.value, selectedGroup.value)
-    if (res.err !== "") {
-      message.error(res.err)
+    const res = await GetTopicOffsets(selectedTopics.value, selectedGroup.value);
+    if (res.err !== '') {
+      message.error(res.err);
     } else {
-      const now = new Date()
-      const time = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()
+      const now = new Date();
+      const time = now.getTime(); // Use timestamp for precise time difference
 
-      // 更新数据结构 start_map
       selectedTopics.value.forEach(topic => {
+        const endOffset = addOffsets(res.result.end_map[topic]) || 0;
+        const commitOffset = addOffsets(res.result.commit_map[topic]) || 0;
 
-        // lag，是end-commit
-        if (!offsetData.value.lag[topic]) {
-          offsetData.value.lag[topic] = []
-        }
-        offsetData.value.lag[topic].push({
-          time: time,
-          offset: addOffsets(res.result.end_map[topic]) - addOffsets(res.result.commit_map[topic]) || 0
-        })
+        // Lag
+        if (!offsetData.value.lag[topic]) offsetData.value.lag[topic] = [];
+        offsetData.value.lag[topic].push({ time, offset: endOffset - commitOffset });
 
-        // commit
-        if (!offsetData.value.commit[topic]) {
-          offsetData.value.commit[topic] = []
-        }
-        offsetData.value.commit[topic].push({
-          time: time,
-          offset: addOffsets(res.result.commit_map[topic]) || 0
-        })
+        // Commit
+        if (!offsetData.value.commit[topic]) offsetData.value.commit[topic] = [];
+        offsetData.value.commit[topic].push({ time, offset: commitOffset });
 
-        // end
-        if (!offsetData.value.end[topic]) {
-          offsetData.value.end[topic] = []
-        }
-        offsetData.value.end[topic].push({
-          time: time,
-          offset: addOffsets(res.result.end_map[topic]) || 0
-        })
+        // End
+        if (!offsetData.value.end[topic]) offsetData.value.end[topic] = [];
+        offsetData.value.end[topic].push({ time, offset: endOffset });
 
-        // 只保留最近30个数据点
-        for (const key of ["lag", "commit", "end"]){
-          if (offsetData.value[key][topic].length > 100) {
-            offsetData.value[key][topic].shift()
-          }
+        // Production Speed
+        if (!offsetData.value.productionSpeed[topic]) offsetData.value.productionSpeed[topic] = [];
+        if (offsetData.value.end[topic].length >= 2) {
+          const lastEnd = offsetData.value.end[topic][offsetData.value.end[topic].length - 2];
+          const deltaEnd = endOffset - lastEnd.offset;
+          const deltaTime = (time - lastEnd.time) / 1000; // Convert to seconds
+          const speed = deltaTime > 0 ? deltaEnd / deltaTime : 0;
+          offsetData.value.productionSpeed[topic].push({ time, speed });
         }
 
-      })
+        // Consumption Speed
+        if (!offsetData.value.consumptionSpeed[topic]) offsetData.value.consumptionSpeed[topic] = [];
+        if (offsetData.value.commit[topic].length >= 2) {
+          const lastCommit = offsetData.value.commit[topic][offsetData.value.commit[topic].length - 2];
+          const deltaCommit = commitOffset - lastCommit.offset;
+          const deltaTime = (time - lastCommit.time) / 1000; // Convert to seconds
+          const speed = deltaTime > 0 ? deltaCommit / deltaTime : 0;
+          offsetData.value.consumptionSpeed[topic].push({ time, speed });
+        }
 
+        // Keep only the last 100 data points
+        for (const key of ['lag', 'commit', 'end', 'productionSpeed', 'consumptionSpeed']) {
+          if (offsetData.value[key][topic]?.length > 100) offsetData.value[key][topic].shift();
+        }
+      });
 
-      updateChart()
+      updateChart();
     }
-
   } catch (e) {
-    message.error(e)
+    message.error(e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
-
+};
 
 const getData = async () => {
-  console.log('初始化消费者数据')
+  console.log('Initializing consumer data');
   try {
-    const res = await GetTopics()
-    const res2 = await GetGroups()
-    if (res.err !== "" || res2.err !== "") {
-      message.error(res.err === res2.err ? res.err : res.err + res2.err)
+    const [res, res2] = await Promise.all([GetTopics(), GetGroups()]);
+    if (res.err !== '' || res2.err !== '') {
+      message.error(res.err || res2.err);
     } else {
-      let topic_data_lst = []
-      if (res.results) {
-        res.results.sort((a, b) => a['topic'] > b['topic'] ? 1 : -1)
-        for (const k in res.results) {
-          topic_data_lst.push({
-            "label": res.results[k]['topic'],
-            "value": res.results[k]['topic']
-          })
-        }
-      }
-      topic_data.value = topic_data_lst
+      topic_data.value = res.results
+          ?.sort((a, b) => (a.topic > b.topic ? 1 : -1))
+          .map(r => ({ label: r.topic, value: r.topic })) || [];
 
-      let groups = []
-      for (const k in res2.results) {
-        const g_data = res2.results[k]
-        groups.push({
-          label: g_data['Group'],
-          value: g_data['Group'],
-          State: g_data['State'],
-          ProtocolType: g_data['ProtocolType'],
-          Coordinator: g_data['Coordinator'],
-        })
-      }
-      groups.sort((a, b) => a['label'] > b['label'] ? 1 : -1)
-      group_data.value = groups
-
+      group_data.value = res2.results
+          ?.map(g => ({
+            label: g.Group,
+            value: g.Group,
+            State: g.State,
+            ProtocolType: g.ProtocolType,
+            Coordinator: g.Coordinator,
+          }))
+          .sort((a, b) => (a.label > b.label ? 1 : -1)) || [];
     }
   } catch (e) {
-    message.error(e)
+    message.error(e);
   }
-}
+};
 
 const addOffsets = (item) => {
+  return Object.values(item || {}).reduce((sum, { At }) => sum + (At > 0 ? At : 0), 0);
+};
 
-  let count = 0;
-  for (const k in item) {
-    const at = item[k]['At']
-    if (at > 0) {
-      count += at
-    }
-  }
-  return count
-}
-
+const selectNode = async () => {
+  topic_data.value = [];
+  group_data.value = [];
+  selectedTopics.value = [];
+  selectedGroup.value = null;
+  offsetData.value = { lag: {}, commit: {}, end: {}, productionSpeed: {}, consumptionSpeed: {} };
+  loading.value = false;
+  await getData();
+};
 </script>
 
 <style scoped>
