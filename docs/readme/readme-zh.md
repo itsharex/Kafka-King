@@ -17,7 +17,7 @@
 
 让kafka更好用，make kafka great again!
 
-本项目是一个kafka GUI客户端，支持各个系统。点个star支持作者辛苦开源吧 谢谢❤❤
+本项目是一个kafka GUI客户端，适配各个桌面系统（除了win7），支持kafka 0.8.0 到 3.8+（最新的4.0经测试也支持）。点个star支持作者辛苦开源吧 谢谢❤❤
 加群和作者一起交流： <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=pDqlVFyLMYEEw8DPJlRSBN27lF8qHV2v&jump_from=webapi&authKey=Wle/K0ARM1YQWlpn6vvfiZuMedy2tT9BI73mUvXVvCuktvi0fNfmNR19Jhyrf2Nz">研发技术交流群：964440643</a>
 
 > 同款好用elasticsearch客户端 `ES-King`，可以一起收藏下：https://github.com/Bronya0/ES-King
