@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../snap/icon.ico" alt="画像タイトル">
+  <img src="../../app/build/appicon.png" width="300" alt="图片标题">
 </p>
 <h1 align="center">Kafka King </h1>
 
