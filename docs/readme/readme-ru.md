@@ -60,9 +60,6 @@ cd app
 
 wails dev
 
-# Звезды
-[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
-
 
 # Лицензия
 Лицензия Apache-2.0
