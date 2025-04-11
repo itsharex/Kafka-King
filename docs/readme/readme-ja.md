@@ -55,10 +55,6 @@ cd app
 wails dev
 
 
-# Star履歴
-[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
-
-
 # ライセンス
 Apache-2.0ライセンス
 
