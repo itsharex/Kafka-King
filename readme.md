@@ -63,9 +63,6 @@ cd app
 wails dev
 ```
 
-# Star History
-[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg)](https://starchart.cc/Bronya0/Kafka-King)
-
 # License
 Apache-2.0 license
 
