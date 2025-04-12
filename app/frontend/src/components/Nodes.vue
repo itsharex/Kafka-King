@@ -18,16 +18,17 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2>{{t('node.title')}}</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
-      <n-text>{{t('common.count')}}：{{ data.length }}</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
+      <h2>{{ t('node.title') }}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{ t('common.refresh') }}</n-button>
+      <n-text>{{ t('common.count') }}：{{ data.length }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
+      </n-button>
     </n-flex>
     <n-spin :show="loading" :description="t('common.connecting')">
-      <n-tabs type="line" animated  v-model:value="activeTab">
+      <n-tabs type="line" animated v-model:value="activeTab">
         <n-tab-pane name="Broker">
           <template #tab>
-            {{t('node.title')}}
+            {{ t('node.title') }}
           </template>
           <n-data-table
               :columns="columns"
@@ -40,15 +41,25 @@
         </n-tab-pane>
         <n-tab-pane name="Config">
           <template #tab>
-            {{t('common.config')}}
+            {{ t('common.config') }}
           </template>
-          <n-data-table
-              :columns="config_columns"
-              :data="config_data"
-              :bordered="false"
-              :pagination="pagination"
+          <n-flex vertical>
 
-          />
+            <n-flex align="center">
+              <n-input :disabled='activeConfigNode' placeholder="search" v-model:value="configSearchText" clearable style="width: 300px"/>
+              <n-button :disabled='activeConfigNode' @click="getBrokerConfig(activeConfigNode)" :render-icon="renderIcon(RefreshOutlined)">
+                {{ t('common.refresh') }}
+              </n-button>
+            </n-flex>
+            <n-data-table
+                :columns="config_columns"
+                :data="config_data"
+                :bordered="false"
+                :pagination="pagination"
+
+            />
+          </n-flex>
+
         </n-tab-pane>
       </n-tabs>
 
@@ -56,12 +67,11 @@
   </n-flex>
 
 
-
 </template>
 <script setup>
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
-import {NButton, NDataTable, NIcon, NTag, NText, useMessage} from 'naive-ui'
+import {NButton, NDataTable, NIcon, NInput, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, getCurrentDateTime, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
@@ -72,6 +82,7 @@ const {t} = useI18n()
 
 const config_data = ref([])
 const data = ref([])
+const configSearchText = ref("")
 // 当前活动的 TabPane 名称
 const activeTab = ref('Broker');
 const activeConfigNode = ref('');
@@ -82,6 +93,7 @@ const selectNode = async (node) => {
   config_data.value = []
   data.value = []
   activeConfigNode.value = ''
+  configSearchText.value = ''
   loading.value = false
 
   await getData()
@@ -103,7 +115,7 @@ const getData = async () => {
       const result = res.result
       data.value = result.brokers
     }
-  }catch (e) {
+  } catch (e) {
     message.error(e)
   }
 
@@ -127,7 +139,7 @@ const pagination = ref({
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
-      activeTab.value === "Broker" ? data.value : config_data.value ,
+      activeTab.value === "Broker" ? data.value : config_data.value,
       activeTab.value === "Broker" ? columns : config_columns
   )
   download_file(csvContent, `${getCurrentDateTime()}.csv`, 'text/csv;charset=utf-8;')
@@ -135,16 +147,18 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  { title: 'node_id', key: 'node_id', sorter: 'default',width: 20,resizable: true },
-  { title: 'host', key: 'host', sorter: 'default',width: 50,resizable: true,
+  {title: 'node_id', key: 'node_id', sorter: 'default', width: 20, resizable: true},
+  {
+    title: 'host', key: 'host', sorter: 'default', width: 50, resizable: true,
     render: (row) => h(NTag, {type: "info"}, {default: () => row['host']}),
   },
-  { title: 'port', key: 'port', sorter: 'default',width: 20,resizable: true,
+  {
+    title: 'port', key: 'port', sorter: 'default', width: 20, resizable: true,
     render: (row) => h(NTag, {type: "success"}, {default: () => row['port']}),
   },
-  { title: 'rack', key: 'rack', sorter: 'default',width: 20,resizable: true },
+  {title: 'rack', key: 'rack', sorter: 'default', width: 20, resizable: true},
   {
-    title: 'config', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'config', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => h(
         NButton,
         {
@@ -155,15 +169,17 @@ const columns = [
             activeConfigNode.value = row["node_id"]
           }
         },
-        {default: () => t('common.config'), icon: () => h(NIcon, null, { default: () => h(SettingsTwotone) })}
+        {default: () => t('common.config'), icon: () => h(NIcon, null, {default: () => h(SettingsTwotone)})}
     )
   },
 ]
 
 const config_columns = [
-  { title: 'Name', key: 'Name', sorter: 'default',width: 80,resizable: true,
+  {
+    title: 'Name', key: 'Name', sorter: 'default', width: 80, resizable: true,
   },
-  { title: t('node.value'), key: 'Value', sorter: 'default',width: 140,resizable: true,
+  {
+    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -173,9 +189,14 @@ const config_columns = [
       })
     }
   },
-  { title: t('node.source'), key: 'Source', sorter: 'default',width: 50,resizable: true,},
-  { title: t('node.sensitive'), key: 'Sensitive',width: 20,resizable: true,sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
-    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error": "info"}, {default: () => row['Sensitive'] === true ? "yes": "no"}),
+  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {
+    title: t('node.sensitive'),
+    key: 'Sensitive',
+    width: 20,
+    resizable: true,
+    sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
+    render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),
   },
 
 ]
@@ -189,10 +210,13 @@ const getBrokerConfig = async (node_id) => {
     } else {
       // 排序
       res.results.sort((a, b) => a["Name"] > b["Name"] ? 1 : -1)
+      if (configSearchText.value){
+        res.results = res.results.filter(item => item['Name'].includes(configSearchText.value))
+      }
       config_data.value = res.results
       activeTab.value = "Config"
     }
-  }catch (e) {
+  } catch (e) {
     message.error(e)
   }
   loading.value = false
@@ -218,7 +242,6 @@ const alterNodeConfig = async (node_id, name, value) => {
 }
 
 </script>
-
 
 
 <style scoped>

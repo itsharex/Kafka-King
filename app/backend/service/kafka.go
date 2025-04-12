@@ -329,7 +329,7 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 }
 
 // GetTopics 获取主题信息
-func (k *Service) GetTopics() *types.ResultsResp {
+func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
 	result := &types.ResultsResp{}
@@ -339,7 +339,7 @@ func (k *Service) GetTopics() *types.ResultsResp {
 		return result
 	}
 
-	if len(k.topics) > 0 {
+	if !noCache && len(k.topics) > 0 {
 		result.Results = k.topics
 		return result
 	}
@@ -531,11 +531,16 @@ func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor
 	}
 
 	ctx := context.Background()
-	_, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), pointerMap, topics...)
+	resp, err := k.kac.CreateTopics(ctx, int32(numPartitions), int16(replicationFactor), pointerMap, topics...)
 	if err != nil {
 		result.Err = "CreateTopics Error：" + err.Error()
 		return result
 	}
+	if resp.Error() != nil {
+		result.Err = "CreateTopics Error：" + resp.Error().Error()
+		return result
+	}
+
 	return result
 }
 
@@ -553,9 +558,13 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 
 	ctx := context.Background()
 	for _, topic := range topics {
-		_, err := k.kac.DeleteTopic(ctx, topic)
+		resp, err := k.kac.DeleteTopic(ctx, topic)
 		if err != nil {
 			result.Err = "DeleteTopic Error：" + err.Error()
+			return result
+		}
+		if resp.Err != nil {
+			result.Err = "DeleteTopic Error：" + resp.Err.Error()
 			return result
 		}
 	}
@@ -575,9 +584,13 @@ func (k *Service) DeleteGroup(group string) *types.ResultResp {
 	k.clearCache()
 
 	ctx := context.Background()
-	_, err := k.kac.DeleteGroup(ctx, group)
+	resp, err := k.kac.DeleteGroup(ctx, group)
 	if err != nil {
 		result.Err = "DeleteGroup Error：" + err.Error()
+		return result
+	}
+	if resp.Err != nil {
+		result.Err = "DeleteGroup Error：" + resp.Err.Error()
 		return result
 	}
 	return result
@@ -597,9 +610,13 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 
 	ctx := context.Background()
 	for _, topic := range topics {
-		_, err := k.kac.CreatePartitions(ctx, count, topic)
+		resp, err := k.kac.CreatePartitions(ctx, count, topic)
 		if err != nil {
 			result.Err = "CreatePartitions Error：" + err.Error()
+			return result
+		}
+		if resp.Error() != nil {
+			result.Err = "CreatePartitions Error：" + resp.Error().Error()
 			return result
 		}
 	}
@@ -625,12 +642,17 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 	}
 
 	ctx := context.Background()
-	_, err := k.kac.AlterTopicConfigs(ctx, ac, topic)
+	resp, err := k.kac.AlterTopicConfigs(ctx, ac, topic)
 	if err != nil {
 		result.Err = "AlterTopicConfigs Error：" + err.Error()
 		return result
 	}
-
+	for _, v := range resp {
+		if v.Err != nil {
+			result.Err = "AlterTopicConfigs Error：" + v.Err.Error()
+			return result
+		}
+	}
 	return result
 }
 
@@ -651,10 +673,16 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 	}
 
 	ctx := context.Background()
-	_, err := k.kac.AlterBrokerConfigs(ctx, ac, nodeId)
+	resp, err := k.kac.AlterBrokerConfigs(ctx, ac, nodeId)
 	if err != nil {
 		result.Err = "AlterBrokerConfigs Error：" + err.Error()
 		return result
+	}
+	for _, v := range resp {
+		if v.Err != nil {
+			result.Err = "AlterBrokerConfigs Error：" + v.Err.Error()
+			return result
+		}
 	}
 	return result
 }

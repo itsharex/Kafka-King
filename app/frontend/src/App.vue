@@ -106,10 +106,10 @@ import ruRU from "./i18n/ru-RU";
 
 const {t, locale} = useI18n()
 
-let headerClass = shallowRef('lightTheme')
+let headerClass = shallowRef('darkTheme')
 let naive_language = shallowRef(zhCN)
 
-let Theme = shallowRef(lightTheme)
+let Theme = shallowRef(darkTheme)
 let config = {}
 
 onMounted(async () => {

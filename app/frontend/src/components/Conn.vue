@@ -20,8 +20,11 @@
     <n-flex vertical>
       <n-flex align="center">
         <h2>{{ t('conn.title') }}</h2>
-        <n-text>{{t('common.count')}}：{{ Nodes.length }}</n-text>
-        <n-button tertiary type="primary" @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{ t('conn.add') }}</n-button>
+        <n-text>{{ t('common.count') }}：{{ Nodes.length }}</n-text>
+        <n-button tertiary type="primary" @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{
+            t('conn.add')
+          }}
+        </n-button>
       </n-flex>
       <n-spin :show="spin_loading" description="Connecting...">
 
@@ -45,8 +48,8 @@
                 </n-space>
               </template>
               <n-descriptions :column="1" label-placement="left">
-                <n-descriptions-item label="地址">
-                  {{ node.bootstrap_servers }}
+                <n-descriptions-item label="address">
+                  {{ node.bootstrap_servers.length > 30 ? node.bootstrap_servers.substring(0, 30) + '...' : node.bootstrap_servers }}
                 </n-descriptions-item>
               </n-descriptions>
             </n-card>
@@ -72,19 +75,22 @@
           </n-form-item>
 
           <n-form-item :label="t('conn.bootstrap_servers')" path="bootstrap_servers">
-            <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
+            <n-flex vertical>
+              <n-input v-model:value="currentNode.bootstrap_servers" placeholder="127.0.0.1:9092,127.0.0.1:9093"/>
+              {{ t('conn.tip') }}
+            </n-flex>
           </n-form-item>
-          {{ t('conn.tip') }}
           <n-form-item :label="t('conn.tls')" path="tls">
             <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
 
           <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
-            <n-switch :round="false" checked-value="true" unchecked-value="false" v-model:value="currentNode.skipTLSVerify"/>
+            <n-switch :round="false" checked-value="true" unchecked-value="false"
+                      v-model:value="currentNode.skipTLSVerify"/>
           </n-form-item>
 
           <n-form-item label="TLS Cert File" path="tls_cert_file">
-<!--客户端或服务器证书用于验证客户端或服务器的身份。-->
+            <!--客户端或服务器证书用于验证客户端或服务器的身份。-->
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_cert_file">
@@ -96,7 +102,7 @@
           </n-form-item>
 
           <n-form-item label="TLS Key File" path="tls_key_file">
-<!--私钥文件用于加密和解密数据，必须妥善保管。-->
+            <!--私钥文件用于加密和解密数据，必须妥善保管。-->
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_key_file','*.key;*.pem;*.der')">.key/pem/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_key_file">
@@ -108,7 +114,7 @@
           </n-form-item>
 
           <n-form-item label="TLS CA File" path="tls_ca_file">
-<!--CA 证书是用于验证服务器或客户端证书的根证书或中间证书。-->
+            <!--CA 证书是用于验证服务器或客户端证书的根证书或中间证书。-->
             <n-flex vertical align="flex-start">
               <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
               <n-flex align="center" v-if="currentNode.tls_ca_file">
@@ -185,7 +191,10 @@
         </n-form>
         <template #footer>
           <n-space justify="end">
-            <n-button tertiary type="primary" @click="test_connect" :loading="test_connect_loading">{{ t('conn.test') }}</n-button>
+            <n-button tertiary type="primary" @click="test_connect" :loading="test_connect_loading">{{
+                t('conn.test')
+              }}
+            </n-button>
             <n-button @click="showEditDrawer = false">{{ t('common.cancel') }}</n-button>
             <n-button type="primary" @click="saveNode">{{ t('common.save') }}</n-button>
           </n-space>

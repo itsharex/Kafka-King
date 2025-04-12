@@ -85,7 +85,7 @@
               <n-tag type="success">
                 {{ activeDetailTopic }}
               </n-tag>
-              <n-button @click="showModal=true" :render-icon="renderIcon(AddFilled)">{{ t('topic.add_partition') }}
+              <n-button :disabled="!activeDetailTopic" @click="showModal=true" :render-icon="renderIcon(AddFilled)">{{ t('topic.add_partition') }}
               </n-button>
               <n-select
                   v-model:value="selectedGroup"
@@ -93,9 +93,10 @@
                   :placeholder="t('topic.selectedGroup')"
                   filterable
                   clearable
+                  :disabled="!activeDetailTopic"
                   style="width: 250px"
               />
-              <n-button @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">{{ t('common.read') }}
+              <n-button :disabled="!activeDetailTopic" @click="getPartitionOffsets" :render-icon="renderIcon(RefreshOutlined)">{{ t('common.read') }}
                 Offsets
               </n-button>
             </n-flex>
@@ -125,7 +126,8 @@
                 {{ activeConfigTopic }}
               </n-tag>
 
-              <n-button @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">
+              <n-input :disabled="!activeConfigTopic" placeholder="search" v-model:value="configSearchText" clearable style="width: 300px"/>
+              <n-button :disabled="!activeConfigTopic" @click="getTopicConfig(activeConfigTopic)" :render-icon="renderIcon(RefreshOutlined)">
                 {{ t('common.refresh') }}
               </n-button>
 
@@ -167,7 +169,7 @@
           />
         </n-form-item>
 
-        <n-form-item :label="t('topic.replication_factor')" path="replicationFactor">
+        <n-form-item :label="t('topic.replication_factor')+' (cluster should be at least 2)'" path="replicationFactor">
           <n-input-number
               v-model:value="topic_add.replication_factor"
               :min="1"
@@ -268,6 +270,7 @@ const message = useMessage()
 const dialog = useDialog()
 
 const searchText = ref("");
+const configSearchText = ref("");
 const activeDetailTopic = ref("");
 const activeConfigTopic = ref("");
 const showDrawer = ref(false)
@@ -299,6 +302,8 @@ const selectNode = async (node) => {
   showDrawer.value = false
   showModal.value = false
   addPartitionNum.value = 1
+  searchText.value = ""
+  configSearchText.value = ""
 
   await getData()
   await getGroups()
@@ -314,7 +319,7 @@ onMounted(() => {
 const getData = async () => {
   loading.value = true
   try {
-    const res = await GetTopics()
+    const res = await GetTopics(true)
     if (res.err !== "") {
       message.error(res.err)
     } else {
@@ -598,6 +603,9 @@ const getTopicConfig = async (topic) => {
       // 排序
       if (res.results) {
         res.results.sort((a, b) => a["Name"] > b["Name"] ? 1 : -1)
+        if (configSearchText.value){
+          res.results = res.results.filter(item => item['Name'].includes(configSearchText.value))
+        }
         config_data.value = res.results
       } else {
         config_data.value = []
