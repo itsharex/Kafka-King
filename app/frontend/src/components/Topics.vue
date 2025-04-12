@@ -337,7 +337,7 @@ const getData = async () => {
       }
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
 
   loading.value = false
@@ -506,7 +506,7 @@ const handleMenuSelect = async (key, row) => {
   try {
     await func[key](row)
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 }
@@ -613,7 +613,7 @@ const getTopicConfig = async (topic) => {
       activeTab.value = "Config"
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -636,7 +636,7 @@ const getTopicDetail = async (topic) => {
     activeTab.value = "Partition"
     console.log(activeTab.value)
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -715,7 +715,7 @@ const getOffsets = async (topics, key) => {
       mergeOffsets()
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -792,7 +792,7 @@ const getGroups = async () => {
       }
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -821,7 +821,7 @@ const deleteTopicFunc = async (topic) => {
       emitter.emit('refreshTopic')
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -845,7 +845,7 @@ const addTopic = async () => {
       emitter.emit('refreshTopic')
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -861,7 +861,7 @@ const addTopicPartition = async () => {
       await getData()
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
   showModal.value = false
@@ -880,7 +880,7 @@ const alterTopicConfig = async (topic, name, value) => {
       await getTopicConfig(activeConfigTopic.value)
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 

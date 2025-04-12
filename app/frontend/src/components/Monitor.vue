@@ -273,7 +273,7 @@ const fetchData = async () => {
       updateChart();
     }
   } catch (e) {
-    message.error(e);
+    message.error(e.message);
   } finally {
     loading.value = false;
   }
@@ -301,7 +301,7 @@ const getData = async () => {
           .sort((a, b) => (a.label > b.label ? 1 : -1)) || [];
     }
   } catch (e) {
-    message.error(e);
+    message.error(e.message);
   }
 };
 

@@ -348,7 +348,7 @@ const test_connect = async () => {
           message.success(t('message.connectSuccess'))
         }
       } catch (e) {
-        message.error(e)
+        message.error(e.message)
       }
       test_connect_loading.value = false
     } else {
@@ -372,7 +372,7 @@ const selectNode = async (node) => {
       message.success(t('message.connectSuccess'))
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   spin_loading.value = false
 }

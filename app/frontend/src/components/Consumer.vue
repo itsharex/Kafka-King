@@ -221,7 +221,7 @@ const getData = async () => {
 
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
 }
 

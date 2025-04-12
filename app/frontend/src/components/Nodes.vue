@@ -116,7 +116,7 @@ const getData = async () => {
       data.value = result.brokers
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
 
   loading.value = false
@@ -217,7 +217,7 @@ const getBrokerConfig = async (node_id) => {
       activeTab.value = "Config"
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 
@@ -235,7 +235,7 @@ const alterNodeConfig = async (node_id, name, value) => {
       await getBrokerConfig(activeConfigNode.value)
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 

@@ -93,7 +93,7 @@ const getData = async () => {
       }
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 }
@@ -114,7 +114,7 @@ const getMembers = async (group) => {
     }
 
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 }
@@ -231,7 +231,7 @@ const deleteGroups = async (group) => {
       await getData()
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
   loading.value = false
 

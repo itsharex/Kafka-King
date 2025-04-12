@@ -159,7 +159,7 @@ const getData = async () => {
       data.value = data_lst
     }
   } catch (e) {
-    message.error(e)
+    message.error(e.message)
   }
 
 }
