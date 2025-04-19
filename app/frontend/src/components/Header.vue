@@ -73,7 +73,7 @@ import {
   SystemUpdateAltSharp
 } from '@vicons/material'
 import logo from '../assets/images/appicon.png'
-import {h, onMounted, ref, shallowRef} from "vue";
+import {h, onMounted, ref, shallowRef, watch} from "vue";
 import {BrowserOpenURL, Quit, WindowMaximise, WindowMinimise, WindowUnmaximise} from "../../wailsjs/runtime";
 import {CheckUpdate} from '../../wailsjs/go/system/Update'
 import {openUrl, renderIcon} from "../utils/common";
@@ -187,6 +187,10 @@ const closeWindow = () => {
   Quit()
 }
 
+// 监听语言变化，重新设置 subtitle
+watch(locale, (newLocale) => {
+  subtitle.value = t('header.desc') + " " + version.value.tag_name
+})
 </script>
 
 <style scoped>

@@ -154,7 +154,7 @@ export default {
         title: "Settings",
         width: "Window Width",
         height: "Window Height",
-        lang: "Language (Restart required)",
+        lang: "Language",
         theme: "Theme"
     },
     message: {
