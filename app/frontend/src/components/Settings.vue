@@ -29,7 +29,7 @@
           </n-form-item>
           <n-form-item :label="t('settings.lang')">
             <n-select v-model:value="config.language" :options="languageOptions"
-                      :style="{ maxWidth: '120px' }"/>
+                      :style="{ maxWidth: '120px' }" @update:value="changeLanguage"/>
           </n-form-item>
 
           <n-form-item :label="t('settings.theme')">
@@ -139,4 +139,8 @@ const changeTheme = () => {
   emitter.emit('update_theme', theme)
 }
 
+const changeLanguage = (newLang) => {
+  config.value.language = newLang
+  emitter.emit('language_change', newLang)
+}
 </script>
