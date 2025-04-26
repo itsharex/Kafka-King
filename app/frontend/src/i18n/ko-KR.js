@@ -128,6 +128,7 @@ export default {
         optionalGroup: "선택 사항: 그룹 (한번 선택하면 소비 시 오프셋이 자동으로 제출됩니다. 새로운 그룹 생성도 지원)",
         groupPlaceholder: "컨슈머 그룹 선택 또는 생성",
         commitOffsetTooltip: "소비 후 오프셋 제출 여부",
+        firstConsumeTip: "첫 번째 소비는 오프셋을 밸런싱하는 데 시간이 걸릴 수 있습니다",
         consumeMessage: "메시지 소비"
     },
     group: {

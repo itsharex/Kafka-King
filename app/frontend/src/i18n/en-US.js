@@ -128,7 +128,8 @@ export default {
         optionalGroup: "Optional: Group (Once selected, offsets will be committed automatically during consumption. Supports creating new groups)",
         groupPlaceholder: "Select or create Consumer Group",
         commitOffsetTooltip: "Whether to commit Offset after consumption",
-        consumeMessage: "Consume Messages"
+        consumeMessage: "Consume Messages",
+        firstConsumeTip: "First consume may take some time to rebalance",
     },
     group: {
         title: "Consumer Group",

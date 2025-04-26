@@ -152,6 +152,9 @@ let messages = []
 const filter_messages = ref([])
 const searchText = ref(null)
 
+// 新增状态变量，用于跟踪是否是首次消费
+const isFirstConsume = ref(true)
+
 // 表单数据
 const select = ref({
   selectedTopic: null,
@@ -330,6 +333,12 @@ const consume = async () => {
 
   loading.value = true
   try {
+    // 如果是首次消费，显示提示
+    if (isFirstConsume.value) {
+      message.info(t('consumer.firstConsumeTip'))
+      isFirstConsume.value = false
+    }
+
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
         select.value.maxMessages, select.value.timeout, select.value.decompress,
         select.value.isCommit)

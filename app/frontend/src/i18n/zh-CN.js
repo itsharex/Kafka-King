@@ -128,7 +128,8 @@ export default {
         optionalGroup: "可选：Group（一旦选择，消费时会自动提交Offset。支持创建新Group）",
         groupPlaceholder: "选择或创建Consumer Group",
         commitOffsetTooltip: "是否在消费后提交Offset",
-        consumeMessage: "消费消息"
+        consumeMessage: "消费消息",
+        firstConsumeTip: "首次消费可能需要一些时间来重平衡",
     },
     group:{
         title: "消费者组",
