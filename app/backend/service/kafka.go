@@ -20,12 +20,14 @@ package service
 import (
 	"app/backend/common"
 	"app/backend/types"
+	"app/backend/utils"
 	"app/backend/utils/compress"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/twmb/franz-go/pkg/kmsg"
 	"log"
 	"os"
 	"strings"
@@ -865,5 +867,198 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 		}
 	}
 	return result
+}
 
+// GetAcls 获取 ACL 列表
+// Kafka 在执行需要授权的操作（如描述 ACLs、创建主题、删除主题等）时，
+// 会检查发出请求的客户端的身份（Principal），然后根据为该 Principal 配置的 ACL 规则来决定是否允许该操作。
+// 如果你没有在 franz-go 客户端配置 SASL 或其他身份验证机制（如 TLS 客户端证书），broker 通常会将其视为 匿名用户 (Anonymous Principal)。
+// 默认情况下，或者在安全配置得当的 Kafka 集群中，匿名用户通常没有执行敏感管理操作（包括描述所有 ACLs）的权限。描述所有 ACLs 需要对 Cluster 资源有 Describe 权限，这通常不会授予匿名用户。
+func (k *Service) GetAcls() *types.ResultsResp {
+	result := &types.ResultsResp{Results: make([]any, 0)}
+	if k.kac == nil {
+		result.Err = common.PleaseSelectErr
+		return result
+	}
+	ctx := context.Background()
+
+	// 创建 ACL 查询构建器
+	aclBuilder := kadm.NewACLs()
+	// 可根据需求添加其他过滤条件，如 Operation、ResourceType 等
+
+	// 查询 ACL
+	acls, err := k.kac.DescribeACLs(ctx, aclBuilder)
+	if err != nil {
+		result.Err = fmt.Sprintf("Failed to list ACLs: %v", err)
+		return result
+	}
+
+	// 构建响应
+	for _, acl := range acls {
+
+		result.Results = append(result.Results, map[string]any{
+			"principal":      acl.Principal,
+			"host":           acl.Host,
+			"operation":      acl.Operation.String(),
+			"resourceType":   acl.Type.String(),
+			"resourceName":   utils.TernaryF(acl.Name != nil, func() string { return *acl.Name }, func() string { return "" }),
+			"patternType":    acl.Pattern.String(),
+			"permissionType": acl.Permission.String(),
+		})
+	}
+	return result
+}
+
+// CreateAcl 创建 ACL
+func (k *Service) parseAcl(acl map[string]any) (*kadm.ACLBuilder, error) {
+	// 安全获取字段并验证
+	principal, ok := acl["principal"].(string)
+	if !ok || principal == "" {
+		return nil, fmt.Errorf("invalid or missing principal")
+	}
+	//资源名
+	resourceName, ok := acl["resourceName"].(string)
+	if !ok || resourceName == "" {
+		return nil, fmt.Errorf("invalid or missing resourceName")
+
+	}
+	// 操作：读写
+	operation, ok := acl["operation"].(string)
+
+	//允许、禁止
+	permissionType, ok := acl["permissionType"].(string)
+	if !ok || permissionType == "" {
+		return nil, fmt.Errorf("invalid or missing permissionType")
+	}
+	//资源类型
+	resourceType, ok := acl["resourceType"].(string)
+	if !ok || resourceType == "" {
+		return nil, fmt.Errorf("invalid or missing resourceType")
+	}
+	host, _ := acl["host"].(string)
+	if host == "" {
+		host = "*"
+	}
+
+	// 转换字符串到 kadm 枚举类型
+	var op kmsg.ACLOperation
+	switch operation {
+	case "":
+		op = kmsg.ACLOperationAny
+	case "READ":
+		op = kmsg.ACLOperationRead
+	case "WRITE":
+		op = kmsg.ACLOperationWrite
+	case "CREATE":
+		op = kmsg.ACLOperationCreate
+	case "DESCRIBE":
+		op = kmsg.ACLOperationDescribe
+	case "DELETE":
+		op = kmsg.ACLOperationDelete
+	case "DESCRIBE_CONFIGS":
+		op = kmsg.ACLOperationDescribeConfigs
+	case "ALTER":
+		op = kmsg.ACLOperationAlter
+	case "ALTER_CONFIGS":
+		op = kmsg.ACLOperationAlterConfigs
+	case "CLUSTER_ACTION":
+		op = kmsg.ACLOperationClusterAction
+	case "IDEMPOTENT_WRITE":
+		op = kmsg.ACLOperationIdempotentWrite
+	default:
+		return nil, fmt.Errorf("unsupported operation: %s", operation)
+	}
+
+	// 创建 ACL
+	aclBuilder := kadm.NewACLs().Operations(op).ResourcePatternType(kmsg.ACLResourcePatternTypeLiteral)
+
+	switch permissionType {
+	case "ALLOW":
+		aclBuilder.Allow(principal).AllowHosts(host)
+	case "DENY":
+		aclBuilder.Deny(principal).DenyHosts(host)
+	default:
+		return nil, fmt.Errorf("unsupported permissionType: %s", permissionType)
+	}
+
+	switch resourceType {
+	case "TOPIC":
+		aclBuilder.Topics(resourceName)
+	case "GROUP":
+		aclBuilder.Groups(resourceName)
+	case "CLUSTER":
+		aclBuilder.Clusters()
+	case "TRANSACTIONAL_ID":
+		aclBuilder.TransactionalIDs()
+	case "DELEGATION_TOKEN":
+		aclBuilder.DelegationTokens()
+	default:
+		return nil, fmt.Errorf("unsupported resourceType: %s", resourceType)
+	}
+
+	fmt.Printf("%+v", aclBuilder)
+	return aclBuilder, nil
+}
+
+func (k *Service) CreateAcl(acl map[string]any) *types.ResultResp {
+	result := &types.ResultResp{}
+	if k.kac == nil {
+		result.Err = common.PleaseSelectErr
+		return result
+	}
+	ctx := context.Background()
+
+	aclBuilder, err := k.parseAcl(acl)
+	if err != nil {
+		result.Err = fmt.Sprintf("Failed to parse ACL: %v", err)
+		return result
+	}
+
+	results, err := k.kac.CreateACLs(ctx, aclBuilder)
+	if err != nil {
+		result.Err = fmt.Sprintf("Failed to create ACL: %v", err)
+		return result
+	}
+
+	// 检查创建结果
+	for _, res := range results {
+		if res.Err != nil {
+			result.Err = fmt.Sprintf("Failed to create ACL: %v", res.Err)
+			return result
+		}
+	}
+
+	return result
+}
+
+// DeleteAcl 删除 ACL
+func (k *Service) DeleteAcl(acl map[string]any) *types.ResultResp {
+	result := &types.ResultResp{}
+	if k.kac == nil {
+		result.Err = common.PleaseSelectErr
+		return result
+	}
+	ctx := context.Background()
+
+	aclBuilder, err := k.parseAcl(acl)
+	if err != nil {
+		result.Err = fmt.Sprintf("Failed to parse ACL: %v", err)
+		return result
+	}
+
+	results, err := k.kac.DeleteACLs(ctx, aclBuilder)
+	if err != nil {
+		result.Err = fmt.Sprintf("Failed to delete ACL: %v", err)
+		return result
+	}
+
+	// 检查删除结果
+	for _, res := range results {
+		if res.Err != nil {
+			result.Err = fmt.Sprintf("Failed to delete ACL: %v", res.Err)
+			return result
+		}
+	}
+
+	return result
 }

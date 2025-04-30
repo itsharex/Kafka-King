@@ -190,5 +190,21 @@ export default {
         netErr: '无法连接github，请检查网络',
         newVersion: '发现新版本',
         down: '立即下载',
-    }
+    },
+    acl: {
+        title: "ACL 管理",
+        add: "添加 ACL",
+        edit: "编辑 ACL",
+        delete: "删除 ACL",
+        principal: "主体",
+        principalPlaceholder: "请输入主体，例如 User:alice",
+        resourceType: "资源类型",
+        resourceTypePlaceholder: "请选择资源类型",
+        resourceName: "资源名称",
+        resourceNamePlaceholder: "请输入资源名称",
+        operation: "操作",
+        operationPlaceholder: "请选择操作",
+        permissionType: "权限类型",
+        permissionTypePlaceholder: "请选择权限类型"
+    },
 };

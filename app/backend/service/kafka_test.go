@@ -194,3 +194,27 @@ func gzipCompress(data []byte) ([]byte, error) {
 
 	return buf.Bytes(), nil // Return the compressed data from the buffer
 }
+
+func TestAcls(t *testing.T) {
+
+	svc := NewKafkaService()
+	svc.SetConnect("test", map[string]any{
+		"bootstrap_servers": ":9092",
+	}, false)
+
+	//rule := map[string]any{
+	//	"principal":    "User:*",
+	//	"resourceType": "TOPIC",
+	//	//"permissionType": "ALLOW",
+	//	"permissionType": "DENY",
+	//	"resourceName":   "1",
+	//	"operation":      "READ",
+	//	"host":           "*",
+	//}
+
+	//fmt.Println(svc.CreateAcl(rule))
+
+	fmt.Println(svc.GetAcls().Results)
+
+	//fmt.Println(svc.DeleteAcl(rule))
+}

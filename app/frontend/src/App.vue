@@ -83,6 +83,7 @@ import {
   InfoOutlined,
   LibraryBooksOutlined,
   MessageOutlined,
+  PermDataSettingTwotone,
   SendTwotone,
   SettingsOutlined,
 } from '@vicons/material'
@@ -99,6 +100,7 @@ import Groups from "./components/Groups.vue";
 import Producer from "./components/Producer.vue";
 import Consumer from "./components/Consumer.vue";
 import Monitor from "./components/Monitor.vue";
+import Acl from "./components/Acl.vue";
 import About from "./components/About.vue";
 import {useI18n} from 'vue-i18n'
 import koKR from "./i18n/ko-KR";
@@ -174,6 +176,12 @@ const sideMenuOptions = computed(() => [
     key: 'monitor',
     icon: renderIcon(AddChartOutlined),
     component: Monitor,
+  },
+  {
+    label: "Acl",
+    key: 'Acl',
+    icon: renderIcon(PermDataSettingTwotone),
+    component: Acl,
   },
   {
     label: t('aside.settings'),
