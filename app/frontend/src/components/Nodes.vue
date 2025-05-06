@@ -20,11 +20,11 @@
     <n-flex align="center">
       <h2>{{ t('node.title') }}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{ t('common.refresh') }}</n-button>
-      <n-text>{{ t('common.count') }}：{{ data.length }}</n-text>
+      <n-text>{{ t('common.count') }}：{{ data?data.length:0 }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
       </n-button>
     </n-flex>
-    <n-spin :show="loading" :description="t('common.connecting')">
+    <n-spin :show="loading" description="loading...">
       <n-tabs type="line" animated v-model:value="activeTab">
         <n-tab-pane name="Broker">
           <template #tab>
@@ -46,8 +46,8 @@
           <n-flex vertical>
 
             <n-flex align="center">
-              <n-input :disabled='activeConfigNode' placeholder="search" v-model:value="configSearchText" clearable style="width: 300px"/>
-              <n-button :disabled='activeConfigNode' @click="getBrokerConfig(activeConfigNode)" :render-icon="renderIcon(RefreshOutlined)">
+              <n-input :disabled='activeConfigNode===""' placeholder="search" v-model:value="configSearchText" clearable style="width: 300px"/>
+              <n-button :disabled='activeConfigNode===""' @click="getBrokerConfig(activeConfigNode)" :render-icon="renderIcon(RefreshOutlined)">
                 {{ t('common.refresh') }}
               </n-button>
             </n-flex>
@@ -78,6 +78,7 @@ import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/ser
 import ShowOrEdit from "../common/ShowOrEdit.vue";
 import {useI18n} from "vue-i18n";
 
+const message = useMessage()
 const {t} = useI18n()
 
 const config_data = ref([])
@@ -87,7 +88,6 @@ const configSearchText = ref("")
 const activeTab = ref('Broker');
 const activeConfigNode = ref('');
 const loading = ref(false)
-const message = useMessage()
 
 const selectNode = async (node) => {
   config_data.value = []
@@ -110,13 +110,13 @@ const getData = async () => {
   try {
     const res = await GetBrokers()
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       const result = res.result
       data.value = result.brokers
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
 
   loading.value = false
@@ -206,7 +206,7 @@ const getBrokerConfig = async (node_id) => {
   try {
     const res = await GetBrokerConfig(node_id)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       // 排序
       res.results.sort((a, b) => a["Name"] > b["Name"] ? 1 : -1)
@@ -217,7 +217,7 @@ const getBrokerConfig = async (node_id) => {
       activeTab.value = "Config"
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -229,13 +229,13 @@ const alterNodeConfig = async (node_id, name, value) => {
   try {
     const res = await AlterNodeConfig(node_id, name, value)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       message.success(t('node.ok_message'))
       await getBrokerConfig(activeConfigNode.value)
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 

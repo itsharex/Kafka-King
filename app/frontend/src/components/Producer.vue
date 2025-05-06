@@ -143,7 +143,7 @@ const getData = async () => {
   try {
     const res = await GetTopics()
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       // 排序
       let data_lst = []
@@ -159,7 +159,7 @@ const getData = async () => {
       data.value = data_lst
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
 
 }
@@ -181,19 +181,19 @@ const removeHeader = (index) => {
 // 发送消息
 const produce = async () => {
   if (!selectedTopic.value) {
-    message.error(t('message.selectTopic'))
+    message.error(t('message.selectTopic'), {duration:  5000})
     return
   }
 
   if (!messageContent.value) {
-    message.error(t('message.pleaseInput'))
+    message.error(t('message.pleaseInput'), {duration:  5000})
     return
   }
   loading.value = true
   try {
     const res = await Produce(selectedTopic.value, messageKey.value, messageContent.value, partition.value, nums.value, headers.value, compress.value)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       message.success(t('message.sendSuccess'))
     }

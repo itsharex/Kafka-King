@@ -194,7 +194,7 @@ const getData = async () => {
     const res = await GetTopics()
     const res2 = await GetGroups()
     if (res.err !== "" || res2.err !== "") {
-      message.error(res.err === res2.err ? res.err : res.err + res2.err)
+      message.error(res.err === res2.err ? res.err : res.err + res2.err, {duration:  5000})
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -224,7 +224,7 @@ const getData = async () => {
 
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
 }
 
@@ -327,7 +327,7 @@ const columns = [
 // 获取消息
 const consume = async () => {
   if (!select.value.selectedTopic) {
-    message.error(t('message.selectTopic'))
+    message.error(t('message.selectTopic'), {duration:  5000})
     return
   }
 
@@ -343,7 +343,7 @@ const consume = async () => {
         select.value.maxMessages, select.value.timeout, select.value.decompress,
         select.value.isCommit)
     if (result.err !== "") {
-      message.error(result.err)
+      message.error(result.err, {duration:  5000})
     } else {
       messages = result.results
       searchData()

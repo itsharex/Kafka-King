@@ -20,12 +20,12 @@
     <n-flex align="center">
       <h2>{{ t('topic.title') }}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{ t('common.refresh') }}</n-button>
-      <n-text>{{ t('common.count') }}：{{ data.length }}</n-text>
+      <n-text>{{ t('common.count') }}：{{ data?data.length:0 }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
       </n-button>
 
     </n-flex>
-    <n-spin :show="loading" :description="t('common.connecting')">
+    <n-spin :show="loading" description="loading...">
       <n-tabs type="line" animated v-model:value="activeTab">
 
         <n-tab-pane name="Topic">
@@ -190,7 +190,7 @@
       <template #footer>
         <n-space>
           <n-button @click="showDrawer = false">{{ t('common.cancel') }}</n-button>
-          <n-button type="primary" @click="addTopic">{{ t('common.enter') }}</n-button>
+          <n-button :loading="loading" type="primary" @click="addTopic">{{ t('common.enter') }}</n-button>
         </n-space>
       </template>
     </n-drawer-content>
@@ -321,7 +321,7 @@ const getData = async () => {
   try {
     const res = await GetTopics(true)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       // 排序
       if (res.results) {
@@ -337,7 +337,7 @@ const getData = async () => {
       }
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
 
   loading.value = false
@@ -506,7 +506,7 @@ const handleMenuSelect = async (key, row) => {
   try {
     await func[key](row)
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 }
@@ -598,7 +598,7 @@ const getTopicConfig = async (topic) => {
   try {
     const res = await GetTopicConfig(topic)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       // 排序
       if (res.results) {
@@ -613,7 +613,7 @@ const getTopicConfig = async (topic) => {
       activeTab.value = "Config"
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -636,7 +636,7 @@ const getTopicDetail = async (topic) => {
     activeTab.value = "Partition"
     console.log(activeTab.value)
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -707,7 +707,7 @@ const getOffsets = async (topics, key) => {
     loading.value = true
     const res = await GetTopicOffsets(topics, key)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       offsets.value.start_map = {...res.result.start_map}
       offsets.value.end_map = {...res.result.end_map}
@@ -715,7 +715,7 @@ const getOffsets = async (topics, key) => {
       mergeOffsets()
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -773,7 +773,7 @@ const getGroups = async () => {
   try {
     const res = await GetGroups()
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       if (res.results) {
         let groups = []
@@ -792,7 +792,7 @@ const getGroups = async () => {
       }
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -814,14 +814,14 @@ const deleteTopicFunc = async (topic) => {
   try {
     const res = await DeleteTopic([topic])
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       message.success(t('common.deleteFinish'))
       await getData()
       emitter.emit('refreshTopic')
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 
@@ -836,7 +836,7 @@ const addTopic = async () => {
     }
     const res = await CreateTopics(topic_add.value.topics, topic_add.value.partitions, topic_add.value.replication_factor, configs)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:5000})
     } else {
       message.success(t('message.addOk'))
       showDrawer.value = false
@@ -845,7 +845,7 @@ const addTopic = async () => {
       emitter.emit('refreshTopic')
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:5000})
   }
   loading.value = false
 
@@ -855,13 +855,13 @@ const addTopicPartition = async () => {
   try {
     const res = await CreatePartitions([activeDetailTopic.value], addPartitionNum.value)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:5000})
     } else {
       message.success(t('message.addOk'))
       await getData()
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:5000})
   }
   loading.value = false
   showModal.value = false
@@ -874,13 +874,13 @@ const alterTopicConfig = async (topic, name, value) => {
   try {
     const res = await AlterTopicConfig(topic, name, value)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:5000})
     } else {
       message.success(t('message.editOk'))
       await getTopicConfig(activeConfigTopic.value)
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:5000})
   }
   loading.value = false
 

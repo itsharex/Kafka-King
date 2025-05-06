@@ -20,7 +20,7 @@
     <n-flex vertical>
       <n-flex align="center">
         <h2>{{ t('conn.title') }}</h2>
-        <n-text>{{ t('common.count') }}：{{ Nodes.length }}</n-text>
+        <n-text>{{ t('common.count') }}：{{ Nodes?Nodes.length:0 }}</n-text>
         <n-button tertiary type="primary" @click="addNewNode" :render-icon="renderIcon(AddFilled)">{{
             t('conn.add')
           }}
@@ -34,6 +34,16 @@
 
               <template #header-extra>
                 <n-space>
+                  Kafka-King
+                  更人性化的 Kafka GUI
+                  集群
+                  数量：3
+                  1212
+                  address:10.19.50.103:9092
+                  10.111.253.22
+                  address:10.111.253.22:9092
+                  address:
+
                   <n-button @click.stop="editNode(node)" size="small">
                     {{ t('common.edit') }}
                   </n-button>
@@ -318,7 +328,7 @@ const saveNode = async () => {
       await refreshNodeList()
       message.success(t('message.saveSuccess'))
     } else {
-      message.error(t('message.mustFill'))
+      message.error(t('message.mustFill'), {duration:  5000})
     }
   })
 }
@@ -343,16 +353,16 @@ const test_connect = async () => {
       try {
         const res = await TestClient(currentNode.value.name, currentNode.value)
         if (res.err !== "") {
-          message.error(t('message.connectErr') + "：" + res.err)
+          message.error(t('message.connectErr') + "：" + res.err, {duration:  5000})
         } else {
-          message.success(t('message.connectSuccess'))
+          message.success(t('message.connectSuccess'), {duration:  5000})
         }
       } catch (e) {
-        message.error(e.message)
+        message.error(e.message, {duration:  5000})
       }
       test_connect_loading.value = false
     } else {
-      message.error(t('message.mustFill'))
+      message.error(t('message.mustFill'), {duration:  5000})
     }
   })
 }
@@ -365,14 +375,14 @@ const selectNode = async (node) => {
   try {
     const res = await SetConnect(node.name, node, false)
     if (res.err !== "") {
-      message.error(t('message.connectErr') + "：" + res.err)
+      message.error(t('message.connectErr') + "：" + res.err, {duration:  5000})
     } else {
       emitter.emit('menu_select', "node")
       emitter.emit('selectNode', node)
       message.success(t('message.connectSuccess'))
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   spin_loading.value = false
 }

@@ -69,20 +69,20 @@
   </template>
   
   <script setup>
-  import { onMounted, ref, shallowRef } from 'vue';
+  import {onMounted, ref, shallowRef} from 'vue';
   import * as echarts from 'echarts/core';
-  import { GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent } from 'echarts/components';
-  import { LineChart } from 'echarts/charts';
-  import { UniversalTransition } from 'echarts/features';
-  import { CanvasRenderer } from 'echarts/renderers';
-  import { lightTheme, NButton, NFlex, useMessage } from 'naive-ui';
-  import { GetGroups, GetTopicOffsets, GetTopics } from '../../wailsjs/go/service/Service';
+  import {GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent} from 'echarts/components';
+  import {LineChart} from 'echarts/charts';
+  import {UniversalTransition} from 'echarts/features';
+  import {CanvasRenderer} from 'echarts/renderers';
+  import {lightTheme, NButton, NFlex, useMessage} from 'naive-ui';
+  import {GetGroups, GetTopicOffsets, GetTopics} from '../../wailsjs/go/service/Service';
   import emitter from '../utils/eventBus';
-  import { renderIcon } from '../utils/common';
-  import { MessageOutlined } from '@vicons/material';
-  import { useI18n } from 'vue-i18n';
-  import { GetConfig } from '../../wailsjs/go/config/AppConfig';
-  
+  import {renderIcon} from '../utils/common';
+  import {MessageOutlined} from '@vicons/material';
+  import {useI18n} from 'vue-i18n';
+  import {GetConfig} from '../../wailsjs/go/config/AppConfig';
+
   const { t } = useI18n();
   const message = useMessage();
   const topic_data = ref([]);
@@ -263,7 +263,7 @@
     try {
       const res = await GetTopicOffsets(selectedTopics.value, selectedGroup.value);
       if (res.err !== '') {
-        message.error(res.err);
+        message.error(res.err, {duration:  5000});
       } else {
         const now = new Date();
         const time = now.getTime(); // Use timestamp for precise time difference
@@ -313,7 +313,7 @@
         updateChart();
       }
     } catch (e) {
-      message.error(e.message);
+      message.error(e.message, {duration:  5000});
     } finally {
       loading.value = false;
     }
@@ -324,7 +324,7 @@
     try {
       const [res, res2] = await Promise.all([GetTopics(), GetGroups()]);
       if (res.err !== '' || res2.err !== '') {
-        message.error(res.err || res2.err);
+        message.error(res.err || res2.err, {duration:  5000});
       } else {
         topic_data.value = res.results
             ?.sort((a, b) => (a.topic > b.topic ? 1 : -1))
@@ -341,7 +341,7 @@
             .sort((a, b) => (a.label > b.label ? 1 : -1)) || [];
       }
     } catch (e) {
-      message.error(e.message);
+      message.error(e.message, {duration:  5000});
     }
   };
   

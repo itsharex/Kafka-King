@@ -20,7 +20,7 @@
     <n-flex align="center">
       <h2 >{{t('group.title')}}</h2>
       <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
-      <n-text>{{t('common.count')}}：{{ group_data.length }}</n-text>
+      <n-text>{{t('common.count')}}：{{ group_data?group_data.length:0 }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
     </n-flex>
     <n-spin :show="loading" :description="t('common.connecting')">
@@ -84,7 +84,7 @@ const getData = async () => {
   try {
     const res = await GetGroups()
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       if (res.results) {
         res.results.sort((a, b) => a['Group'] > b['Group'] ? 1 : -1)
@@ -93,7 +93,7 @@ const getData = async () => {
       }
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 }
@@ -103,7 +103,7 @@ const getMembers = async (group) => {
   try {
     const res = await GetGroupMembers([group])
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       if (res.results[0]) {
         let data0 = res.results[0]
@@ -114,7 +114,7 @@ const getMembers = async (group) => {
     }
 
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 }
@@ -225,13 +225,13 @@ const deleteGroups = async (group) => {
   try {
     const res = await DeleteGroup(group)
     if (res.err !== "") {
-      message.error(res.err)
+      message.error(res.err, {duration:  5000})
     } else {
       message.success(t('common.deleteFinish'))
       await getData()
     }
   } catch (e) {
-    message.error(e.message)
+    message.error(e.message, {duration:  5000})
   }
   loading.value = false
 

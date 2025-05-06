@@ -121,7 +121,7 @@ const saveConfig = async () => {
   config.value.theme = theme
   const err = await SaveConfig(config.value)
   if (err !== "") {
-    message.error(t('message.saveErr') + "：" + err)
+    message.error(t('message.saveErr') + "：" + err, {duration:  5000})
     return
   }
 

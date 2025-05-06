@@ -237,7 +237,7 @@ func (k *Service) GetBrokers() *types.ResultResp {
 		return result
 	}
 
-	var brokersResp []map[string]any
+	brokersResp := make([]map[string]any, 0)
 	for _, broker := range brokers {
 		brokersResp = append(brokersResp, map[string]any{
 			"node_id": broker.NodeID,
@@ -256,7 +256,7 @@ func (k *Service) GetBrokers() *types.ResultResp {
 
 // GetBrokerConfig 获取Broker配置
 func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr // 确保 common.PleaseSelectErr 是一个有效的错误变量
@@ -289,7 +289,7 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 }
 
 func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
-	var result []any
+	result := make([]any, 0)
 	for topicName, topicDetail := range topics {
 		partitionErrs := ""
 		var partitions []any
@@ -334,7 +334,7 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -361,7 +361,7 @@ func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
 
 // GetTopicConfig 获取主题配置
 func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -445,7 +445,7 @@ func (k *Service) ToMap(mapStruct map[string]map[int32]kadm.Offset) map[string]m
 func (k *Service) GetGroups() *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -475,7 +475,7 @@ func (k *Service) GetGroups() *types.ResultsResp {
 
 // GetGroupMembers 获取消费组下的成员信息
 func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -630,7 +630,7 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 func (k *Service) AlterTopicConfig(topic string, name, value string) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -661,7 +661,7 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -693,7 +693,7 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string, compressMethod string) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -755,7 +755,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit bool) *types.ResultsResp {
 	k.mutex.Lock()
 	defer k.mutex.Unlock()
-	result := &types.ResultsResp{}
+	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
