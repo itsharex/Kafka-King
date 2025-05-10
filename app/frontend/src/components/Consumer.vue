@@ -33,6 +33,7 @@
         label-width="auto"
         :rules="{
               selectedTopic: {required: true, trigger: 'blur'},
+              selectedGroup: {required: true, trigger: 'blur'},
               maxMessages: {required: true, type: 'number',trigger: 'blur'},
             }"
     >
@@ -59,7 +60,7 @@
         </n-tooltip>
       </n-form-item>
 
-      <n-form-item label="Consumer Group" path="selectedGroup">
+      <n-form-item label="Group" path="selectedGroup">
         <n-tooltip>
           <template #trigger>
             <n-select
@@ -367,7 +368,10 @@ const consume = async () => {
     message.error(t('message.selectTopic'), {duration: 5000})
     return
   }
-
+  if (!select.value.selectedGroup) {
+    message.error("Group is needed", {duration: 5000})
+    return
+  }
   loading.value = true
   try {
     // 如果是首次消费，显示提示
