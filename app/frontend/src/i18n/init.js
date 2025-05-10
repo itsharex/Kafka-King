@@ -29,7 +29,7 @@ const languageMap = {
     'ko-KR': koKR,
     'ru-RU': ruRU,
 };
-const default_language = 'en-US';
+const default_language = 'zh-CN';
 
 const i18n = createI18n({
     legacy: false, // 使用Composition API

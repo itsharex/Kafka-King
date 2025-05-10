@@ -49,6 +49,7 @@
                   v-model:value="selectedGroup"
                   :options="group_data"
                   :placeholder="t('topic.selectedGroup')"
+                  :render-option="renderSelect"
                   filterable
                   clearable
                   style="width: 250px"
@@ -91,6 +92,7 @@
                   v-model:value="selectedGroup"
                   :options="group_data"
                   :placeholder="t('topic.selectedGroup')"
+                  :render-option="renderSelect"
                   filterable
                   clearable
                   :disabled="!activeDetailTopic"
@@ -229,7 +231,14 @@ import {
   SearchOutlined,
   SettingsRound,
 } from '@vicons/material'
-import {createCsvContent, download_file, getCurrentDateTime, isValidJson, renderIcon} from "../utils/common";
+import {
+  createCsvContent,
+  download_file,
+  getCurrentDateTime,
+  isValidJson,
+  renderIcon,
+  renderSelect
+} from "../utils/common";
 import {
   AlterTopicConfig,
   CreatePartitions,

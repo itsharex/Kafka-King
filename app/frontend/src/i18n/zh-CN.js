@@ -118,7 +118,7 @@ export default {
     },
     consumer: {
         title: "Consumer",
-        desc: "一个简单消费者客户端，查看Topic消息。",
+        desc: "一个消费者客户端，查看Topic消息。",
         requiredTopic: "必选：Topic",
         topicPlaceholder: "选择或搜索Kafka Topic",
         requiredMessagesCount: "必选：消费数量",
@@ -128,8 +128,11 @@ export default {
         optionalGroup: "可选：Group（一旦选择，消费时会自动提交Offset。支持创建新Group）",
         groupPlaceholder: "选择或创建Consumer Group",
         commitOffsetTooltip: "是否在消费后提交Offset",
-        consumeMessage: "消费消息",
+        isLatest: "默认消费位置",
+        onlyTip: "注意：仅在Group首次消费时生效，后续改动无效",
+        consumeMessage: "消费",
         firstConsumeTip: "首次消费可能需要一些时间来重平衡",
+        startTimestamp: "默认消费起始时间",
     },
     group:{
         title: "消费者组",

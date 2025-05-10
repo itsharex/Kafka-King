@@ -177,12 +177,12 @@ const sideMenuOptions = computed(() => [
     icon: renderIcon(AddChartOutlined),
     component: Monitor,
   },
-  {
-    label: "Acl",
-    key: 'Acl',
-    icon: renderIcon(PermDataSettingTwotone),
-    component: Acl,
-  },
+  // {
+  //   label: "Acl",
+  //   key: 'Acl',
+  //   icon: renderIcon(PermDataSettingTwotone),
+  //   component: Acl,
+  // },
   {
     label: t('aside.settings'),
     key: 'settings',

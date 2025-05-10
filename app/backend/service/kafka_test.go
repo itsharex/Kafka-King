@@ -194,7 +194,21 @@ func gzipCompress(data []byte) ([]byte, error) {
 
 	return buf.Bytes(), nil // Return the compressed data from the buffer
 }
+func TestConsume(t *testing.T) {
+	s := NewKafkaService()
+	s.SetConnect("dsd", map[string]any{
+		"name":              "debian",
+		"bootstrap_servers": "192.168.1.100:9092",
+		"tls":               "disable",
+		"skipTLSVerify":     "",
+		"tls_cert_file":     "",
+		"tls_key_file":      "",
+		"tls_ca_file":       "", "sasl": "disable", "sasl_mechanism": "PLAIN", "sasl_user": "", "sasl_pwd": "", "kerberos_user_keytab": "", "kerberos_krb5_conf": "", "Kerberos_user": "", "Kerberos_realm": "", "kerberos_service_name": "",
+	}, false)
 
+	res := s.Consumer("1", "__kafka_king_auto_generate__", 5, 1000, "", false, true, 1746879189000)
+	fmt.Printf("%+v", res)
+}
 func TestAcls(t *testing.T) {
 
 	svc := NewKafkaService()

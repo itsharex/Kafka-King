@@ -27,6 +27,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kmsg"
 	"log"
 	"os"
@@ -332,8 +333,6 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 
 // GetTopics 获取主题信息
 func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultsResp{Results: make([]any, 0)}
 
 	if k.kac == nil {
@@ -443,17 +442,15 @@ func (k *Service) ToMap(mapStruct map[string]map[int32]kadm.Offset) map[string]m
 
 // GetGroups 获取消费组信息
 func (k *Service) GetGroups() *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
-	if len(k.groups) > 0 {
-		result.Results = k.groups
-		return result
-	}
+	//if len(k.groups) > 0 {
+	//	result.Results = k.groups
+	//	return result
+	//}
 	ctx := context.Background()
 	groups, err := k.kac.ListGroups(ctx)
 	if err != nil {
@@ -516,8 +513,6 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 
 // CreateTopics 创建主题
 func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor int, configs map[string]string) *types.ResultResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -548,8 +543,6 @@ func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor
 
 // DeleteTopic 删除主题
 func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -575,8 +568,6 @@ func (k *Service) DeleteTopic(topics []string) *types.ResultResp {
 
 // DeleteGroup 删除Group
 func (k *Service) DeleteGroup(group string) *types.ResultResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -600,8 +591,6 @@ func (k *Service) DeleteGroup(group string) *types.ResultResp {
 
 // CreatePartitions 添加分区
 func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultResp{}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -628,8 +617,6 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 
 // AlterTopicConfig 修改主题配置
 func (k *Service) AlterTopicConfig(topic string, name, value string) *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -659,8 +646,6 @@ func (k *Service) AlterTopicConfig(topic string, name, value string) *types.Resu
 }
 
 func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -691,8 +676,6 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 
 // Produce 生产消息
 func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string, compressMethod string) *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -752,9 +735,7 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 
 // Consumer 消费消息
 // 参考：https://github.com/twmb/franz-go/blob/master/examples/group_consuming/main.go
-func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit bool) *types.ResultsResp {
-	k.mutex.Lock()
-	defer k.mutex.Unlock()
+func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit, isLatest bool, startTimestamp int) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -771,10 +752,19 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 		}
 		conf := append(k.config,
 			kgo.ConsumeTopics(topic),
-			kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
+			kgo.DisableAutoCommit(),
 		)
-		if group != "" {
-			conf = append(conf, kgo.ConsumerGroup(group), kgo.DisableAutoCommit())
+		if group != "__kafka_king_auto_generate__" {
+			conf = append(conf, kgo.ConsumerGroup(group))
+		} else {
+			conf = append(conf, kgo.ConsumerGroup("__kafka_king__"+uuid.New().String()))
+		}
+		if startTimestamp != 0 {
+			conf = append(conf, kgo.ConsumeResetOffset(kgo.NewOffset().AfterMilli(int64(startTimestamp))))
+		} else if isLatest {
+			conf = append(conf, kgo.ConsumeResetOffset(kgo.NewOffset().AtEnd()))
+		} else {
+			conf = append(conf, kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()))
 		}
 
 		cl, err := kgo.NewClient(

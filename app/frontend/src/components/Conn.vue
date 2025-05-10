@@ -34,16 +34,6 @@
 
               <template #header-extra>
                 <n-space>
-                  Kafka-King
-                  更人性化的 Kafka GUI
-                  集群
-                  数量：3
-                  1212
-                  address:10.19.50.103:9092
-                  10.111.253.22
-                  address:10.111.253.22:9092
-                  address:
-
                   <n-button @click.stop="editNode(node)" size="small">
                     {{ t('common.edit') }}
                   </n-button>

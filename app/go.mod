@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/go-resty/resty/v2 v2.16.5
+	github.com/google/uuid v1.6.0
 	github.com/jcmturner/gokrb5/v8 v8.4.4
 	github.com/klauspost/compress v1.17.11
 	github.com/pierrec/lz4/v4 v4.1.22
@@ -19,7 +20,6 @@ require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect

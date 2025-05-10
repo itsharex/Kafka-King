@@ -28,6 +28,7 @@
           v-model:value="selectedTopic"
           :options="data"
           :placeholder="t('producer.topicPlaceholder')"
+          :render-option="renderSelect"
           filterable
           clearable
           style="width: 300px"
@@ -100,7 +101,7 @@
 import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
 import {NButton, useMessage} from "naive-ui";
-import {renderIcon} from "../utils/common";
+import {renderIcon, renderSelect} from "../utils/common";
 import {SendTwotone} from "@vicons/material";
 import {GetTopics, Produce} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";

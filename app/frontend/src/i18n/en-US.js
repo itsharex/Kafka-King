@@ -128,8 +128,11 @@ export default {
         optionalGroup: "Optional: Group (Once selected, offsets will be committed automatically during consumption. Supports creating new groups)",
         groupPlaceholder: "Select or create Consumer Group",
         commitOffsetTooltip: "Whether to commit Offset after consumption",
+        isLatest: "Default consume location",
+        onlyTip: "Note: Only effective when Group is first consumed, subsequent changes are invalid",
         consumeMessage: "Consume Messages",
         firstConsumeTip: "First consume may take some time to rebalance",
+        startTimestamp: "Default consume start time",
     },
     group: {
         title: "Consumer Group",

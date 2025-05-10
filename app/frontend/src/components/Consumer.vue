@@ -42,6 +42,7 @@
             v-model:value="select.selectedTopic"
             :options="topic_data"
             :placeholder="t('consumer.requiredTopic')"
+            :render-option="renderSelect"
             filterable
             clearable
         />
@@ -64,6 +65,8 @@
             <n-select
                 v-model:value="select.selectedGroup"
                 :options="group_data"
+                :render-option="renderSelect"
+                style="max-width: 200px"
                 filterable
                 clearable
                 tag
@@ -101,15 +104,44 @@
         />
       </n-form-item>
 
-      <n-form-item label="CommitOffset" path="isCommit">
+      <n-form-item label="Commit Offset" path="isCommit">
         <n-tooltip>
           <template #trigger>
-            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isCommit"/>
+            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isCommit">
+              <template #unchecked>false</template>
+              <template #checked>true</template>
+            </n-switch>
           </template>
           {{ t('consumer.commitOffsetTooltip') }}
         </n-tooltip>
       </n-form-item>
 
+      <n-form-item :label="t('consumer.isLatest')" path="isLatest">
+        <n-tooltip>
+          <template #trigger>
+            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isLatest">
+              <template #unchecked>最早</template>
+              <template #checked>最新</template>
+            </n-switch>
+          </template>
+          {{ t('consumer.onlyTip') }}
+        </n-tooltip>
+      </n-form-item>
+
+      <n-form-item :label="t('consumer.startTimestamp')" path="startTimestamp">
+        <n-tooltip>
+          <template #trigger>
+            <n-date-picker
+                v-model:value="select.startTimestamp"
+                type="datetime"
+                value-format="timestamp"
+                clearable
+                style="max-width: 188px"
+            />
+          </template>
+          {{ t('consumer.onlyTip') }}
+        </n-tooltip>
+      </n-form-item>
 
       <n-form-item>
         <n-button tertiary type="primary" @click="consume" :loading="loading"
@@ -119,7 +151,7 @@
       </n-form-item>
 
       <n-form-item>
-        <n-input v-model:value="searchText" @input="searchData" placeholder="local search" clearable />
+        <n-input v-model:value="searchText" @input="searchData" placeholder="local search" clearable style="max-width: 150px"/>
       </n-form-item>
 
     </n-form>
@@ -134,11 +166,11 @@
   </n-flex>
 </template>
 <script setup>
-import {onMounted, ref} from 'vue'
+import {h, onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
-import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, renderIcon, renderSelect} from "../utils/common";
 import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
-import {NButton, NDataTable, NFlex, NInput, useMessage} from 'naive-ui'
+import {NButton, NDataTable, NFlex, NInput, NTooltip, useMessage} from 'naive-ui'
 import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
 
@@ -158,11 +190,13 @@ const isFirstConsume = ref(true)
 // 表单数据
 const select = ref({
   selectedTopic: null,
-  selectedGroup: null,
+  selectedGroup: "__kafka_king_auto_generate__",
   maxMessages: 10,
   timeout: 10,
   isCommit: false,
+  isLatest: false,
   decompress: null,
+  startTimestamp: null,
 })
 
 const loading = ref(false)
@@ -194,7 +228,7 @@ const getData = async () => {
     const res = await GetTopics()
     const res2 = await GetGroups()
     if (res.err !== "" || res2.err !== "") {
-      message.error(res.err === res2.err ? res.err : res.err + res2.err, {duration:  5000})
+      message.error(res.err === res2.err ? res.err : res.err + res2.err, {duration: 5000})
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -208,7 +242,10 @@ const getData = async () => {
       }
       topic_data.value = topic_data_lst
 
-      let groups = []
+      let groups = [{
+        label: '(auto generate)',
+        value: '__kafka_king_auto_generate__',
+      }]
       for (const k in res2.results) {
         const g_data = res2.results[k]
         groups.push({
@@ -224,7 +261,7 @@ const getData = async () => {
 
     }
   } catch (e) {
-    message.error(e.message, {duration:  5000})
+    message.error(e.message, {duration: 5000})
   }
 }
 
@@ -327,7 +364,7 @@ const columns = [
 // 获取消息
 const consume = async () => {
   if (!select.value.selectedTopic) {
-    message.error(t('message.selectTopic'), {duration:  5000})
+    message.error(t('message.selectTopic'), {duration: 5000})
     return
   }
 
@@ -341,9 +378,10 @@ const consume = async () => {
 
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
         select.value.maxMessages, select.value.timeout, select.value.decompress,
-        select.value.isCommit)
+        select.value.isCommit, select.value.isLatest, select.value.startTimestamp)
+
     if (result.err !== "") {
-      message.error(result.err, {duration:  5000})
+      message.error(result.err, {duration: 5000})
     } else {
       messages = result.results
       searchData()

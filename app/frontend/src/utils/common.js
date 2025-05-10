@@ -17,13 +17,16 @@
 
 // 渲染图标给菜单
 import {h} from "vue";
-import {NIcon} from "naive-ui";
+import {NIcon, NTooltip} from "naive-ui";
 import {BrowserOpenURL} from "../../wailsjs/runtime";
 
 // 渲染图标
 export function renderIcon(icon) {
   return () => h(NIcon, null, {default: () => h(icon)});
 }
+export const renderSelect = ({ node, option }) => h(NTooltip, {
+  placement: "right",
+}, {trigger: () => node, default: () => `${option.label}`});
 
 // 打开链接
 export function openUrl(url) {
