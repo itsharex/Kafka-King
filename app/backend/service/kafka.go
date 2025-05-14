@@ -29,7 +29,10 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kmsg"
+	"golang.org/x/crypto/ssh"
+	"io"
 	"log"
+	"net"
 	"os"
 	"strings"
 	"sync"
@@ -61,6 +64,7 @@ type Service struct {
 	mutex            sync.Mutex
 	topics           []any
 	groups           []any
+	sshTunnel        *sshTunnel // 新增：存储 SSH 隧道
 }
 
 func (k *Service) ptr(s string) *string {
@@ -71,7 +75,7 @@ func NewKafkaService() *Service {
 	return &Service{}
 }
 
-func (k *Service) Close(ctx context.Context) bool {
+func (k *Service) Close(_ context.Context) bool {
 	// 关闭连接,return false表示允许关闭
 	if k.client != nil {
 		k.client.Close()
@@ -82,8 +86,124 @@ func (k *Service) Close(ctx context.Context) bool {
 	if k.consumer != nil && len(k.consumer) == 2 {
 		k.consumer[2].(*kgo.Client).Close()
 	}
+	if k.sshTunnel != nil {
+		_ = k.sshTunnel.client.Close()
+		k.sshTunnel = nil
+	}
 	fmt.Println("关闭连接")
 	return false
+}
+
+// SSH 隧道配置
+type sshTunnel struct {
+	client    *ssh.Client
+	localAddr string
+}
+
+func pipe(src, dst net.Conn) {
+	defer func(src net.Conn) {
+		_ = src.Close()
+	}(src)
+	defer func(dst net.Conn) {
+		_ = dst.Close()
+	}(dst)
+	go func() {
+		_, _ = io.Copy(dst, src)
+	}()
+	_, _ = io.Copy(src, dst)
+}
+
+func (k *Service) setupSSHTunnel(conn map[string]any) (*sshTunnel, error) {
+	if conn["use_ssh"] != "enable" {
+		return nil, nil
+	}
+
+	sshHost, ok := conn["ssh_host"].(string)
+	if !ok || sshHost == "" {
+		return nil, errors.New("SSH host is required")
+	}
+	sshPort, ok := conn["ssh_port"].(float64)
+	if !ok {
+		sshPort = 22
+	}
+	sshUser, ok := conn["ssh_user"].(string)
+	if !ok || sshUser == "" {
+		return nil, errors.New("SSH user is required")
+	}
+
+	// SSH 认证配置
+	var authMethods []ssh.AuthMethod
+	if sshPassword, ok := conn["ssh_password"].(string); ok && sshPassword != "" {
+		authMethods = append(authMethods, ssh.Password(sshPassword))
+	}
+	if sshKeyFile, ok := conn["ssh_key_file"].(string); ok && sshKeyFile != "" {
+		key, err := os.ReadFile(sshKeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read SSH key file: %v", err)
+		}
+		signer, err := ssh.ParsePrivateKey(key)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse SSH key: %v", err)
+		}
+		authMethods = append(authMethods, ssh.PublicKeys(signer))
+	}
+	if len(authMethods) == 0 {
+		return nil, errors.New("SSH authentication method is required (password or key)")
+	}
+
+	// SSH 客户端配置
+	sshConfig := &ssh.ClientConfig{
+		User:            sshUser,
+		Auth:            authMethods,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // 开发环境中忽略主机密钥验证
+		Timeout:         10 * time.Second,
+	}
+
+	// 连接 SSH 服务器
+	sshClient, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", sshHost, int(sshPort)), sshConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to dial SSH server: %v", err)
+	}
+
+	// 为每个 bootstrap server 创建本地监听端口
+	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
+	localAddr := "localhost:0" // 动态分配本地端口
+	listener, err := net.Listen("tcp", localAddr)
+	if err != nil {
+		_ = sshClient.Close()
+		return nil, fmt.Errorf("failed to create local listener: %v", err)
+	}
+
+	// 获取分配的本地端口
+	localPort := listener.Addr().(*net.TCPAddr).Port
+	localAddr = fmt.Sprintf("localhost:%d", localPort)
+
+	// 启动隧道
+	go func() {
+		defer func(listener net.Listener) {
+			_ = listener.Close()
+		}(listener)
+		for {
+			localConn, err := listener.Accept()
+			if err != nil {
+				log.Printf("SSH tunnel listener accept error: %v", err)
+				return
+			}
+			// 假设第一个 bootstrap server 为目标
+			remoteConn, err := sshClient.Dial("tcp", bootstrapServers[0])
+			if err != nil {
+				log.Printf("SSH tunnel remote dial error: %v", err)
+				_ = localConn.Close()
+				continue
+			}
+			go pipe(localConn, remoteConn)
+		}
+	}()
+
+	return &sshTunnel{
+		client:    sshClient,
+		localAddr: localAddr,
+	}, nil
 }
 
 func (k *Service) SetConnect(connectName string, conn map[string]any, isTest bool) *types.ResultResp {
@@ -92,6 +212,19 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 	result := &types.ResultResp{}
 
 	var config []kgo.Opt
+	var sshTunnel *sshTunnel
+	var err error
+
+	// 设置 SSH 隧道
+	if conn["use_ssh"] == "enable" {
+		sshTunnel, err = k.setupSSHTunnel(conn)
+		if err != nil {
+			result.Err = fmt.Sprintf("SSH tunnel setup failed: %v", err)
+			return result
+		}
+		// 使用本地隧道地址替换 bootstrap servers
+		conn["bootstrap_servers"] = sshTunnel.localAddr
+	}
 
 	// TLS配置
 	if conn["tls"] == "enable" {
@@ -208,6 +341,10 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		k.bootstrapServers = bootstrapServers
 		k.clearCache()
 		k.topics = k.buildTopicsResp(topics)
+		// 存储 SSH 隧道客户端
+		if sshTunnel != nil {
+			k.sshTunnel = sshTunnel
+		}
 	}
 
 	return result

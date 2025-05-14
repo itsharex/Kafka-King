@@ -55,6 +55,12 @@ type Connect struct {
 	KerberosUser        string `json:"Kerberos_user"`
 	KerberosRealm       string `json:"Kerberos_realm"`
 	KerberosServiceName string `json:"kerberos_service_name"`
+	UseSsh              string `json:"use_ssh"`      // 新增：是否使用 SSH
+	SshHost             string `json:"ssh_host"`     // SSH 主机
+	SshPort             int    `json:"ssh_port"`     // SSH 端口
+	SshUser             string `json:"ssh_user"`     // SSH 用户名
+	SshPassword         string `json:"ssh_password"` // SSH 密码
+	SshKeyFile          string `json:"ssh_key_file"` // SSH 私钥文件
 }
 type H map[string]any
 

@@ -71,7 +71,13 @@ export default {
         kerberos_krb5_conf: "Kerberos krb5.conf path",
         Kerberos_user: "Kerberos User",
         Kerberos_realm: "Kerberos Realm",
-        kerberos_service_name: "Kerberos Service Name"
+        kerberos_service_name: "Kerberos Service Name",
+        use_ssh: 'Use SSH Proxy',
+        ssh_host: 'SSH Host',
+        ssh_port: 'SSH Port',
+        ssh_user: 'SSH Username',
+        ssh_password: 'SSH Password',
+        ssh_key_file: 'SSH Private Key File',
     },
     node: {
         title: "Node",

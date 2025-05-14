@@ -72,6 +72,12 @@ export default {
         Kerberos_user: 'Kerberos_user 用户名',
         Kerberos_realm: 'Kerberos_realm 领域域名',
         kerberos_service_name: 'kerberos_service_name 服务名',
+        use_ssh: '使用 SSH 代理',
+        ssh_host: 'SSH 主机',
+        ssh_port: 'SSH 端口',
+        ssh_user: 'SSH 用户名',
+        ssh_password: 'SSH 密码',
+        ssh_key_file: 'SSH 私钥文件',
     },
     node: {
         title: '节点',

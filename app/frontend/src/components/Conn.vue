@@ -84,109 +84,148 @@
             <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.tls"/>
           </n-form-item>
 
-          <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
-            <n-switch :round="false" checked-value="true" unchecked-value="false"
-                      v-model:value="currentNode.skipTLSVerify"/>
-          </n-form-item>
+          <div v-if="currentNode.tls === 'enable'" style="margin-left: 10px">
+            <n-form-item :label="t('conn.skipTLSVerify')" path="skipTLSVerify">
+              <n-switch :round="false" checked-value="true" unchecked-value="false"
+                        v-model:value="currentNode.skipTLSVerify"/>
+            </n-form-item>
 
-          <n-form-item label="TLS Cert File" path="tls_cert_file">
-            <!--客户端或服务器证书用于验证客户端或服务器的身份。-->
-            <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
-              <n-flex align="center" v-if="currentNode.tls_cert_file">
-                <p style="color: gray;">{{ currentNode.tls_cert_file }}</p>
-                <n-button size="tiny" @click="currentNode.tls_cert_file=''" :render-icon="renderIcon(CloseFilled)"/>
+            <n-form-item label="TLS Cert File" path="tls_cert_file">
+              <!--客户端或服务器证书用于验证客户端或服务器的身份。-->
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('tls_cert_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
+                <n-flex align="center" v-if="currentNode.tls_cert_file">
+                  <p style="color: gray;">{{ currentNode.tls_cert_file }}</p>
+                  <n-button size="tiny" @click="currentNode.tls_cert_file=''" :render-icon="renderIcon(CloseFilled)"/>
+                </n-flex>
               </n-flex>
-            </n-flex>
 
-          </n-form-item>
+            </n-form-item>
 
-          <n-form-item label="TLS Key File" path="tls_key_file">
-            <!--私钥文件用于加密和解密数据，必须妥善保管。-->
-            <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_key_file','*.key;*.pem;*.der')">.key/pem/der</n-button>
-              <n-flex align="center" v-if="currentNode.tls_key_file">
-                <p style="color: gray;">{{ currentNode.tls_key_file }}</p>
-                <n-button size="tiny" @click="currentNode.tls_key_file=''" :render-icon="renderIcon(CloseFilled)"/>
+            <n-form-item label="TLS Key File" path="tls_key_file">
+              <!--私钥文件用于加密和解密数据，必须妥善保管。-->
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('tls_key_file','*.key;*.pem;*.der')">.key/pem/der</n-button>
+                <n-flex align="center" v-if="currentNode.tls_key_file">
+                  <p style="color: gray;">{{ currentNode.tls_key_file }}</p>
+                  <n-button size="tiny" @click="currentNode.tls_key_file=''" :render-icon="renderIcon(CloseFilled)"/>
+                </n-flex>
               </n-flex>
-            </n-flex>
 
-          </n-form-item>
+            </n-form-item>
 
-          <n-form-item label="TLS CA File" path="tls_ca_file">
-            <!--CA 证书是用于验证服务器或客户端证书的根证书或中间证书。-->
-            <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
-              <n-flex align="center" v-if="currentNode.tls_ca_file">
-                <p style="color: gray;">{{ currentNode.tls_ca_file }}</p>
-                <n-button size="tiny" @click="currentNode.tls_ca_file=''" :render-icon="renderIcon(CloseFilled)"/>
+            <n-form-item label="TLS CA File" path="tls_ca_file">
+              <!--CA 证书是用于验证服务器或客户端证书的根证书或中间证书。-->
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('tls_ca_file','*.crt;*.pem;*.cer;*.der')">.crt/pem/cer/der</n-button>
+                <n-flex align="center" v-if="currentNode.tls_ca_file">
+                  <p style="color: gray;">{{ currentNode.tls_ca_file }}</p>
+                  <n-button size="tiny" @click="currentNode.tls_ca_file=''" :render-icon="renderIcon(CloseFilled)"/>
+                </n-flex>
               </n-flex>
-            </n-flex>
+            </n-form-item>
+          </div>
 
+
+          <!-- 添加 SSH 代理配置 -->
+          <n-form-item :label="t('conn.use_ssh')" path="use_ssh">
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.use_ssh" />
           </n-form-item>
+          <div v-if="currentNode.use_ssh === 'enable'" style="margin-left: 10px">
+            <n-form-item :label="t('conn.ssh_host')" path="ssh_host" >
+              <n-input v-model:value="currentNode.ssh_host" placeholder="SSH Host (e.g., 192.168.1.100)" />
+            </n-form-item>
+            <n-form-item :label="t('conn.ssh_port')" path="ssh_port" >
+              <n-input-number v-model:value="currentNode.ssh_port" :default-value="22" :min="1" :max="65535" />
+            </n-form-item>
+            <n-form-item :label="t('conn.ssh_user')" path="ssh_user">
+              <n-input v-model:value="currentNode.ssh_user" placeholder="SSH Username" />
+            </n-form-item>
+            <n-form-item :label="t('conn.ssh_password')" path="ssh_password">
+              <n-input v-model:value="currentNode.ssh_password" type="password" placeholder="SSH Password" />
+            </n-form-item>
+            <n-form-item :label="t('conn.ssh_key_file')" path="ssh_key_file" >
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('ssh_key_file', '*')">.pem/.key</n-button>
+                <n-flex align="center" v-if="currentNode.ssh_key_file">
+                  <p style="color: gray;">{{ currentNode.ssh_key_file }}</p>
+                  <n-button size="tiny" @click="currentNode.ssh_key_file=''" :render-icon="renderIcon(CloseFilled)" />
+                </n-flex>
+              </n-flex>
+            </n-form-item>
+          </div>
+
 
           <n-form-item :label="t('conn.use_sasl')" path="sasl">
             <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.sasl"/>
           </n-form-item>
 
-          <n-form-item :label="t('conn.sasl_mechanism')" path="sasl_mechanism">
-            <n-select
-                v-model:value="currentNode.sasl_mechanism"
-                :options="sasl_mechanism_options"
-                :placeholder="t('common.check')"
-                filterable
-                clearable
-                style="width: 200px"
-            />
+          <div v-if="currentNode.sasl === 'enable'" style="margin-left: 10px">
+            <n-form-item :label="t('conn.sasl_mechanism')" path="sasl_mechanism">
+              <n-select
+                  v-model:value="currentNode.sasl_mechanism"
+                  :options="sasl_mechanism_options"
+                  :placeholder="t('common.check')"
+                  filterable
+                  clearable
+                  style="width: 200px"
+              />
+            </n-form-item>
+
+            <n-form-item :label="t('conn.sasl_user')" path="sasl_user">
+              <n-input v-model:value="currentNode.sasl_user" :placeholder="t('conn.sasl_user')"/>
+            </n-form-item>
+
+            <n-form-item :label="t('conn.sasl_pwd')" path="sasl_pwd">
+              <n-input
+                  v-model:value="currentNode.sasl_pwd"
+                  type="password"
+                  :placeholder="t('conn.sasl_pwd')"
+              />
+            </n-form-item>
+          </div>
+
+          <n-form-item label="kerberos" path="sasl">
+            <n-switch :round="false" checked-value="enable" unchecked-value="disable" v-model:value="currentNode.use_kerberos"/>
           </n-form-item>
 
-          <n-form-item :label="t('conn.sasl_user')" path="sasl_user">
-            <n-input v-model:value="currentNode.sasl_user" :placeholder="t('conn.sasl_user')"/>
-          </n-form-item>
-
-          <n-form-item :label="t('conn.sasl_pwd')" path="sasl_pwd">
-            <n-input
-                v-model:value="currentNode.sasl_pwd"
-                type="password"
-                :placeholder="t('conn.sasl_pwd')"
-            />
-          </n-form-item>
-
-          <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
-
-            <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('kerberos_user_keytab','')">keytab</n-button>
-              <n-flex align="center" v-if="currentNode.kerberos_user_keytab">
-                <p style="color: gray;">{{ currentNode.kerberos_user_keytab }}</p>
-                <n-button size="tiny" @click="currentNode.kerberos_user_keytab=''"
-                          :render-icon="renderIcon(CloseFilled)"/>
+          <div v-if="currentNode.use_kerberos === 'enable'" style="margin-left: 10px">
+            <n-form-item :label="t('conn.kerberos_user_keytab')" path="kerberos_user_keytab">
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('kerberos_user_keytab','')">keytab</n-button>
+                <n-flex align="center" v-if="currentNode.kerberos_user_keytab">
+                  <p style="color: gray;">{{ currentNode.kerberos_user_keytab }}</p>
+                  <n-button size="tiny" @click="currentNode.kerberos_user_keytab=''"
+                            :render-icon="renderIcon(CloseFilled)"/>
+                </n-flex>
               </n-flex>
-            </n-flex>
 
-          </n-form-item>
+            </n-form-item>
 
-          <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
-            <n-flex vertical align="flex-start">
-              <n-button @click="SelectFile('kerberos_krb5_conf','')">krb5_conf</n-button>
-              <n-flex align="center" v-if="currentNode.kerberos_krb5_conf">
-                <p style="color: gray;">{{ currentNode.kerberos_krb5_conf }}</p>
-                <n-button size="tiny" @click="currentNode.kerberos_krb5_conf=''"
-                          :render-icon="renderIcon(CloseFilled)"/>
+            <n-form-item :label="t('conn.kerberos_krb5_conf')" path="kerberos_krb5_conf">
+              <n-flex vertical align="flex-start">
+                <n-button @click="SelectFile('kerberos_krb5_conf','')">krb5_conf</n-button>
+                <n-flex align="center" v-if="currentNode.kerberos_krb5_conf">
+                  <p style="color: gray;">{{ currentNode.kerberos_krb5_conf }}</p>
+                  <n-button size="tiny" @click="currentNode.kerberos_krb5_conf=''"
+                            :render-icon="renderIcon(CloseFilled)"/>
+                </n-flex>
               </n-flex>
-            </n-flex>
-          </n-form-item>
+            </n-form-item>
 
-          <n-form-item :label="t('conn.Kerberos_user')" path="Kerberos_user">
-            <n-input v-model:value="currentNode.Kerberos_user"/>
-          </n-form-item>
+            <n-form-item :label="t('conn.Kerberos_user')" path="Kerberos_user">
+              <n-input v-model:value="currentNode.Kerberos_user"/>
+            </n-form-item>
 
-          <n-form-item :label="t('conn.Kerberos_realm')" path="Kerberos_realm">
-            <n-input v-model:value="currentNode.Kerberos_realm"/>
-          </n-form-item>
+            <n-form-item :label="t('conn.Kerberos_realm')" path="Kerberos_realm">
+              <n-input v-model:value="currentNode.Kerberos_realm"/>
+            </n-form-item>
 
-          <n-form-item :label="t('conn.kerberos_service_name')" path="kerberos_service_name">
-            <n-input v-model:value="currentNode.kerberos_service_name"/>
-          </n-form-item>
+            <n-form-item :label="t('conn.kerberos_service_name')" path="kerberos_service_name">
+              <n-input v-model:value="currentNode.kerberos_service_name"/>
+            </n-form-item>
+          </div>
+
 
         </n-form>
         <template #footer>
@@ -235,11 +274,18 @@ const currentNode = ref({
   sasl_mechanism: "PLAIN",
   sasl_user: '',
   sasl_pwd: '',
+  use_kerberos: 'disable',
   kerberos_user_keytab: '',
   kerberos_krb5_conf: '',
   Kerberos_user: '',
   Kerberos_realm: '',
   kerberos_service_name: '',
+  use_ssh: 'disable', // 新增 SSH 开关
+  ssh_host: '',       // SSH 主机
+  ssh_port: 22,       // SSH 端口
+  ssh_user: '',       // SSH 用户名
+  ssh_password: '',   // SSH 密码
+  ssh_key_file: '',   // SSH 私钥文件
 })
 const isEditing = ref(false)
 const spin_loading = ref(false)
@@ -286,7 +332,31 @@ function editNode(node) {
 
 // 新增
 const addNewNode = async () => {
-  currentNode.value = {}
+  currentNode.value = {
+    id: 0,
+    name: '',
+    bootstrap_servers: '',
+    tls: 'disable',
+    skipTLSVerify: 'true',
+    tls_cert_file: '',
+    tls_key_file: '',
+    tls_ca_file: '',
+    sasl: 'disable',
+    sasl_mechanism: 'PLAIN',
+    sasl_user: '',
+    sasl_pwd: '',
+    kerberos_user_keytab: '',
+    kerberos_krb5_conf: '',
+    Kerberos_user: '',
+    Kerberos_realm: '',
+    kerberos_service_name: '',
+    use_ssh: 'disable',
+    ssh_host: '',
+    ssh_port: 22,
+    ssh_user: '',
+    ssh_password: '',
+    ssh_key_file: '',
+  };
   isEditing.value = false
   showEditDrawer.value = true
 }
