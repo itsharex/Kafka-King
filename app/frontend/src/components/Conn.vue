@@ -320,7 +320,8 @@ onMounted(() => {
 const refreshNodeList = async () => {
   spin_loading.value = true
   const config = await GetConfig()
-  Nodes.value = config.connects
+  // 去掉name为null的历史脏数据
+  Nodes.value = config.connects.filter(node => node.name !== null && node.name !== "")
   spin_loading.value = false
 }
 
