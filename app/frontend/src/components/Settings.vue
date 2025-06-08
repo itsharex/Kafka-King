@@ -49,22 +49,19 @@
           </n-form-item>
 
           <n-form-item>
-            <n-button @click="saveConfig" strong type="primary">{{ t('common.save') }}</n-button>
-          </n-form-item>
+            <n-flex>
+              <n-button @click="saveConfig" strong type="primary">{{ t('common.save') }}</n-button>
 
-          <n-form-item label="">
-          </n-form-item>
-          <n-form-item label="">
+              <n-tooltip>
+                <template #trigger>
+                  <n-button @click="getSysInfo()" style="width: 100px">ProcessInfo</n-button>
+                </template>
+                <n-p style="white-space: pre-wrap; max-height: 400px; overflow: auto; text-align: left">{{ sys_info }}</n-p>
+              </n-tooltip>
+            </n-flex>
           </n-form-item>
 
         </n-form>
-    </n-gi>
-    <n-gi>
-        <n-flex vertical justify="start" style="text-align: left">
-          <h2>ProcessInfo</h2>
-          <n-p style="white-space: pre-wrap">{{ sys_info }}</n-p>
-          <n-button @click="getSysInfo()" style="width: 100px">Refresh</n-button>
-        </n-flex>
     </n-gi>
   </n-grid>
 </template>
