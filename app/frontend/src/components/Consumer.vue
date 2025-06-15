@@ -287,14 +287,14 @@ const columns = [
   {
     title: 'Offset',
     key: 'Offset',
-    width: 20,
+    minWidth: 20,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
   },
   {
     title: 'Key',
     key: 'Key',
-    width: 15,
+    minWidth: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
@@ -302,7 +302,7 @@ const columns = [
   {
     title: 'Value',
     key: 'Value',
-    width: 40,
+    minWidth: 40,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
@@ -310,7 +310,7 @@ const columns = [
   {
     title: 'Timestamp',
     key: 'Timestamp',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: (rowA, rowB) => {
@@ -322,7 +322,7 @@ const columns = [
   {
     title: 'Topic',
     key: 'Topic',
-    width: 20,
+    minWidth: 20,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     resizable: true,
     sorter: 'default'
@@ -330,14 +330,14 @@ const columns = [
   {
     title: 'Partition',
     key: 'Partition',
-    width: 10,
+    minWidth: 10,
     resizable: true,
     sorter: 'default'
   },
   {
     title: 'Headers',
     key: 'Headers',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     sorter: 'default'
@@ -355,7 +355,7 @@ const columns = [
   {
     title: 'ProducerID',
     key: 'ProducerID',
-    width: 10,
+    minWidth: 10,
     resizable: true,
     sorter: 'default'
   }

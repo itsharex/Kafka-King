@@ -147,18 +147,18 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'node_id', key: 'node_id', sorter: 'default', width: 20, resizable: true},
+  {title: 'node_id', key: 'node_id', sorter: 'default', minWidth: 20, resizable: true},
   {
-    title: 'host', key: 'host', sorter: 'default', width: 50, resizable: true,
+    title: 'host', key: 'host', sorter: 'default', minWidth: 50, resizable: true,
     render: (row) => h(NTag, {type: "info"}, {default: () => row['host']}),
   },
   {
-    title: 'port', key: 'port', sorter: 'default', width: 20, resizable: true,
+    title: 'port', key: 'port', sorter: 'default', minWidth: 20, resizable: true,
     render: (row) => h(NTag, {type: "success"}, {default: () => row['port']}),
   },
-  {title: 'rack', key: 'rack', sorter: 'default', width: 20, resizable: true},
+  {title: 'rack', key: 'rack', sorter: 'default', minWidth: 20, resizable: true},
   {
-    title: 'config', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    title: 'config', key: 'config', minWidth: 30, resizable: true, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => h(
         NButton,
         {
@@ -176,10 +176,10 @@ const columns = [
 
 const config_columns = [
   {
-    title: 'Name', key: 'Name', sorter: 'default', width: 80, resizable: true,
+    title: 'Name', key: 'Name', sorter: 'default', minWidth: 80, resizable: true,
   },
   {
-    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
+    title: t('node.value'), key: 'Value', sorter: 'default', minWidth: 140, resizable: true,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -189,11 +189,11 @@ const config_columns = [
       })
     }
   },
-  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {title: t('node.source'), key: 'Source', sorter: 'default', minWidth: 50, resizable: true,},
   {
     title: t('node.sensitive'),
     key: 'Sensitive',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),

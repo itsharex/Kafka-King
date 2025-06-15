@@ -113,17 +113,17 @@ const permissionTypeOptions = [
 ];
 
 const columns = [
-  {title: 'Principal', key: 'principal', sorter: 'default', width: 100},
-  {title: 'Host', key: 'host', sorter: 'default', width: 100},
-  {title: 'Resource Type', key: 'resourceType', sorter: 'default', width: 100},
-  {title: 'Resource Name', key: 'resourceName', sorter: 'default', width: 100},
-  {title: 'Operation', key: 'operation', sorter: 'default', width: 100},
-  {title: 'Pattern Type', key: 'patternType', sorter: 'default', width: 100},
-  {title: 'Permission Type', key: 'permissionType', sorter: 'default', width: 100},
+  {title: 'Principal', key: 'principal', sorter: 'default', minWidth: 100},
+  {title: 'Host', key: 'host', sorter: 'default', minWidth: 100},
+  {title: 'Resource Type', key: 'resourceType', sorter: 'default', minWidth: 100},
+  {title: 'Resource Name', key: 'resourceName', sorter: 'default', minWidth: 100},
+  {title: 'Operation', key: 'operation', sorter: 'default', minWidth: 100},
+  {title: 'Pattern Type', key: 'patternType', sorter: 'default', minWidth: 100},
+  {title: 'Permission Type', key: 'permissionType', sorter: 'default', minWidth: 100},
   {
     title: t('common.action'),
     key: 'actions',
-    width: 100,
+    minWidth: 100,
     render: (row) => {
       return h(NSpace, null, {
         default: () => [

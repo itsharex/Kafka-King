@@ -142,27 +142,27 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'Group', key: 'Group', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'Group', key: 'Group', sorter: 'default', minWidth: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
   {
-    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'Coordinator', key: 'Coordinator', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
   },
   {
-    title: 'State', key: 'State', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'State', key: 'State', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
     render: (row) => h(NTag, {type: "success"}, {default: () => row['State'] || 'unknown'}),
   },
   {
     title: 'ProtocolType',
     key: 'ProtocolType',
     sorter: 'default',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     ellipsis: {tooltip: {style: { maxWidth: '800px' },}}
   },
   {
     title: t('common.action'),
     key: 'actions',
-    width: 80,  // 调整宽度以适应两个按钮
+    minWidth: 80,  // 调整宽度以适应两个按钮
     resizable: true,
     render: (row) => h(
         NButtonGroup,
@@ -213,10 +213,10 @@ const columns = [
 ]
 
 const members_columns = [
-  {title: 'MemberID', key: 'MemberID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'InstanceID', key: 'InstanceID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'ClientID', key: 'ClientID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'ClientHost', key: 'ClientHost', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'MemberID', key: 'MemberID', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'InstanceID', key: 'InstanceID', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'ClientID', key: 'ClientID', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'ClientHost', key: 'ClientHost', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
 
 ]
 

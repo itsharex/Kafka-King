@@ -383,9 +383,9 @@ const downloadAllDataCsv = async () => {
 
 const columns = [
   {type: "selection",},
-  // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  // {title: 'ID', key: 'ID', sorter: 'default', minWidth: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
   {
-    title: 'topic', key: 'topic', sorter: 'default', width: 80, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    title: 'topic', key: 'topic', sorter: 'default', minWidth: 80, resizable: true, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => h(NText, {
       type: 'info',
       style: {cursor: 'pointer'},
@@ -396,7 +396,7 @@ const columns = [
     }, {default: () => row['topic']}),
   },
   {
-    title: t('topic.partition'), key: 'partition_count', sorter: 'default', width: 30, resizable: true,
+    title: t('topic.partition'), key: 'partition_count', sorter: 'default', minWidth: 30, resizable: true,
     render: (row) => h(NText, {
       type: 'info',
       style: {cursor: 'pointer'},
@@ -406,12 +406,12 @@ const columns = [
       }
     }, {default: () => row['partition_count']}),
   },
-  {title: t('topic.replication_factor'), key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
+  {title: t('topic.replication_factor'), key: 'replication_factor', sorter: 'default', minWidth: 30, resizable: true},
   {
     title: t('topic.err'),
     key: 'Err',
     sorter: 'default',
-    width: 40,
+    minWidth: 40,
     resizable: true,
     ellipsis: {
       tooltip: {
@@ -424,7 +424,7 @@ const columns = [
     title: 'StartOffset',
     key: 'StartOffset',
     sorter: 'default',
-    width: 50,
+    minWidth: 50,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
@@ -432,7 +432,7 @@ const columns = [
     title: 'CommittedOffset',
     key: 'CommittedOffset',
     sorter: 'default',
-    width: 60,
+    minWidth: 60,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
@@ -440,14 +440,14 @@ const columns = [
     title: 'EndOffset',
     key: 'EndOffset',
     sorter: 'default',
-    width: 50,
+    minWidth: 50,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
   {
     title: t('topic.lag'),
     key: 'lag',
-    width: 50,
+    minWidth: 50,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => {
@@ -468,7 +468,7 @@ const columns = [
   {
     title: t('common.action'),
     key: 'actions',
-    width: 80,  // 调整宽度以适应两个按钮
+    minWidth: 80,  // 调整宽度以适应两个按钮
     resizable: true,
     render: (row) => {
       const options = [
@@ -522,12 +522,12 @@ const handleMenuSelect = async (key, row) => {
 
 
 const partitions_columns = [
-  {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
+  {title: 'ID', key: 'partition', sorter: 'default', minWidth: 10, resizable: true},
   {
     title: 'Health',
     key: 'err',
     sorter: 'default',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     ellipsis: {tooltip: {scrollable: true,}},
     render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "health" : row['err']}),
@@ -536,7 +536,7 @@ const partitions_columns = [
     title: 'StartOffset',
     key: 'StartOffset',
     sorter: 'default',
-    width: 15,
+    minWidth: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
@@ -544,7 +544,7 @@ const partitions_columns = [
     title: 'CommittedOffset',
     key: 'CommittedOffset',
     sorter: 'default',
-    width: 16,
+    minWidth: 16,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
@@ -552,7 +552,7 @@ const partitions_columns = [
     title: 'EndOffset',
     key: 'EndOffset',
     sorter: 'default',
-    width: 15,
+    minWidth: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
   },
@@ -560,7 +560,7 @@ const partitions_columns = [
     title: 'Lag',
     key: '积压',
     sorter: 'default',
-    width: 15,
+    minWidth: 15,
     resizable: true,
     ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
     render: (row) => {
@@ -569,17 +569,17 @@ const partitions_columns = [
       }
     }
   },
-  {title: 'LeaderID', key: 'leader', sorter: 'default', width: 15, resizable: true},
-  {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
-  {title: 'Replicas', key: 'replicas', sorter: 'default', width: 15, resizable: true},
-  {title: 'ISR', key: 'isr', sorter: 'default', width: 15, resizable: true},
-  {title: 'ErrorReplicas', key: 'OfflineReplicas', sorter: 'default', width: 15, resizable: true},
+  {title: 'LeaderID', key: 'leader', sorter: 'default', minWidth: 15, resizable: true},
+  {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', minWidth: 15, resizable: true},
+  {title: 'Replicas', key: 'replicas', sorter: 'default', minWidth: 15, resizable: true},
+  {title: 'ISR', key: 'isr', sorter: 'default', minWidth: 15, resizable: true},
+  {title: 'ErrorReplicas', key: 'OfflineReplicas', sorter: 'default', minWidth: 15, resizable: true},
 ]
 
 const config_columns = [
-  {title: 'Name', key: 'Name', sorter: 'default', width: 100, resizable: true},
+  {title: 'Name', key: 'Name', sorter: 'default', minWidth: 100, resizable: true},
   {
-    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
+    title: t('node.value'), key: 'Value', sorter: 'default', minWidth: 140, resizable: true,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -589,11 +589,11 @@ const config_columns = [
       })
     }
   },
-  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {title: t('node.source'), key: 'Source', sorter: 'default', minWidth: 50, resizable: true,},
   {
     title: t('node.sensitive'),
     key: 'Sensitive',
-    width: 20,
+    minWidth: 20,
     resizable: true,
     sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),
