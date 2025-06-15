@@ -353,17 +353,19 @@ const getData = async () => {
 
 }
 
+const pageKey = 'kafkaKing:topics:pageKey'
 const pagination = ref({
   page: 1,
-  pageSize: 10,
+  pageSize: localStorage.getItem(pageKey) || 10,
   showSizePicker: true,
-  pageSizes: [5, 10, 20, 30, 40],
+  pageSizes: [5, 10, 15, 20, 25, 30, 40],
   onChange: (page) => {
     pagination.value.page = page
   },
   onUpdatePageSize: (pageSize) => {
     pagination.value.pageSize = pageSize
     pagination.value.page = 1
+    localStorage.setItem(pageKey, pageSize.toString())
   },
 })
 
@@ -525,34 +527,22 @@ const partitions_columns = [
   {
     title: 'StartOffset',
     key: 'StartOffset',
-
     width: 15,
-
-
   },
   {
     title: 'CommittedOffset',
     key: 'CommittedOffset',
-
     width: 16,
-
-
   },
   {
     title: 'EndOffset',
     key: 'EndOffset',
-
     width: 15,
-
-
   },
   {
     title: 'Lag',
     key: '积压',
-
     width: 15,
-
-
     render: (row) => {
       if (row.EndOffset != null && row.CommittedOffset != null) {
         return row.EndOffset - row.CommittedOffset

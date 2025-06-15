@@ -20,22 +20,22 @@
     <n-flex align="center">
       <h2>{{ t('consumer.title') }}</h2>
       <p>{{ t('consumer.desc') }}</p>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
+      <n-button :render-icon="renderIcon(DriveFileMoveTwotone)" @click="downloadAllDataCsv">{{ t('common.csv') }}
       </n-button>
     </n-flex>
     <!-- 查询条件区域 -->
     <n-form
         ref="formRef"
         :model="select"
-        inline
-        label-placement="top"
-        style="text-align: left;"
-        label-width="auto"
         :rules="{
               selectedTopic: {required: true, trigger: 'blur'},
               selectedGroup: {required: true, trigger: 'blur'},
               maxMessages: {required: true, type: 'number',trigger: 'blur'},
             }"
+        inline
+        label-placement="top"
+        label-width="auto"
+        style="text-align: left;"
     >
 
       <n-form-item label="Topic" path="selectedTopic">
@@ -44,8 +44,8 @@
             :options="topic_data"
             :placeholder="t('consumer.requiredTopic')"
             :render-option="renderSelect"
-            filterable
             clearable
+            filterable
         />
       </n-form-item>
       <n-form-item label="Number" path="maxMessages" style="width: 100px">
@@ -67,9 +67,9 @@
                 v-model:value="select.selectedGroup"
                 :options="group_data"
                 :render-option="renderSelect"
-                style="max-width: 200px"
-                filterable
                 clearable
+                filterable
+                style="max-width: 200px"
                 tag
             />
           </template>
@@ -99,8 +99,8 @@
               {label: 'zstd', value: 'zstd'},
               {label: 'snappy', value: 'snappy'},
             ]"
-            filterable
             clearable
+            filterable
             style="width: 100px"
         />
       </n-form-item>
@@ -108,7 +108,7 @@
       <n-form-item label="Commit Offset" path="isCommit">
         <n-tooltip>
           <template #trigger>
-            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isCommit">
+            <n-switch v-model:value="select.isCommit" :checked-value=true :round="false" :unchecked-value=false>
               <template #unchecked>false</template>
               <template #checked>true</template>
             </n-switch>
@@ -120,7 +120,7 @@
       <n-form-item :label="t('consumer.isLatest')" path="isLatest">
         <n-tooltip>
           <template #trigger>
-            <n-switch :round="false" :checked-value=true :unchecked-value=false v-model:value="select.isLatest">
+            <n-switch v-model:value="select.isLatest" :checked-value=true :round="false" :unchecked-value=false>
               <template #unchecked>最早</template>
               <template #checked>最新</template>
             </n-switch>
@@ -134,10 +134,10 @@
           <template #trigger>
             <n-date-picker
                 v-model:value="select.startTimestamp"
-                type="datetime"
-                value-format="timestamp"
                 clearable
                 style="max-width: 188px"
+                type="datetime"
+                value-format="timestamp"
             />
           </template>
           {{ t('consumer.onlyTip') }}
@@ -145,23 +145,24 @@
       </n-form-item>
 
       <n-form-item>
-        <n-button tertiary type="primary" @click="consume" :loading="loading"
-                  :render-icon="renderIcon(MessageOutlined)">
+        <n-button :loading="loading" :render-icon="renderIcon(MessageOutlined)" tertiary type="primary"
+                  @click="consume">
           {{ t('consumer.consumeMessage') }}
         </n-button>
       </n-form-item>
 
       <n-form-item>
-        <n-input v-model:value="searchText" @input="searchData" placeholder="local search" clearable style="max-width: 150px"/>
+        <n-input v-model:value="searchText" clearable placeholder="local search" style="max-width: 150px"
+                 @input="searchData"/>
       </n-form-item>
 
     </n-form>
     <!-- 消息列表 -->
     <n-data-table
+        :bordered="true"
         :columns="refColumns(columns)"
         :data="filter_messages"
         :pagination="pagination"
-        :bordered="true"
         striped
     />
   </n-flex>
@@ -267,17 +268,19 @@ const getData = async () => {
 }
 
 // 分页配置
+const pageKey = 'kafkaKing:consumer:pageKey'
 const pagination = ref({
   page: 1,
-  pageSize: 10,
+  pageSize: localStorage.getItem(pageKey) || 10,
   showSizePicker: true,
-  pageSizes: [5, 10, 20, 30, 40],
+  pageSizes: [5, 10, 15, 20, 25, 30, 40, 50, 100],
   onChange: (page) => {
     pagination.value.page = page
   },
   onUpdatePageSize: (pageSize) => {
     pagination.value.pageSize = pageSize
     pagination.value.page = 1
+    localStorage.setItem(pageKey, pageSize.toString())
   },
 })
 
