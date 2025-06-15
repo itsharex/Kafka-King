@@ -158,7 +158,7 @@
     </n-form>
     <!-- 消息列表 -->
     <n-data-table
-        :columns="columns"
+        :columns="refColumns(columns)"
         :data="filter_messages"
         :pagination="pagination"
         :bordered="true"
@@ -169,7 +169,7 @@
 <script setup>
 import {h, onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
-import {createCsvContent, download_file, renderIcon, renderSelect} from "../utils/common";
+import {createCsvContent, download_file, refColumns, renderIcon, renderSelect} from "../utils/common";
 import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
 import {NButton, NDataTable, NFlex, NInput, NTooltip, useMessage} from 'naive-ui'
 import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
@@ -288,31 +288,31 @@ const columns = [
     title: 'Offset',
     key: 'Offset',
     width: 20,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
     sorter: 'default'
   },
   {
     title: 'Key',
     key: 'Key',
     width: 15,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     sorter: 'default'
   },
   {
     title: 'Value',
     key: 'Value',
     width: 40,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     sorter: 'default'
   },
   {
     title: 'Timestamp',
     key: 'Timestamp',
     width: 20,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     sorter: (rowA, rowB) => {
       const dateA = new Date(rowA['Timestamp']);
       const dateB = new Date(rowB['Timestamp']);
@@ -323,23 +323,23 @@ const columns = [
     title: 'Topic',
     key: 'Topic',
     width: 20,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
-    resizable: true,
+
+
     sorter: 'default'
   },
   {
     title: 'Partition',
     key: 'Partition',
     width: 10,
-    resizable: true,
+
     sorter: 'default'
   },
   {
     title: 'Headers',
     key: 'Headers',
     width: 20,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     sorter: 'default'
   },
   // {
@@ -356,7 +356,7 @@ const columns = [
     title: 'ProducerID',
     key: 'ProducerID',
     width: 10,
-    resizable: true,
+
     sorter: 'default'
   }
 ]

@@ -31,7 +31,7 @@
             {{ t('node.title') }}
           </template>
           <n-data-table
-              :columns="columns"
+              :columns="refColumns(columns)"
               :data="data"
               size="small"
               :bordered="false"
@@ -52,7 +52,7 @@
               </n-button>
             </n-flex>
             <n-data-table
-                :columns="config_columns"
+                :columns="refColumns(config_columns)"
                 :data="config_data"
                 :bordered="false"
                 :pagination="pagination"
@@ -72,7 +72,7 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NDataTable, NIcon, NInput, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, getCurrentDateTime, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, getCurrentDateTime, refColumns, renderIcon} from "../utils/common";
 import {DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {AlterNodeConfig, GetBrokerConfig, GetBrokers} from "../../wailsjs/go/service/Service";
 import ShowOrEdit from "../common/ShowOrEdit.vue";
@@ -147,18 +147,18 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'node_id', key: 'node_id', sorter: 'default', width: 20, resizable: true},
+  {title: 'node_id', key: 'node_id',  width: 20},
   {
-    title: 'host', key: 'host', sorter: 'default', width: 50, resizable: true,
+    title: 'host', key: 'host',  width: 50,
     render: (row) => h(NTag, {type: "info"}, {default: () => row['host']}),
   },
   {
-    title: 'port', key: 'port', sorter: 'default', width: 20, resizable: true,
+    title: 'port', key: 'port',  width: 20,
     render: (row) => h(NTag, {type: "success"}, {default: () => row['port']}),
   },
-  {title: 'rack', key: 'rack', sorter: 'default', width: 20, resizable: true},
+  {title: 'rack', key: 'rack',  width: 20},
   {
-    title: 'config', key: 'config', width: 30, resizable: true, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    title: 'config', key: 'config', width: 30,
     render: (row) => h(
         NButton,
         {
@@ -176,10 +176,10 @@ const columns = [
 
 const config_columns = [
   {
-    title: 'Name', key: 'Name', sorter: 'default', width: 80, resizable: true,
+    title: 'Name', key: 'Name',  width: 80,
   },
   {
-    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
+    title: t('node.value'), key: 'Value',  width: 140,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -189,12 +189,12 @@ const config_columns = [
       })
     }
   },
-  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {title: t('node.source'), key: 'Source',  width: 50, },
   {
     title: t('node.sensitive'),
     key: 'Sensitive',
     width: 20,
-    resizable: true,
+
     sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),
   },

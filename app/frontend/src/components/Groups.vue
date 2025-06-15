@@ -25,7 +25,7 @@
     </n-flex>
     <n-spin :show="loading" :description="t('common.connecting')">
       <n-data-table
-          :columns="columns"
+          :columns="refColumns(columns)"
           :data="group_data"
           size="small"
           :bordered="false"
@@ -38,7 +38,7 @@
   <n-drawer v-model:show="showDrawer" :width="800">
     <n-drawer-content :title="t('group.member')">
       <n-data-table
-          :columns="members_columns"
+          :columns="refColumns(members_columns)"
           :data="members_data"
           :bordered="false"
           :pagination="pagination"
@@ -51,7 +51,7 @@
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
 import {NButton, NButtonGroup, NDataTable, NIcon, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
-import {createCsvContent, download_file, renderIcon} from "../utils/common";
+import {createCsvContent, download_file, refColumns, renderIcon} from "../utils/common";
 import {DeleteForeverTwotone, DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {DeleteGroup, GetGroupMembers, GetGroups} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
@@ -142,28 +142,24 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'Group', key: 'Group', sorter: 'default', width: 60, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'Group', key: 'Group',  width: 60},
   {
-    title: 'Coordinator', key: 'Coordinator', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'Coordinator', key: 'Coordinator',  width: 20,
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
   },
   {
-    title: 'State', key: 'State', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},
+    title: 'State', key: 'State',  width: 20,
     render: (row) => h(NTag, {type: "success"}, {default: () => row['State'] || 'unknown'}),
   },
   {
     title: 'ProtocolType',
     key: 'ProtocolType',
-    sorter: 'default',
     width: 20,
-    resizable: true,
-    ellipsis: {tooltip: {style: { maxWidth: '800px' },}}
   },
   {
     title: t('common.action'),
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
-    resizable: true,
     render: (row) => h(
         NButtonGroup,
         {
@@ -213,10 +209,10 @@ const columns = [
 ]
 
 const members_columns = [
-  {title: 'MemberID', key: 'MemberID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'InstanceID', key: 'InstanceID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'ClientID', key: 'ClientID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
-  {title: 'ClientHost', key: 'ClientHost', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}}},
+  {title: 'MemberID', key: 'MemberID',  width: 20},
+  {title: 'InstanceID', key: 'InstanceID',  width: 20},
+  {title: 'ClientID', key: 'ClientID',  width: 20},
+  {title: 'ClientHost', key: 'ClientHost',  width: 20},
 
 ]
 

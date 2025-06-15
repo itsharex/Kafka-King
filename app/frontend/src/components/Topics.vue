@@ -59,7 +59,7 @@
               </n-button>
             </n-flex>
             <n-data-table
-                :columns="columns"
+                :columns="refColumns(columns)"
                 :data="data"
                 size="small"
                 :bordered="false"
@@ -103,7 +103,7 @@
               </n-button>
             </n-flex>
             <n-data-table
-                :columns="partitions_columns"
+                :columns="refColumns(partitions_columns)"
                 :data="partitions_data"
                 :bordered="false"
                 :pagination="pagination"
@@ -135,7 +135,7 @@
 
             </n-flex>
             <n-data-table
-                :columns="config_columns"
+                :columns="refColumns(config_columns)"
                 :data="config_data"
                 :bordered="false"
                 :pagination="pagination"
@@ -235,7 +235,7 @@ import {
   createCsvContent,
   download_file,
   getCurrentDateTime,
-  isValidJson,
+  isValidJson, refColumns,
   renderIcon,
   renderSelect
 } from "../utils/common";
@@ -383,9 +383,9 @@ const downloadAllDataCsv = async () => {
 
 const columns = [
   {type: "selection",},
-  // {title: 'ID', key: 'ID', sorter: 'default', width: 20, resizable: true, ellipsis: {tooltip: {style: { maxWidth: '800px' },}},},
+  // {title: 'ID', key: 'ID',  width: 20,},
   {
-    title: 'topic', key: 'topic', sorter: 'default', width: 80, ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+    title: 'topic', key: 'topic',  width: 80,
     render: (row) => h(NText, {
       type: 'info',
       style: {cursor: 'pointer'},
@@ -396,7 +396,7 @@ const columns = [
     }, {default: () => row['topic']}),
   },
   {
-    title: t('topic.partition'), key: 'partition_count', sorter: 'default', width: 30, resizable: true,
+    title: t('topic.partition'), key: 'partition_count',  width: 30,
     render: (row) => h(NText, {
       type: 'info',
       style: {cursor: 'pointer'},
@@ -406,50 +406,43 @@ const columns = [
       }
     }, {default: () => row['partition_count']}),
   },
-  {title: t('topic.replication_factor'), key: 'replication_factor', sorter: 'default', width: 30, resizable: true},
+  {title: t('topic.replication_factor'), key: 'replication_factor',  width: 30},
   {
     title: t('topic.err'),
     key: 'Err',
-    sorter: 'default',
     width: 40,
-    resizable: true,
-    ellipsis: {
-      tooltip: {
-        scrollable: true,
-      }
-    },
     render: (row) => h(NTag, {type: row['Err'] === "" ? "success" : 'error'}, {default: () => row['Err'] === "" ? "health" : row['Err']}),
   },
   {
     title: 'StartOffset',
     key: 'StartOffset',
-    sorter: 'default',
+
     width: 50,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: 'CommittedOffset',
     key: 'CommittedOffset',
-    sorter: 'default',
+
     width: 60,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: 'EndOffset',
     key: 'EndOffset',
-    sorter: 'default',
+
     width: 50,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: t('topic.lag'),
     key: 'lag',
     width: 50,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     render: (row) => {
       if (row.EndOffset != null && row.CommittedOffset != null) {
         return row.EndOffset - row.CommittedOffset
@@ -469,7 +462,7 @@ const columns = [
     title: t('common.action'),
     key: 'actions',
     width: 80,  // 调整宽度以适应两个按钮
-    resizable: true,
+
     render: (row) => {
       const options = [
         {label: t('topic.viewProduce'), key: 'viewProduce'},
@@ -522,64 +515,61 @@ const handleMenuSelect = async (key, row) => {
 
 
 const partitions_columns = [
-  {title: 'ID', key: 'partition', sorter: 'default', width: 10, resizable: true},
+  {title: 'ID', key: 'partition',  width: 10},
   {
     title: 'Health',
     key: 'err',
-    sorter: 'default',
     width: 20,
-    resizable: true,
-    ellipsis: {tooltip: {scrollable: true,}},
     render: (row) => h(NTag, {type: row['err'] === "" ? "success" : 'error'}, {default: () => row['err'] === "" ? "health" : row['err']}),
   },
   {
     title: 'StartOffset',
     key: 'StartOffset',
-    sorter: 'default',
+
     width: 15,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: 'CommittedOffset',
     key: 'CommittedOffset',
-    sorter: 'default',
+
     width: 16,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: 'EndOffset',
     key: 'EndOffset',
-    sorter: 'default',
+
     width: 15,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
   },
   {
     title: 'Lag',
     key: '积压',
-    sorter: 'default',
+
     width: 15,
-    resizable: true,
-    ellipsis: {tooltip: {style: {maxWidth: '800px'},}},
+
+
     render: (row) => {
       if (row.EndOffset != null && row.CommittedOffset != null) {
         return row.EndOffset - row.CommittedOffset
       }
     }
   },
-  {title: 'LeaderID', key: 'leader', sorter: 'default', width: 15, resizable: true},
-  {title: 'LeaderEpoch', key: 'LeaderEpoch', sorter: 'default', width: 15, resizable: true},
-  {title: 'Replicas', key: 'replicas', sorter: 'default', width: 15, resizable: true},
-  {title: 'ISR', key: 'isr', sorter: 'default', width: 15, resizable: true},
-  {title: 'ErrorReplicas', key: 'OfflineReplicas', sorter: 'default', width: 15, resizable: true},
+  {title: 'LeaderID', key: 'leader',  width: 15},
+  {title: 'LeaderEpoch', key: 'LeaderEpoch',  width: 15},
+  {title: 'Replicas', key: 'replicas',  width: 15},
+  {title: 'ISR', key: 'isr',  width: 15},
+  {title: 'ErrorReplicas', key: 'OfflineReplicas',  width: 15},
 ]
 
 const config_columns = [
-  {title: 'Name', key: 'Name', sorter: 'default', width: 100, resizable: true},
+  {title: 'Name', key: 'Name',  width: 100},
   {
-    title: t('node.value'), key: 'Value', sorter: 'default', width: 140, resizable: true,
+    title: t('node.value'), key: 'Value',  width: 140,
     render: (row) => {
       return h(ShowOrEdit, {
         value: row['Value'],
@@ -589,12 +579,11 @@ const config_columns = [
       })
     }
   },
-  {title: t('node.source'), key: 'Source', sorter: 'default', width: 50, resizable: true,},
+  {title: t('node.source'), key: 'Source',  width: 50, },
   {
     title: t('node.sensitive'),
     key: 'Sensitive',
     width: 20,
-    resizable: true,
     sorter: (row1, row2) => Number(row1['Sensitive']) - Number(row2['Sensitive']),
     render: (row) => h(NTag, {type: row['Sensitive'] === true ? "error" : "info"}, {default: () => row['Sensitive'] === true ? "yes" : "no"}),
   },

@@ -142,3 +142,61 @@ export function getCurrentDateTime() {
 export function getLocalLanguage() {
   return navigator.language;
 }
+
+
+/**
+ * 智能处理表格列配置
+ * minWidth 不会主动影响列的初始宽度，它只是作为拖拽调整时的最小宽度限制。
+ *  初始宽度由以下优先级决定：
+ *      width > 内容自适应宽度 > 表格容器的等分分配。
+ * 1. 自动计算未配置 minWidth 的列（基于 title 长度）
+ * 2. 默认允许拖动（除非显式禁用）
+ * 3. 自动添加 ellipsis 省略效果
+ * 4. 当允许拖动时，移除默认 width 配置（避免冲突）
+ */
+export function refColumns(columns) {
+  return columns.map((column) => {
+    // 深拷贝原始列配置（避免修改原对象）
+    const processed = { ...column };
+    if (processed.type === 'selection'){
+      return processed;
+    }
+    if (!('sorter' in processed)) {
+      processed.sorter = 'default';
+    }
+    // ===== 处理 resizable =====
+    if (!('resizable' in processed)) {
+      processed.resizable = true; // 默认允许拖动
+    }
+
+    if (processed.resizable){
+      // ===== 处理 minWidth =====
+      if (!('width' in processed)) {
+        processed.width = calculateWidthByTitle(processed.title);
+      }
+    }
+
+    // ===== 处理 ellipsis =====
+    if (!('ellipsis' in processed)) {
+      processed.ellipsis = {
+        tooltip: {
+          scrollable: true,
+          style: { maxWidth: '800px' } // 自定义提示框最大宽度
+        }
+      };
+    }
+    console.log(processed)
+    return processed;
+  });
+}
+
+/**
+ * 根据标题文本计算建议宽度（中英文混合）
+ */
+function calculateWidthByTitle(title) {
+  let width = 0;
+  for (const char of title) {
+    width += /[\u4e00-\u9fa5]/.test(char) ? 16 : 8; // 中文16px，英文8px
+  }
+  return Math.max(width + 24, 80); // 加 padding 且不低于 80px
+}

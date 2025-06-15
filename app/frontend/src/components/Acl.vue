@@ -8,7 +8,7 @@
     </n-flex>
     <n-spin :show="loading" :description="t('common.connecting')">
       <n-data-table
-          :columns="columns"
+          :columns="refColumns(columns)"
           :data="acls"
           size="small"
           :bordered="false"
@@ -68,7 +68,7 @@ import {NButton, NDataTable, NForm, NFormItem, NInput, NSelect, NSpace, useMessa
 import {AddFilled, RefreshOutlined} from '@vicons/material';
 import {CreateAcl, DeleteAcl, GetAcls} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
-import {renderIcon} from "../utils/common";
+import {refColumns, renderIcon} from "../utils/common";
 
 const {t} = useI18n();
 
@@ -113,13 +113,13 @@ const permissionTypeOptions = [
 ];
 
 const columns = [
-  {title: 'Principal', key: 'principal', sorter: 'default', width: 100},
-  {title: 'Host', key: 'host', sorter: 'default', width: 100},
-  {title: 'Resource Type', key: 'resourceType', sorter: 'default', width: 100},
-  {title: 'Resource Name', key: 'resourceName', sorter: 'default', width: 100},
-  {title: 'Operation', key: 'operation', sorter: 'default', width: 100},
-  {title: 'Pattern Type', key: 'patternType', sorter: 'default', width: 100},
-  {title: 'Permission Type', key: 'permissionType', sorter: 'default', width: 100},
+  {title: 'Principal', key: 'principal',  width: 100},
+  {title: 'Host', key: 'host',  width: 100},
+  {title: 'Resource Type', key: 'resourceType',  width: 100},
+  {title: 'Resource Name', key: 'resourceName',  width: 100},
+  {title: 'Operation', key: 'operation',  width: 100},
+  {title: 'Pattern Type', key: 'patternType',  width: 100},
+  {title: 'Permission Type', key: 'permissionType',  width: 100},
   {
     title: t('common.action'),
     key: 'actions',
