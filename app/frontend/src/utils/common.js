@@ -185,7 +185,6 @@ export function refColumns(columns) {
         }
       };
     }
-    console.log(processed)
     return processed;
   });
 }
