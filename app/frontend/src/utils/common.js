@@ -161,6 +161,11 @@ export function refColumns(columns) {
     if (processed.type === 'selection'){
       return processed;
     }
+    if ("_ignore" in processed){
+      delete processed._ignore;
+      return processed;
+    }
+
     if (!('sorter' in processed)) {
       processed.sorter = 'default';
     }
