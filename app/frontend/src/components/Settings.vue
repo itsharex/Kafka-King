@@ -56,7 +56,7 @@
                 <template #trigger>
                   <n-button @click="getSysInfo()" style="width: 100px">ProcessInfo</n-button>
                 </template>
-                <n-p style="white-space: pre-wrap; max-height: 400px; overflow: auto; text-align: left">{{ sys_info }}</n-p>
+                <n-p :style="sysInfoStyle" class="sys-info">{{ sys_info }}</n-p>
               </n-tooltip>
             </n-flex>
           </n-form-item>
@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, computed} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
 import {GetProcessInfo} from '../../wailsjs/go/system/Update'
@@ -80,7 +80,7 @@ import {useI18n} from "vue-i18n";
 const {t} = useI18n()
 
 const message = useMessage()
-let theme = lightTheme.name
+const theme = ref(lightTheme.name);
 const sys_info = ref("")
 
 const config = ref({
@@ -108,7 +108,7 @@ onMounted(async () => {
   const loadedConfig = await GetConfig()
   console.log(loadedConfig)
   config.value = loadedConfig
-  theme = loadedConfig.theme
+  theme.value = loadedConfig.theme;
 
   await getSysInfo()
 })
@@ -133,11 +133,25 @@ const saveConfig = async () => {
 
 
 const changeTheme = () => {
-  emitter.emit('update_theme', theme)
+  emitter.emit('update_theme', theme.value);
 }
 
 const changeLanguage = (newLang) => {
   config.value.language = newLang
   emitter.emit('language_change', newLang)
 }
+  
+const sysInfoStyle = computed(() => {
+  return theme.value === darkTheme.name 
+    ? { color: '#ffffff', backgroundColor: '#1f1f1f' } // 深色主题
+    : { color: '#000000', backgroundColor: '#ffffff' }; // 浅色主题
+});  
 </script>
+<style scoped>
+.sys-info {
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow: auto;
+  text-align: left;
+}
+</style>
