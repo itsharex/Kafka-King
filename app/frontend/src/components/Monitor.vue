@@ -20,6 +20,32 @@
       <n-flex align="center">
         <h2>{{ t('inspection.title') }}</h2>
         <p>{{ t('inspection.desc') }}</p>
+        <n-input 
+          v-model:value="schemeName" 
+          :placeholder="t('inspection.schemeNamePlaceholder')"
+          style="width: 200px; margin-right: 10px;"
+        />
+        <n-button @click="saveScheme">
+          {{ t('inspection.saveScheme') }}
+        </n-button>
+        <n-select
+          v-model:value="selectedScheme"
+          :options="savedSchemes"
+          :placeholder="t('inspection.loadSchemePlaceholder')"
+          label-field="name"
+          value-field="id"
+          style="width: 200px; margin-left: 10px;"
+          @update:value="loadScheme"
+        />
+            <!-- 新增删除按钮 -->
+        <n-button 
+          @click="confirmDeleteScheme" 
+          :disabled="!selectedScheme"
+          type="error"
+          style="margin-left: 10px;"
+        >
+          {{ t('inspection.deleteScheme') }}
+        </n-button>
       </n-flex>
       <n-flex align="center">
         {{ t('inspection.topicsLabel') }}:
@@ -75,7 +101,7 @@
   import {LineChart} from 'echarts/charts';
   import {UniversalTransition} from 'echarts/features';
   import {CanvasRenderer} from 'echarts/renderers';
-  import {lightTheme, NButton, NFlex, useMessage} from 'naive-ui';
+  import {lightTheme, NButton, NFlex, useMessage, useDialog} from 'naive-ui';
   import {GetGroups, GetTopicOffsets, GetTopics} from '../../wailsjs/go/service/Service';
   import emitter from '../utils/eventBus';
   import {renderIcon} from '../utils/common';
@@ -89,6 +115,11 @@
   const group_data = ref([]);
   const selectedTopics = ref([]);
   const selectedGroup = ref(null);
+
+  const schemeName = ref(''); 
+  const savedSchemes = ref([]); 
+  const selectedScheme = ref(null); 
+  const dialog = useDialog();
   
   const lag_chartRef = shallowRef(null);
   const commit_chartRef = shallowRef(null);
@@ -127,8 +158,93 @@
     await getData();
     initChart();
 
+    const storedSchemes = localStorage.getItem('monitorSchemes');
+    if (storedSchemes) {
+      savedSchemes.value = JSON.parse(storedSchemes);
+    }
+
     window.addEventListener('resize', handleResize);
+
   });
+
+  // 在 script setup 中添加方法
+  const saveScheme = () => {
+    if (!schemeName.value) {
+      message.warning(t('message.schemeNameRequired'));
+      return;
+    }
+  
+    // 生成唯一ID
+    const newScheme = {
+      id: Date.now().toString(),
+      name: schemeName.value,
+      topics: [...selectedTopics.value],
+      group: selectedGroup.value
+    };
+    
+    // 检查是否已存在同名方案
+    const existingIndex = savedSchemes.value.findIndex(s => s.name === schemeName.value);
+    if (existingIndex !== -1) {
+      savedSchemes.value[existingIndex] = newScheme;
+    } else {
+      savedSchemes.value.push(newScheme);
+    }
+    
+    // 保存到 localStorage
+    localStorage.setItem('monitorSchemes', JSON.stringify(savedSchemes.value));
+    message.success(t('message.schemeSaved'));
+    schemeName.value = '';
+  };
+  
+  const loadScheme = (schemeId) => {
+    const scheme = savedSchemes.value.find(s => s.id === schemeId);
+    if (scheme) {
+      // 停止当前监控
+      if (isInspecting.value) stopInspection();
+      
+      // 加载方案数据
+      selectedTopics.value = [...scheme.topics];
+      selectedGroup.value = scheme.group;
+      
+      // 清空图表数据
+      clear_offset();
+      message.success(t('message.schemeLoaded', { name: scheme.name }));
+    }
+  };
+  // 添加删除方法
+  const confirmDeleteScheme = () => {
+    if (!selectedScheme.value) return;
+    
+    const scheme = savedSchemes.value.find(s => s.id === selectedScheme.value);
+    if (!scheme) return;
+    
+    dialog.warning({
+      title: t('inspection.deleteSchemeConfirm'),
+      content: t('inspection.deleteSchemeConfirmContent', { name: scheme.name }),
+      positiveText: t('common.enter'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: () => {
+        deleteScheme(scheme.id);
+      }
+    });
+  };
+  
+  const deleteScheme = (schemeId) => {
+    // 从列表中删除
+    const index = savedSchemes.value.findIndex(s => s.id === schemeId);
+    if (index !== -1) {
+      savedSchemes.value.splice(index, 1);
+      
+      // 如果删除的是当前选中的方案，清空选择
+      if (selectedScheme.value === schemeId) {
+        selectedScheme.value = null;
+      }
+      
+      // 更新本地存储
+      localStorage.setItem('monitorSchemes', JSON.stringify(savedSchemes.value));
+      message.success(t('message.schemeDeleted'));
+    }
+  };
   
   const getIntervalInMilliseconds = () => {
     return refreshInterval.value * 60 * 1000;
@@ -195,7 +311,7 @@
       yAxis: { type: 'value' },
       legend: { data: [], top: '5%', height:'20%' },
       series: [],
-      grid: { top: '25%', },  
+      grid: { top: '25%', },
     };
   
     lag_chart.value = echarts.init(lag_chartRef.value, echarts_theme);
