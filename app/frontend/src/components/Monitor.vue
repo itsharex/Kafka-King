@@ -189,12 +189,13 @@
   
     const option = {
       backgroundColor: 'transparent',
-      title: { text: '' },
+      title: { text: '', top: '0%', left: 'center', padding: 20 },
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', boundaryGap: false, splitLine: { show: true }, data: [] },
       yAxis: { type: 'value' },
-      legend: { data: [] },
+      legend: { data: [], top: '5%', height:'20%' },
       series: [],
+      grid: { top: '25%', },  
     };
   
     lag_chart.value = echarts.init(lag_chartRef.value, echarts_theme);
