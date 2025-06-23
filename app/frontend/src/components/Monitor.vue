@@ -115,6 +115,7 @@
   const group_data = ref([]);
   const selectedTopics = ref([]);
   const selectedGroup = ref(null);
+  const monitorSchemesKey = 'kafkaKingMonitorSchemes';
 
   const schemeName = ref(''); 
   const savedSchemes = ref([]); 
@@ -158,7 +159,7 @@
     await getData();
     initChart();
 
-    const storedSchemes = localStorage.getItem('monitorSchemes');
+    const storedSchemes = localStorage.getItem(monitorSchemesKey);
     if (storedSchemes) {
       savedSchemes.value = JSON.parse(storedSchemes);
     }
@@ -191,7 +192,7 @@
     }
     
     // 保存到 localStorage
-    localStorage.setItem('monitorSchemes', JSON.stringify(savedSchemes.value));
+    localStorage.setItem(monitorSchemesKey, JSON.stringify(savedSchemes.value));
     message.success(t('message.schemeSaved'));
     schemeName.value = '';
   };
@@ -241,7 +242,7 @@
       }
       
       // 更新本地存储
-      localStorage.setItem('monitorSchemes', JSON.stringify(savedSchemes.value));
+      localStorage.setItem(monitorSchemesKey, JSON.stringify(savedSchemes.value));
       message.success(t('message.schemeDeleted'));
     }
   };
