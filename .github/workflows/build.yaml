@@ -48,7 +48,7 @@ jobs:
           cd ..
           copy readme.md app\build\bin\
           copy LICENSE app\build\bin\
-          & "C:\Program Files\7-Zip\7z.exe" a -t7z "${{ env.APP_NAME }}-${{ github.ref_name }}.windows.x64.7z" ".\app\build\bin\*" -r
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z "${{ env.APP_NAME }}-${{ github.ref_name }}-windows-x64.7z" ".\app\build\bin\*" -r
           
       - name: Upload
         uses: softprops/action-gh-release@v1
@@ -89,7 +89,7 @@ jobs:
           wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
           mkdir -p _build/ _dist/
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app _dist/${{ env.APP_NAME }}-${{ github.ref_name }}.macos.universal.app.zip
+          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app _dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.zip
           cp -r ./build/bin/${{ env.APP_NAME }}.app _build/
           brew install create-dmg
           create-dmg --no-internet-enable --volname "${{ env.APP_NAME }}" --volicon "_build/${{ env.APP_NAME }}.app/Contents/Resources/iconfile.icns" --window-pos 400 400 --window-size 660 450 --icon "${{ env.APP_NAME }}.app" 180 180 --icon-size 100 --hide-extension "${{ env.APP_NAME }}.app" --app-drop-link 480 180 "_dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.dmg" "_build/"
@@ -140,8 +140,8 @@ jobs:
           cp -r ${{ env.APP_WORKING_DIRECTORY }}/build/bin/* _temp_dist/
           chmod +x _temp_dist/*
           cd _temp_dist/
-          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}.ubuntu.$ARCH.tar.gz *
-          mv ${{ env.APP_NAME }}-${{ github.ref_name }}.ubuntu.$ARCH.tar.gz ..
+          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$ARCH.tar.gz *
+          mv ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$ARCH.tar.gz ..
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
