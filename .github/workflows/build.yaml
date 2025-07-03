@@ -83,19 +83,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Build & Compress
+        shell: bash
         run: |
           ARCH=$(uname -m)
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          brew install mitchellh/gon/gon
           cd ${{ env.APP_WORKING_DIRECTORY }}
           wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app ./build/bin/${{ env.APP_NAME }}-${{ github.ref_name }}.macos.universal.app.zip
+          mkdir -p _build/ _dist/
+          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app _dist/${{ env.APP_NAME }}-${{ github.ref_name }}.macos.universal.app.zip
+          cp -r ./build/bin/${{ env.APP_NAME }}.app _build/
+          brew install create-dmg
+          create-dmg --no-internet-enable --volname "${{ env.APP_NAME }}" --volicon "_build/${{ env.APP_NAME }}.app/Contents/Resources/iconfile.icns" --window-pos 400 400 --window-size 660 450 --icon "${{ env.APP_NAME }}.app" 180 180 --icon-size 100 --hide-extension "${{ env.APP_NAME }}.app" --app-drop-link 480 180 "_dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.dmg" "_build/"
 
       - name: Upload
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ env.APP_WORKING_DIRECTORY }}/build/bin/*.zip
+          files: | 
+            ${{ env.APP_WORKING_DIRECTORY }}/_dist/*
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -126,8 +131,8 @@ jobs:
       - name: Build & Compress
         run: |
           ARCH=$(uname -m)
+          sudo apt-get update && sudo apt-get install libgtk-3-dev libwebkit2gtk-4.0-dev build-essential
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.0-dev gcc-aarch64-linux-gnu
           cd ${{ env.APP_WORKING_DIRECTORY }}
           wails build -ldflags="-X 'app/backend/common.Version=${{ github.ref_name }}'" -o ${{ env.APP_NAME }}
           cd ..
