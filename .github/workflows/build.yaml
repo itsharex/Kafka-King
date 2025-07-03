@@ -92,7 +92,18 @@ jobs:
           ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app _dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.zip
           cp -r ./build/bin/${{ env.APP_NAME }}.app _build/
           brew install create-dmg
-          create-dmg --no-internet-enable --volname "${{ env.APP_NAME }}" --volicon "_build/${{ env.APP_NAME }}.app/Contents/Resources/iconfile.icns" --window-pos 400 400 --window-size 660 450 --icon "${{ env.APP_NAME }}.app" 180 180 --icon-size 100 --hide-extension "${{ env.APP_NAME }}.app" --app-drop-link 480 180 "_dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.dmg" "_build/"
+          create-dmg \
+            --no-internet-enable \
+            --volname "${{ env.APP_NAME }}" \
+            --volicon "_build/${{ env.APP_NAME }}.app/Contents/Resources/iconfile.icns" \
+            --window-pos 400 400 \
+            --window-size 660 450 \
+            --icon "${{ env.APP_NAME }}.app" 180 180 \
+            --icon-size 100 \
+            --hide-extension "${{ env.APP_NAME }}.app" \
+            --app-drop-link 480 180 \
+            "_dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.dmg" \
+            "_build/"
 
       - name: Upload
         uses: softprops/action-gh-release@v1
