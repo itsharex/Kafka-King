@@ -315,6 +315,7 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 	config = append(
 		config,
 		kgo.SeedBrokers(bootstrapServers...),
+		kgo.RecordPartitioner(kgo.ManualPartitioner()), // 支持手动指定分区号
 	)
 
 	cl, err := kgo.NewClient(config...)
@@ -950,6 +951,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 
 		var data []byte
 		var err error
+
 		switch decompress {
 		case "gzip":
 			data, err = compress.GzipDecompress(v.Value)
