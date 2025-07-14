@@ -23,10 +23,13 @@
       <n-text>{{t('common.count')}}：{{ group_data?group_data.length:0 }}</n-text>
       <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
     </n-flex>
+    <n-input v-model:value="searchText" clearable placeholder="search" style="max-width: 20%"
+             @keyup.enter="searchData"/>
+
     <n-spin :show="loading" :description="t('common.connecting')">
       <n-data-table
           :columns="refColumns(columns)"
-          :data="group_data"
+          :data="filter_data"
           size="small"
           :bordered="false"
           striped
@@ -50,7 +53,7 @@
 <script setup>
 import {h, onMounted, ref} from "vue";
 import emitter from "../utils/eventBus";
-import {NButton, NButtonGroup, NDataTable, NIcon, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
+import {NButton, NButtonGroup, NDataTable, NIcon, NInput, NPopconfirm, NTag, NText, useMessage} from 'naive-ui'
 import {createCsvContent, download_file, refColumns, renderIcon} from "../utils/common";
 import {DeleteForeverTwotone, DriveFileMoveTwotone, RefreshOutlined, SettingsTwotone} from "@vicons/material";
 import {DeleteGroup, GetGroupMembers, GetGroups} from "../../wailsjs/go/service/Service";
@@ -64,9 +67,14 @@ const loading = ref(false)
 const showDrawer = ref(false)
 const message = useMessage()
 
+const filter_data = ref([])
+const searchText = ref(null)
+
 const selectNode = async (node) => {
   group_data.value = []
+  filter_data.value = []
   members_data.value = []
+  searchText.value = null
 
   loading.value = false
   await getData()
@@ -74,7 +82,6 @@ const selectNode = async (node) => {
 
 onMounted(() => {
   emitter.on('selectNode', selectNode)
-
   getData()
 })
 
@@ -90,6 +97,7 @@ const getData = async () => {
         res.results.sort((a, b) => a['Group'] > b['Group'] ? 1 : -1)
         group_data.value = res.results
         console.log(res.results)
+        searchData()
       }
     }
   } catch (e) {
@@ -232,6 +240,19 @@ const deleteGroups = async (group) => {
   loading.value = false
 
 }
+
+const searchData = () => {
+  if (searchText.value) {
+    const query = searchText.value.toLowerCase();
+    filter_data.value = group_data.value.filter(item => {
+      return Object.values(item).some(val =>
+          String(val).toLowerCase().includes(query)
+      );
+    });
+  } else {
+    filter_data.value = group_data.value;
+  }
+};
 </script>
 
 

@@ -172,17 +172,17 @@ const sideMenuOptions = computed(() => [
     component: Groups,
   },
   {
+    label: "Acl",
+    key: 'Acl',
+    icon: renderIcon(PermDataSettingTwotone),
+    component: Acl,
+  },
+  {
     label: t('aside.monitor'),
     key: 'monitor',
     icon: renderIcon(AddChartOutlined),
     component: Monitor,
   },
-  // {
-  //   label: "Acl",
-  //   key: 'Acl',
-  //   icon: renderIcon(PermDataSettingTwotone),
-  //   component: Acl,
-  // },
   {
     label: t('aside.settings'),
     key: 'settings',

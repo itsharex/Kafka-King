@@ -168,7 +168,7 @@
   </n-flex>
 </template>
 <script setup>
-import {h, onMounted, ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import emitter from "../utils/eventBus";
 import {createCsvContent, download_file, refColumns, renderIcon, renderSelect} from "../utils/common";
 import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
@@ -206,6 +206,7 @@ const loading = ref(false)
 const refreshTopic = async () => {
   await getData()
 }
+
 const selectNode = async (node) => {
   topic_data.value = []
   group_data.value = []

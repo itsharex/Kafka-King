@@ -6,10 +6,13 @@
       <n-text>{{ t('common.count') }}：{{ acls ? acls.length : 0 }}</n-text>
       <n-button @click="showAddModal = true" :render-icon="renderIcon(AddFilled)">{{ t('acl.add') }}</n-button>
     </n-flex>
+    <n-input v-model:value="searchText" clearable placeholder="search" style="max-width: 20%"
+             @keyup.enter="searchData"/>
+
     <n-spin :show="loading" :description="t('common.connecting')">
       <n-data-table
           :columns="refColumns(columns)"
-          :data="acls"
+          :data="filter_datas"
           size="small"
           :bordered="false"
           striped
@@ -54,11 +57,14 @@
             :placeholder="t('acl.permissionTypePlaceholder')"
         />
       </n-form-item>
+      <n-form-item label="host" path="host">
+        <n-input v-model:value="aclForm.host" placeholder="host"/>
+      </n-form-item>
     </n-form>
-      <n-flex>
-        <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
-        <n-button type="primary" @click="addAcl">{{ t('common.enter') }}</n-button>
-      </n-flex>
+    <n-flex>
+      <n-button @click="showAddModal = false">{{ t('common.cancel') }}</n-button>
+      <n-button type="primary" tertiary @click="addAcl">{{ t('common.enter') }}</n-button>
+    </n-flex>
   </n-modal>
 </template>
 
@@ -69,6 +75,7 @@ import {AddFilled, RefreshOutlined} from '@vicons/material';
 import {CreateAcl, DeleteAcl, GetAcls} from "../../wailsjs/go/service/Service";
 import {useI18n} from "vue-i18n";
 import {refColumns, renderIcon} from "../utils/common";
+import emitter from "../utils/eventBus";
 
 const {t} = useI18n();
 
@@ -78,12 +85,17 @@ const acls = ref([]);
 const loading = ref(false);
 const showAddModal = ref(false);
 
+const filter_datas = ref([])
+const searchText = ref(null)
+
+
 const aclForm = ref({
   principal: '',
   resourceType: '',
   resourceName: '',
   operation: '',
-  permissionType: ''
+  permissionType: '',
+  host: '*',
 });
 
 const resourceTypeOptions = [
@@ -113,13 +125,13 @@ const permissionTypeOptions = [
 ];
 
 const columns = [
-  {title: 'Principal', key: 'principal',  width: 100},
-  {title: 'Host', key: 'host',  width: 100},
-  {title: 'Resource Type', key: 'resourceType',  width: 100},
-  {title: 'Resource Name', key: 'resourceName',  width: 100},
-  {title: 'Operation', key: 'operation',  width: 100},
-  {title: 'Pattern Type', key: 'patternType',  width: 100},
-  {title: 'Permission Type', key: 'permissionType',  width: 100},
+  {title: 'Principal', key: 'principal', width: 100},
+  {title: 'Host', key: 'host', width: 100},
+  {title: 'Resource Type', key: 'resourceType', width: 100},
+  {title: 'Resource Name', key: 'resourceName', width: 100},
+  {title: 'Operation', key: 'operation', width: 100},
+  {title: 'Pattern Type', key: 'patternType', width: 100},
+  {title: 'Permission Type', key: 'permissionType', width: 100},
   {
     title: t('common.action'),
     key: 'actions',
@@ -151,19 +163,28 @@ const pagination = ref({
   },
 });
 
+const selectNode = async (node) => {
+  filter_datas.value = []
+  acls.value = []
+  searchText.value = null
+  loading.value = false
+  await getAcls()
+}
 
 const getAcls = async () => {
   loading.value = true;
   try {
     const res = await GetAcls();
+    console.log(res)
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000});
+      message.error(res.err, {duration: 5000});
     } else {
       console.log(res)
       acls.value = res.results;
+      searchData()
     }
   } catch (e) {
-    message.error(e.message, {duration:  5000});
+    message.error(e.message, {duration: 5000});
   }
   loading.value = false;
 };
@@ -172,33 +193,48 @@ const addAcl = async () => {
   try {
     const res = await CreateAcl(aclForm.value);
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000});
+      message.error(res.err, {duration: 5000});
     } else {
       message.success(t('message.addOk'));
       showAddModal.value = false;
       await getAcls();
     }
   } catch (e) {
-    message.error(e.message, {duration:  5000});
+    message.error(e.message, {duration: 5000});
   }
 };
 
 const deleteAcl = async (acl) => {
   try {
-    const res = await DeleteAcl(acl.id);
+    const res = await DeleteAcl(acl);
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000});
+      message.error(res.err, {duration: 5000});
     } else {
       message.success(t('message.deleteFinish'));
-      await getAcls();
     }
+    await getAcls();
   } catch (e) {
-    message.error(e.message, {duration:  5000});
+    message.error(e.message, {duration: 5000});
   }
 };
 
-onMounted(() => {
-  getAcls();
+const searchData = () => {
+  if (searchText.value) {
+    const query = searchText.value.toLowerCase();
+    filter_datas.value = acls.value.filter(item => {
+      return Object.values(item).some(val =>
+          String(val).toLowerCase().includes(query)
+      );
+    });
+  } else {
+    filter_datas.value = acls.value;
+  }
+};
+
+
+onMounted(async () => {
+  emitter.on('selectNode', selectNode)
+  await getAcls();
 });
 </script>
 
