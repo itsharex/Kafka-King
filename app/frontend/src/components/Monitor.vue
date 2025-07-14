@@ -32,6 +32,7 @@
           v-model:value="selectedScheme"
           :options="savedSchemes"
           :placeholder="t('inspection.loadSchemePlaceholder')"
+          clearable
           label-field="name"
           value-field="id"
           style="width: 200px; margin-left: 10px;"
@@ -42,6 +43,7 @@
           @click="confirmDeleteScheme" 
           :disabled="!selectedScheme"
           type="error"
+          secondary
           style="margin-left: 10px;"
         >
           {{ t('inspection.deleteScheme') }}
@@ -101,7 +103,7 @@
   import {LineChart} from 'echarts/charts';
   import {UniversalTransition} from 'echarts/features';
   import {CanvasRenderer} from 'echarts/renderers';
-  import {lightTheme, NButton, NFlex, useMessage, useDialog} from 'naive-ui';
+  import {lightTheme, NButton, NFlex, useDialog, useMessage} from 'naive-ui';
   import {GetGroups, GetTopicOffsets, GetTopics} from '../../wailsjs/go/service/Service';
   import emitter from '../utils/eventBus';
   import {renderIcon} from '../utils/common';
