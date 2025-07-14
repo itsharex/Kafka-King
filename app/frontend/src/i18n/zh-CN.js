@@ -148,6 +148,12 @@ export default {
     inspection: {
         title: "巡检",
         desc: "巡检Kafka积压情况。",
+        schemeNamePlaceholder: "输入方案名称",
+        saveScheme: "保存方案",
+        loadSchemePlaceholder: "选择监控方案",
+        deleteScheme: "删除方案",
+        deleteSchemeConfirm: "确认删除",
+        deleteSchemeConfirmContent: "确定要删除方案 '{name}' 吗？此操作不可恢复。",        
         topicsLabel: "Topics",
         topicPlaceholder: "选择或搜索Kafka Topic",
         groupLabel: "Group",
