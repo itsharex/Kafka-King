@@ -89,7 +89,6 @@ jobs:
           wails build -ldflags "-X 'app/backend/common.Version=${{ github.ref_name }}'" -platform darwin/universal -o ${{ env.APP_NAME }} 
           chmod +x build/bin/*/Contents/MacOS/*
           mkdir -p _build/ _dist/
-          ditto -c -k --keepParent ./build/bin/${{ env.APP_NAME }}.app _dist/${{ env.APP_NAME }}-${{ github.ref_name }}-macos.zip
           cp -r ./build/bin/${{ env.APP_NAME }}.app _build/
           brew install create-dmg
           create-dmg \
