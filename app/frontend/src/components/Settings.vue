@@ -37,7 +37,7 @@
                 :checked-value="darkTheme.name"
                 :unchecked-value="lightTheme.name"
                 v-model:value="theme"
-                @update-value="changeTheme"
+                @update:value="changeTheme"
             >
               <template #checked-icon>
                 <n-icon :component="NightlightRoundFilled"/>
@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, computed} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {darkTheme, lightTheme, NButton, NForm, NFormItem, NInputNumber, NSelect, useMessage,} from 'naive-ui'
 import {GetConfig, SaveConfig} from '../../wailsjs/go/config/AppConfig'
 import {GetProcessInfo} from '../../wailsjs/go/system/Update'
