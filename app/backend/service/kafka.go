@@ -25,6 +25,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -977,7 +978,7 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			"Timestamp":     v.Timestamp.Format(time.DateTime),
 			"Partition":     v.Partition,
 			"Topic":         v.Topic,
-			"Headers":       v.Headers,
+			"Headers":       getHeadersString(v.Headers),
 			"LeaderEpoch":   v.LeaderEpoch,
 			"ProducerEpoch": v.ProducerEpoch,
 			"ProducerID":    v.ProducerID,
@@ -996,6 +997,26 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 		}
 	}
 	return result
+}
+
+// getHeadersString 从RecordHeader切片获取json字符串
+func getHeadersString(headers []kgo.RecordHeader) string {
+	if len(headers) == 0 {
+		return ""
+	}
+
+	headersMap := make(map[string]string)
+	for _, h := range headers {
+		headersMap[h.Key] = string(h.Value)
+	}
+
+	jsonBytes, err := json.Marshal(headersMap)
+	if err != nil {
+		//不影响主任务的执行，仅仅在对应的条目显示错误
+		return err.Error()
+	}
+
+	return string(jsonBytes)
 }
 
 // GetAcls 获取 ACL 列表
