@@ -229,9 +229,8 @@ const getData = async () => {
   console.log('初始化消费者数据')
   try {
     const res = await GetTopics()
-    const res2 = await GetGroups()
-    if (res.err !== "" || res2.err !== "") {
-      message.error(res.err === res2.err ? res.err : res.err + res2.err, {duration: 5000})
+    if (res.err !== "") {
+      message.error(res.err, {duration: 5000})
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -244,7 +243,11 @@ const getData = async () => {
         }
       }
       topic_data.value = topic_data_lst
-
+    }
+    const res2 = await GetGroups()
+    if (res2.err !== "") {
+      message.error(res2.err, {duration: 5000})
+    } else {
       let groups = [{
         label: '(auto generate)',
         value: '__kafka_king_auto_generate__',
@@ -261,7 +264,6 @@ const getData = async () => {
       }
       groups.sort((a, b) => a['label'] > b['label'] ? 1 : -1)
       group_data.value = groups
-
     }
   } catch (e) {
     message.error(e.message, {duration: 5000})
