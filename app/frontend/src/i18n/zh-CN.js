@@ -57,7 +57,7 @@ export default {
         please_add_link: '请输入连接地址',
         input_name: '请输入名称',
         bootstrap_servers: '连接地址',
-        tip: '注意：必须保证本地能够访问 kafka 配置的 advertised.listeners 地址 （特别是域名解析，即使你填的是ip，也需要在本地配置好hosts）',
+        tip: '注意：必须在本地hosts文件中给kafka整个集群全部节点添加主机名到ip的DNS解析，否则可能通信异常',
         tls: '使用 TLS',
         skipTLSVerify: '跳过 TLS 验证',
         tls_cert_file: '输入 pem 证书路径',

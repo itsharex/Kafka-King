@@ -57,7 +57,7 @@ export default {
         please_add_link: "Please enter the connection address",
         input_name: "Please enter the name",
         bootstrap_servers: "Connection Address",
-        tip: "Note: Ensure that your local environment can access the Kafka advertised.listeners address (especially domain name resolution, even if you fill in an IP, you need to configure hosts properly on your local machine)",
+        tip: "Note: You must add the host name to the DNS resolution of the IP address of all nodes in the Kafka cluster to the local hosts file, otherwise communication abnormalities may occur.",
         tls: "Use TLS",
         skipTLSVerify: "Skip TLS Verification",
         tls_cert_file: "Enter PEM certificate path",

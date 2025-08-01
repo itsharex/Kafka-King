@@ -57,7 +57,7 @@ export default {
         please_add_link: "接続アドレスを入力してください",
         input_name: "名前を入力してください",
         bootstrap_servers: "接続アドレス",
-        tip: "注意: ローカル環境からKafkaのadvertised.listenersアドレスにアクセスできるようにしてください（特にドメイン名解決、IPを入力してもローカルでhostsを設定する必要があります）",
+        tip: "注意: Kafka クラスター内のすべてのノードの IP アドレスの DNS 解決にホスト名をローカル ホスト ファイルに追加する必要があります。そうしないと、通信異常が発生する可能性があります。",
         tls: "TLSを使用",
         skipTLSVerify: "TLS検証をスキップ",
         tls_cert_file: "PEM証明書パスを入力",
