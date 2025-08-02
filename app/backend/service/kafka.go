@@ -1212,3 +1212,47 @@ func (k *Service) DeleteAcl(acl map[string]any) *types.ResultResp {
 
 	return result
 }
+
+// ManageKafkaSCRAMUsers  添加、更新或删除 Kafka SCRAM 用户。
+func (k *Service) ManageKafkaSCRAMUsers(usersToUpsert map[string]string, usersToDelete []string) (kadm.AlteredUserSCRAMs, error) {
+	var upserts []kadm.UpsertSCRAM
+	var deletes []kadm.DeleteSCRAM
+	// 3. 准备要添加或更新的用户数据 (Upserts)
+	for user, password := range usersToUpsert {
+		// 默认使用 SCRAM-SHA-512，迭代次数为 4096
+		upsert := kadm.UpsertSCRAM{
+			User:       user,
+			Password:   password,
+			Mechanism:  kadm.ScramSha512,
+			Iterations: 4096,
+		}
+		upserts = append(upserts, upsert)
+	}
+
+	// 4. 准备要删除的用户数据 (Deletes)
+	for _, user := range usersToDelete {
+		// 删除时，需要指定要删除的凭据机制
+		del := kadm.DeleteSCRAM{
+			User:      user,
+			Mechanism: kadm.ScramSha512, // 假设删除的是 SHA-512 的凭据
+		}
+		// 如果你的环境中同时存在 SHA-256 和 SHA-512 的同名用户，
+		// 你可能需要更复杂的逻辑来决定删除哪一个，或者两个都删除。
+		// 例如：
+		// deletes = append(deletes, kadm.DeleteSCRAM{User: user, Mechanism: kadm.ScramSha256})
+		// deletes = append(deletes, kadm.DeleteSCRAM{User: user, Mechanism: kadm.ScramSha512})
+		deletes = append(deletes, del)
+	}
+
+	// 5. 调用 AlterUserSCRAMs 函数
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	// 同时传入删除列表和更新/插入列表
+	results, err := k.kac.AlterUserSCRAMs(ctx, deletes, upserts)
+	if err != nil {
+		return nil, fmt.Errorf("修改 SCRAM 用户失败: %v", err)
+	}
+
+	return results, nil
+}
