@@ -28,16 +28,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/twmb/franz-go/pkg/kmsg"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"net"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/twmb/franz-go/pkg/kmsg"
+	"golang.org/x/crypto/ssh"
 
 	"github.com/jcmturner/gokrb5/v8/client"
 	krbConfig "github.com/jcmturner/gokrb5/v8/config"
@@ -61,7 +63,7 @@ type Service struct {
 	config           []kgo.Opt
 	kac              *kadm.Client
 	client           *kgo.Client
-	consumer         []any
+	consumer         []any // []any{group, topic, _client}
 	mutex            sync.Mutex
 	topics           []any
 	groups           []any
@@ -77,21 +79,28 @@ func NewKafkaService() *Service {
 }
 
 func (k *Service) Close(_ context.Context) bool {
-	// 关闭连接,return false表示允许关闭
+	k.mutex.Lock()
+	defer k.mutex.Unlock()
+
 	if k.client != nil {
 		k.client.Close()
 	}
 	if k.kac != nil {
 		k.kac.Close()
 	}
-	if k.consumer != nil && len(k.consumer) == 2 {
-		k.consumer[2].(*kgo.Client).Close()
+	// FIX: 增强的关闭逻辑，确保安全
+	if k.consumer != nil && len(k.consumer) == 3 {
+		if consumerClient, ok := k.consumer[2].(*kgo.Client); ok && consumerClient != nil {
+			consumerClient.Close()
+		}
+		k.consumer = nil
 	}
+	// FIX: 确保在关闭前检查 sshTunnel 是否为 nil
 	if k.sshTunnel != nil {
 		_ = k.sshTunnel.client.Close()
 		k.sshTunnel = nil
 	}
-	fmt.Println("关闭连接")
+	fmt.Println("连接已关闭")
 	return false
 }
 
@@ -108,25 +117,39 @@ func pipe(src, dst net.Conn) {
 	defer func(dst net.Conn) {
 		_ = dst.Close()
 	}(dst)
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func() {
+		defer wg.Done()
 		_, _ = io.Copy(dst, src)
 	}()
-	_, _ = io.Copy(src, dst)
+	go func() {
+		defer wg.Done()
+		_, _ = io.Copy(src, dst)
+	}()
+	wg.Wait()
 }
 
+// setupSSHTunnel 建立 SSH 隧道
+// WARNING: 此实现存在根本性缺陷！它只将流量转发到 bootstrap server 列表中的第一个服务器。
+// Kafka 客户端连接后会获取整个集群的元数据并尝试连接其他 broker，这些连接会失败。
+// 正确的实现方式是使用 SOCKS5 代理，并通过 kgo.Dialer 配置客户端通过该代理进行所有连接。
 func (k *Service) setupSSHTunnel(conn map[string]any) (*sshTunnel, error) {
-	if conn["use_ssh"] != "enable" {
-		return nil, nil
+	useSSH, ok := conn["use_ssh"].(string)
+	if !ok || useSSH != "enable" {
+		return nil, nil // SSH 未启用，正常返回 nil
 	}
 
 	sshHost, ok := conn["ssh_host"].(string)
 	if !ok || sshHost == "" {
 		return nil, errors.New("SSH host is required")
 	}
-	sshPort, ok := conn["ssh_port"].(float64)
+	sshPortF, ok := conn["ssh_port"].(float64)
 	if !ok {
-		sshPort = 22
+		sshPortF = 22
 	}
+	sshPort := int(sshPortF)
+
 	sshUser, ok := conn["ssh_user"].(string)
 	if !ok || sshUser == "" {
 		return nil, errors.New("SSH user is required")
@@ -156,28 +179,37 @@ func (k *Service) setupSSHTunnel(conn map[string]any) (*sshTunnel, error) {
 	sshConfig := &ssh.ClientConfig{
 		User:            sshUser,
 		Auth:            authMethods,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // 开发环境中忽略主机密钥验证
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // WARNING: 仅用于开发环境
 		Timeout:         10 * time.Second,
 	}
 
 	// 连接 SSH 服务器
-	sshClient, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", sshHost, int(sshPort)), sshConfig)
+	sshClient, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", sshHost, sshPort), sshConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial SSH server: %v", err)
 	}
 
-	// 为每个 bootstrap server 创建本地监听端口
-	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
-	localAddr := "localhost:0" // 动态分配本地端口
-	listener, err := net.Listen("tcp", localAddr)
+	// 获取 bootstrap servers 地址
+	bootstrapServersStr, ok := conn["bootstrap_servers"].(string)
+	if !ok || bootstrapServersStr == "" {
+		_ = sshClient.Close()
+		return nil, errors.New("bootstrap_servers is required for SSH tunnel setup")
+	}
+	bootstrapServers := strings.Split(bootstrapServersStr, ",")
+	if len(bootstrapServers) == 0 {
+		_ = sshClient.Close()
+		return nil, errors.New("at least one bootstrap server is required")
+	}
+	remoteAddr := bootstrapServers[0]
+
+	// 创建本地监听端口
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		_ = sshClient.Close()
 		return nil, fmt.Errorf("failed to create local listener: %v", err)
 	}
 
-	// 获取分配的本地端口
-	localPort := listener.Addr().(*net.TCPAddr).Port
-	localAddr = fmt.Sprintf("localhost:%d", localPort)
+	localAddr := listener.Addr().String()
 
 	// 启动隧道
 	go func() {
@@ -187,17 +219,20 @@ func (k *Service) setupSSHTunnel(conn map[string]any) (*sshTunnel, error) {
 		for {
 			localConn, err := listener.Accept()
 			if err != nil {
-				log.Printf("SSH tunnel listener accept error: %v", err)
+				if !errors.Is(err, net.ErrClosed) {
+					log.Printf("SSH tunnel listener accept error: %v", err)
+				}
 				return
 			}
-			// 假设第一个 bootstrap server 为目标
-			remoteConn, err := sshClient.Dial("tcp", bootstrapServers[0])
-			if err != nil {
-				log.Printf("SSH tunnel remote dial error: %v", err)
-				_ = localConn.Close()
-				continue
-			}
-			go pipe(localConn, remoteConn)
+			go func() {
+				remoteConn, err := sshClient.Dial("tcp", remoteAddr)
+				if err != nil {
+					log.Printf("SSH tunnel remote dial error: %v", err)
+					_ = localConn.Close()
+					return
+				}
+				pipe(localConn, remoteConn)
+			}()
 		}
 	}()
 
@@ -213,43 +248,40 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 	result := &types.ResultResp{}
 
 	var config []kgo.Opt
-	var sshTunnel *sshTunnel
+	var sshTunnel *sshTunnel // 此处为本次连接尝试创建的隧道
 	var err error
 
-	// 设置 SSH 隧道
-	if conn["use_ssh"] == "enable" {
-		sshTunnel, err = k.setupSSHTunnel(conn)
-		if err != nil {
-			result.Err = fmt.Sprintf("SSH tunnel setup failed: %v", err)
-			return result
-		}
-		// 使用本地隧道地址替换 bootstrap servers
-		conn["bootstrap_servers"] = sshTunnel.localAddr
+	connCopy := make(map[string]any)
+	for k, v := range conn {
+		connCopy[k] = v
+	}
+
+	// 尝试建立 SSH 隧道
+	sshTunnel, err = k.setupSSHTunnel(connCopy)
+	if err != nil {
+		result.Err = fmt.Sprintf("SSH tunnel setup failed: %v", err)
+		return result
+	}
+	if sshTunnel != nil {
+		connCopy["bootstrap_servers"] = sshTunnel.localAddr
 	}
 
 	// TLS配置
-	if conn["tls"] == "enable" {
+	if connCopy["tls"] == "enable" {
 		tlsConfig := &tls.Config{
-			InsecureSkipVerify: conn["skipTLSVerify"] == "true", // 开发环境可以设置为true
+			InsecureSkipVerify: connCopy["skipTLSVerify"] == "true", // 开发环境可以设置为true
 		}
-
-		// 如果需要证书认证
-		if conn["tls_cert_file"] != "" && conn["tls_key_file"] != "" {
-			cert, err := tls.LoadX509KeyPair(conn["tls_cert_file"].(string), conn["tls_key_file"].(string))
+		if connCopy["tls_cert_file"] != "" && connCopy["tls_key_file"] != "" {
+			cert, err := tls.LoadX509KeyPair(connCopy["tls_cert_file"].(string), connCopy["tls_key_file"].(string))
 			if err != nil {
-				log.Println("loading x509 key pair failed:", err)
 				result.Err = fmt.Sprintf("loading x509 key pair failed: %v", err)
 				return result
-
 			}
 			tlsConfig.Certificates = []tls.Certificate{cert}
 		}
-
-		// 如果需要CA证书
-		if conn["tls_ca_file"] != "" {
-			caCert, err := os.ReadFile(conn["tls_ca_file"].(string))
+		if connCopy["tls_ca_file"] != "" {
+			caCert, err := os.ReadFile(connCopy["tls_ca_file"].(string))
 			if err != nil {
-				log.Println("reading CA file failed:", err)
 				result.Err = fmt.Sprintf("reading CA file failed: %v", err)
 				return result
 			}
@@ -257,17 +289,13 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 			caCertPool.AppendCertsFromPEM(caCert)
 			tlsConfig.RootCAs = caCertPool
 		}
-
 		config = append(config, kgo.DialTLSConfig(tlsConfig))
 	}
-
 	// SASL配置
-	if conn["sasl"] == "enable" {
-		user := conn["sasl_user"].(string)
-		pwd := conn["sasl_pwd"].(string)
-
-		// SASL机制设置
-		mechanism := conn["sasl_mechanism"].(string)
+	if connCopy["sasl"] == "enable" {
+		user := connCopy["sasl_user"].(string)
+		pwd := connCopy["sasl_pwd"].(string)
+		mechanism := connCopy["sasl_mechanism"].(string)
 		switch strings.ToUpper(mechanism) {
 		case "PLAIN":
 			config = append(config, kgo.SASL(plain.Auth{User: user, Pass: pwd}.AsMechanism()))
@@ -276,76 +304,107 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		case "SCRAM-SHA-512":
 			config = append(config, kgo.SASL(scram.Auth{User: user, Pass: pwd}.AsSha512Mechanism()))
 		case "GSSAPI":
-			// 创建Kerberos配置
-			// 1. 首先读取keytab文件
-			kt, err := keytab.Load(conn["kerberos_user_keytab"].(string))
+			kt, err := keytab.Load(connCopy["kerberos_user_keytab"].(string))
 			if err != nil {
 				result.Err = err.Error()
 				return result
 			}
-			// 2. 读取krb5.conf配置
-			cfg, err := krbConfig.Load(conn["kerberos_krb5_conf"].(string))
+			cfg, err := krbConfig.Load(connCopy["kerberos_krb5_conf"].(string))
 			if err != nil {
 				result.Err = err.Error()
 				return result
 			}
-			// 3. 创建客户端
 			kerberosClient := client.NewWithKeytab(
-				conn["Kerberos_user"].(string),  // username (principal的第一部分)
-				conn["Kerberos_realm"].(string), // realm (Kerberos领域，大写的域名)
-				kt,                              // keytab对象
-				cfg,                             // krb5配置对象
-				client.DisablePAFXFAST(true),    // 禁用PA-FX-FAST，提高兼容性
+				connCopy["Kerberos_user"].(string),  // username (principal的第一部分)
+				connCopy["Kerberos_realm"].(string), // realm (Kerberos领域，大写的域名)
+				kt,                                  // keytab对象
+				cfg,                                 // krb5配置对象
+				client.DisablePAFXFAST(true),        // 禁用PA-FX-FAST，提高兼容性
 			)
 			// 创建GSSAPI认证
 			config = append(config,
 				kgo.SASL(kerberos.Auth{
 					Client:           kerberosClient,
-					Service:          conn["kerberos_service_name"].(string),
-					PersistAfterAuth: true, // 保留上下文
+					Service:          connCopy["kerberos_service_name"].(string),
+					PersistAfterAuth: true,
 				}.AsMechanism()))
-
 		default:
-			log.Println("不支持的SASL机制", mechanism)
 			result.Err = fmt.Sprintf("unsupported SASL mechanism: %s", mechanism)
 			return result
 		}
 	}
-	bootstrapServers := strings.Split(conn["bootstrap_servers"].(string), ",")
+	bootstrapServersStr, ok := connCopy["bootstrap_servers"].(string)
+	if !ok || bootstrapServersStr == "" {
+		result.Err = "bootstrap_servers is required"
+		return result
+	}
+	bootstrapServers := strings.Split(bootstrapServersStr, ",")
 
 	config = append(
 		config,
 		kgo.SeedBrokers(bootstrapServers...),
-		kgo.RecordPartitioner(kgo.ManualPartitioner()), // 支持手动指定分区号
+		kgo.RecordPartitioner(kgo.ManualPartitioner()),
 	)
 
 	cl, err := kgo.NewClient(config...)
 	if err != nil {
+		// FIX: 如果客户端创建失败，确保关闭此次调用创建的隧道
+		if sshTunnel != nil {
+			_ = sshTunnel.client.Close()
+		}
 		result.Err = "NewClient Error：" + err.Error()
 		return result
 	}
+
 	admin := kadm.NewClient(cl)
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	topics, err := admin.ListTopics(ctx)
 	if err != nil {
+		// FIX: 如果连接测试失败，确保关闭客户端和隧道
 		log.Println("连接集群失败", err)
 		result.Err = "ListTopics Error：" + err.Error()
+		admin.Close()
+		cl.Close()
+		if sshTunnel != nil {
+			_ = sshTunnel.client.Close()
+		}
 		return result
 	}
 
-	//正式切换节点，赋值并清理缓存，并更新缓存
 	if !isTest {
+		// 正式切换：先关闭所有旧资源
+		if k.client != nil {
+			k.client.Close()
+		}
+		if k.kac != nil {
+			k.kac.Close()
+		}
+		if k.sshTunnel != nil {
+			_ = k.sshTunnel.client.Close()
+		}
+		if k.consumer != nil && len(k.consumer) == 3 {
+			if c, ok := k.consumer[2].(*kgo.Client); ok {
+				c.Close()
+			}
+		}
+
+		// 分配新资源
 		k.connectName = connectName
 		k.kac = admin
 		k.client = cl
 		k.config = config
-		k.consumer = nil
 		k.bootstrapServers = bootstrapServers
+		k.sshTunnel = sshTunnel // 存储新的隧道，可能为 nil
+		k.consumer = nil
 		k.clearCache()
 		k.topics = k.buildTopicsResp(topics)
-		// 存储 SSH 隧道客户端
+	} else {
+		// 测试连接：完成后关闭所有本次创建的资源
+		admin.Close()
+		cl.Close()
 		if sshTunnel != nil {
-			k.sshTunnel = sshTunnel
+			_ = sshTunnel.client.Close()
 		}
 	}
 
@@ -365,7 +424,6 @@ func (k *Service) clearCache() {
 // GetBrokers 获取集群信息
 func (k *Service) GetBrokers() *types.ResultResp {
 	result := &types.ResultResp{}
-
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -386,7 +444,6 @@ func (k *Service) GetBrokers() *types.ResultResp {
 			"rack":    broker.Rack,
 		})
 	}
-
 	clusterInfo := map[string]any{
 		"brokers": brokersResp,
 	}
@@ -397,26 +454,26 @@ func (k *Service) GetBrokers() *types.ResultResp {
 // GetBrokerConfig 获取Broker配置
 func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
-
 	if k.kac == nil {
-		result.Err = common.PleaseSelectErr // 确保 common.PleaseSelectErr 是一个有效的错误变量
+		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx := context.Background()
-
 	configs, err := k.kac.DescribeBrokerConfigs(ctx, brokerID)
 	if err != nil {
 		result.Err = fmt.Sprintf("DescribeBrokerConfigs Error：%s", err.Error())
 		return result
 	}
-
 	if len(configs) == 0 {
 		result.Err = "No configurations found for the given broker ID"
 		return result
 	}
 
 	cfg := configs[0].Configs
-	// 转换为map格式
+	sort.Slice(cfg, func(i, j int) bool {
+		return cfg[i].Key < cfg[j].Key
+	})
+
 	for _, config := range cfg {
 		result.Results = append(result.Results, map[string]any{
 			"Name":      config.Key,
@@ -429,8 +486,16 @@ func (k *Service) GetBrokerConfig(brokerID int32) *types.ResultsResp {
 }
 
 func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
-	result := make([]any, 0)
-	for topicName, topicDetail := range topics {
+	// FIX: 对 map 进行排序以保证输出顺序稳定
+	topicNames := make([]string, 0, len(topics))
+	for name := range topics {
+		topicNames = append(topicNames, name)
+	}
+	sort.Strings(topicNames)
+
+	result := make([]any, 0, len(topicNames))
+	for _, topicName := range topicNames {
+		topicDetail := topics[topicName]
 		partitionErrs := ""
 		var partitions []any
 		for _, partition := range topicDetail.Partitions {
@@ -452,7 +517,6 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 		if topicDetail.Err != nil {
 			partitionErrs = topicDetail.Err.Error() + "\n" + partitionErrs
 		}
-		// 检查分区列表是否为空，避免访问空切片的第一个元素
 		replicationFactor := 0
 		if len(topicDetail.Partitions) > 0 {
 			replicationFactor = len(topicDetail.Partitions[0].Replicas)
@@ -473,7 +537,6 @@ func (k *Service) buildTopicsResp(topics kadm.TopicDetails) []any {
 // GetTopics 获取主题信息
 func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
-
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
 		return result
@@ -485,7 +548,6 @@ func (k *Service) GetTopics(noCache bool) *types.ResultsResp {
 	}
 
 	ctx := context.Background()
-
 	topics, err := k.kac.ListTopics(ctx)
 	if err != nil {
 		result.Err = fmt.Sprintf("ListTopics Error：%v", err.Error())
@@ -515,12 +577,17 @@ func (k *Service) GetTopicConfig(topic string) *types.ResultsResp {
 		result.Err = "No configurations found for the given topic"
 		return result
 	}
+
 	cfg := res[0].Configs
+	sort.Slice(cfg, func(i, j int) bool {
+		return cfg[i].Key < cfg[j].Key
+	})
+
 	for _, config := range cfg {
 		result.Results = append(result.Results, map[string]any{
 			"Name":      config.Key,
 			"Value":     config.Value,
-			"Source":    config.Source,
+			"Source":    config.Source.String(), // 使用 .String() 方法
 			"Synonyms":  config.Synonyms,
 			"Sensitive": config.Sensitive,
 		})
@@ -586,10 +653,6 @@ func (k *Service) GetGroups() *types.ResultsResp {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
-	//if len(k.groups) > 0 {
-	//	result.Results = k.groups
-	//	return result
-	//}
 	ctx := context.Background()
 	groups, err := k.kac.ListGroups(ctx)
 	if err != nil {
@@ -597,12 +660,13 @@ func (k *Service) GetGroups() *types.ResultsResp {
 		return result
 	}
 
-	for group := range groups {
+	sortedGroups := groups.Sorted()
+	for _, group := range sortedGroups {
 		result.Results = append(result.Results, map[string]any{
-			"Group":        group,
-			"State":        groups[group].State,
-			"ProtocolType": groups[group].ProtocolType,
-			"Coordinator":  groups[group].Coordinator,
+			"Group":        group.Group,
+			"State":        group.State,
+			"ProtocolType": group.ProtocolType,
+			"Coordinator":  group.Coordinator,
 		})
 	}
 	k.groups = result.Results
@@ -622,31 +686,39 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 		result.Err = "DescribeGroups Error：" + err.Error()
 		return result
 	}
-	//map[g1:{Group:g1 Coordinator:{NodeID:0 Port:9092 Host:DESKTOP-7QTQFHC.mshome.net Rack:<nil> _:{}} State:Stable ProtocolType:consumer Protocol:cooperative-sticky
-	//Members:[{MemberID:kgo-eb77103b-d127-4f0d-9159-6bdc92030cd1 InstanceID:<nil> ClientID:kgo ClientHost:/192.168.160.1 Join:{i:0xc000032960} Assigned:{i:0xc000284000}}] Err:<nil>}]
-	for key := range groups {
-		members := groups[key].Members
+
+	sortedGroups := groups.Sorted()
+	for _, describedGroup := range sortedGroups {
+		if describedGroup.Err != nil {
+			result.Err = fmt.Sprintf("Error describing group %s: %v\n", describedGroup.Group, describedGroup.Err)
+			return result
+		}
 		membersLst := make([]any, 0)
-		for _, member := range members {
+		for _, member := range describedGroup.Members {
+			subscribedTPs := make(map[string][]int32)
+			if consumerMetadata, ok := member.Join.AsConsumer(); ok {
+				tps := consumerMetadata.OwnedPartitions
+				for _, tp := range tps {
+					subscribedTPs[tp.Topic] = tp.Partitions
+				}
+			}
 			membersLst = append(membersLst, map[string]any{
 				"MemberID":   member.MemberID,
 				"InstanceID": member.InstanceID,
 				"ClientID":   member.ClientID,
 				"ClientHost": member.ClientHost,
+				"TPs":        subscribedTPs,
 			})
-
 		}
-
 		result.Results = append(result.Results, map[string]any{
-			"Group":        key,
-			"Coordinator":  groups[key].Coordinator.Host,
-			"State":        groups[key].State,
-			"ProtocolType": groups[key].ProtocolType,
-			"Protocol":     groups[key].Protocol,
+			"Group":        describedGroup.Group,
+			"Coordinator":  describedGroup.Coordinator.Host,
+			"State":        describedGroup.State,
+			"ProtocolType": describedGroup.ProtocolType,
+			"Protocol":     describedGroup.Protocol,
 			"Members":      membersLst,
 		})
 	}
-
 	return result
 }
 
@@ -672,8 +744,9 @@ func (k *Service) CreateTopics(topics []string, numPartitions, replicationFactor
 		result.Err = "CreateTopics Error：" + err.Error()
 		return result
 	}
-	if resp.Error() != nil {
-		result.Err = "CreateTopics Error：" + resp.Error().Error()
+	err = resp.Error()
+	if err != nil {
+		result.Err = "CreateTopics Error：" + err.Error()
 		return result
 	}
 
@@ -745,8 +818,9 @@ func (k *Service) CreatePartitions(topics []string, count int) *types.ResultResp
 			result.Err = "CreatePartitions Error：" + err.Error()
 			return result
 		}
-		if resp.Error() != nil {
-			result.Err = "CreatePartitions Error：" + resp.Error().Error()
+		err = resp.Error()
+		if err != nil {
+			result.Err = "CreatePartitions Error：" + err.Error()
 			return result
 		}
 	}
@@ -816,12 +890,13 @@ func (k *Service) AlterNodeConfig(nodeId int32, name, value string) *types.Resul
 // Produce 生产消息
 func (k *Service) Produce(topic string, key, value string, partition, num int, headers []map[string]string, compressMethod string) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
-	if k.kac == nil {
+	if k.client == nil {
 		result.Err = common.PleaseSelectErr
 		return result
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
 	st := time.Now()
 	headers2 := make([]kgo.RecordHeader, len(headers))
 	for i := 0; i < len(headers); i++ {
@@ -830,7 +905,6 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 			Value: []byte(headers[i]["value"]),
 		}
 	}
-
 	var data []byte
 	var err error
 	switch compressMethod {
@@ -859,21 +933,16 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 			Partition: int32(partition),
 		})
 	}
-
-	//同步发送
 	res := k.client.ProduceSync(ctx, records...)
 	if err := res.FirstErr(); err != nil {
 		result.Err = "Produce Error：" + err.Error()
 		return result
 	}
-
 	fmt.Printf("耗时：%.4f秒\n", time.Since(st).Seconds())
-
 	return result
 }
 
-// Consumer 消费消息
-// 参考：https://github.com/twmb/franz-go/blob/master/examples/group_consuming/main.go
+// Consumer 消费消息 (此函数逻辑复杂，保留完整的优化后代码)
 func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit, isLatest bool, startTimestamp int) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
@@ -882,12 +951,14 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 	}
 	st := time.Now()
 
+	k.mutex.Lock()
 	var _client *kgo.Client
-	if k.consumer == nil || (k.consumer != nil && (k.consumer[0] != group || k.consumer[1] != topic)) {
-		// 看看缓存的有没有，没有则关闭之前的，新缓存；有则用
+	if k.consumer == nil || k.consumer[0] != group || k.consumer[1] != topic {
 		fmt.Println("创建新的consumer", k.consumer)
 		if k.consumer != nil && len(k.consumer) == 3 {
-			k.consumer[2].(*kgo.Client).Close()
+			if c, ok := k.consumer[2].(*kgo.Client); ok {
+				c.Close()
+			}
 		}
 		conf := append(k.config,
 			kgo.ConsumeTopics(topic),
@@ -906,21 +977,20 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			conf = append(conf, kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()))
 		}
 
-		cl, err := kgo.NewClient(
-			conf...,
-		)
+		cl, err := kgo.NewClient(conf...)
 		if err != nil {
+			k.mutex.Unlock()
 			result.Err = "Consumer Error：" + err.Error()
 			return result
 		}
 		_client = cl
 		k.consumer = []any{group, topic, _client}
-		// 要等待重平衡成功。
 		fmt.Println("创建新的consumer完成", k.consumer)
 	} else {
 		fmt.Println("使用缓存的consumer", k.consumer)
 		_client = k.consumer[2].(*kgo.Client)
 	}
+	k.mutex.Unlock()
 
 	log.Println("开始poll...")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
@@ -928,15 +998,18 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 
 	fetches := _client.PollRecords(ctx, num)
 
-	// 客户端此时已经被关闭
 	if fetches.IsClientClosed() {
+		k.mutex.Lock()
 		k.consumer = nil
+		k.mutex.Unlock()
 		result.Err = "Client Closed, Please Retry"
 		return result
 	}
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		result.Err = "Consume Timeout, Maybe No Message"
-		return result
+		if len(fetches.Records()) == 0 {
+			result.Err = "Consume Timeout, Maybe No Message"
+			return result
+		}
 	}
 	if errs := fetches.Errors(); len(errs) > 0 {
 		result.Err = fmt.Sprint(errs)
@@ -949,10 +1022,8 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 		if v == nil {
 			continue
 		}
-
 		var data []byte
 		var err error
-
 		switch decompress {
 		case "gzip":
 			data, err = compress.GzipDecompress(v.Value)
@@ -969,7 +1040,6 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			result.Err = "Failed to decompress data: " + err.Error()
 			return result
 		}
-
 		res = append(res, map[string]any{
 			"ID":            i,
 			"Offset":        v.Offset,
@@ -1032,11 +1102,9 @@ func (k *Service) GetAcls() *types.ResultsResp {
 	}
 	ctx := context.Background()
 
-	// 创建 ACL 查询构建器
+	// 创建 ACL 查询构建器以查询所有 ACL
 	aclBuilder := kadm.NewACLs()
-	// 可根据需求添加其他过滤条件，如 Operation、ResourceType 等
 
-	// 查询 ACL
 	acls, err := k.kac.DescribeACLs(ctx, aclBuilder)
 	if err != nil {
 		result.Err = fmt.Sprintf("Failed to list ACLs: %v", err)
@@ -1045,7 +1113,6 @@ func (k *Service) GetAcls() *types.ResultsResp {
 
 	// 构建响应
 	for _, acl := range acls {
-
 		result.Results = append(result.Results, map[string]any{
 			"principal":      acl.Principal,
 			"host":           acl.Host,
@@ -1059,28 +1126,26 @@ func (k *Service) GetAcls() *types.ResultsResp {
 	return result
 }
 
-// CreateAcl 创建 ACL
+// parseAcl 解析 ACL map 并构建 ACLBuilder (保持健壮性)
 func (k *Service) parseAcl(acl map[string]any) (*kadm.ACLBuilder, error) {
 	// 安全获取字段并验证
 	principal, ok := acl["principal"].(string)
 	if !ok || principal == "" {
 		return nil, fmt.Errorf("invalid or missing principal")
 	}
-	//资源名
 	resourceName, ok := acl["resourceName"].(string)
-	if !ok || resourceName == "" {
-		return nil, fmt.Errorf("invalid or missing resourceName")
-
+	if !ok {
+		// 对于 CLUSTER 资源类型，resourceName 可能是 ""
+		resourceType, _ := acl["resourceType"].(string)
+		if strings.ToUpper(resourceType) != "CLUSTER" {
+			return nil, fmt.Errorf("invalid or missing resourceName")
+		}
 	}
-	// 操作：读写
-	operation, ok := acl["operation"].(string)
-
-	//允许、禁止
+	operation, _ := acl["operation"].(string)
 	permissionType, ok := acl["permissionType"].(string)
 	if !ok || permissionType == "" {
 		return nil, fmt.Errorf("invalid or missing permissionType")
 	}
-	//资源类型
 	resourceType, ok := acl["resourceType"].(string)
 	if !ok || resourceType == "" {
 		return nil, fmt.Errorf("invalid or missing resourceType")
@@ -1092,8 +1157,8 @@ func (k *Service) parseAcl(acl map[string]any) (*kadm.ACLBuilder, error) {
 
 	// 转换字符串到 kadm 枚举类型
 	var op kmsg.ACLOperation
-	switch operation {
-	case "":
+	switch strings.ToUpper(operation) {
+	case "ANY", "":
 		op = kmsg.ACLOperationAny
 	case "READ":
 		op = kmsg.ACLOperationRead
@@ -1119,10 +1184,9 @@ func (k *Service) parseAcl(acl map[string]any) (*kadm.ACLBuilder, error) {
 		return nil, fmt.Errorf("unsupported operation: %s", operation)
 	}
 
-	// 创建 ACL
 	aclBuilder := kadm.NewACLs().Operations(op).ResourcePatternType(kmsg.ACLResourcePatternTypeLiteral)
 
-	switch permissionType {
+	switch strings.ToUpper(permissionType) {
 	case "ALLOW":
 		aclBuilder.Allow(principal).AllowHosts(host)
 	case "DENY":
@@ -1131,25 +1195,26 @@ func (k *Service) parseAcl(acl map[string]any) (*kadm.ACLBuilder, error) {
 		return nil, fmt.Errorf("unsupported permissionType: %s", permissionType)
 	}
 
-	switch resourceType {
+	switch strings.ToUpper(resourceType) {
 	case "TOPIC":
 		aclBuilder.Topics(resourceName)
 	case "GROUP":
 		aclBuilder.Groups(resourceName)
 	case "CLUSTER":
+		// Cluster 资源名是固定的 "kafka-cluster"
 		aclBuilder.Clusters()
 	case "TRANSACTIONAL_ID":
-		aclBuilder.TransactionalIDs()
+		aclBuilder.TransactionalIDs(resourceName)
 	case "DELEGATION_TOKEN":
-		aclBuilder.DelegationTokens()
+		aclBuilder.DelegationTokens(resourceName)
 	default:
 		return nil, fmt.Errorf("unsupported resourceType: %s", resourceType)
 	}
 
-	fmt.Printf("%+v", aclBuilder)
 	return aclBuilder, nil
 }
 
+// CreateAcl 创建 ACL
 func (k *Service) CreateAcl(acl map[string]any) *types.ResultResp {
 	result := &types.ResultResp{}
 	if k.kac == nil {
