@@ -18,10 +18,11 @@
 <template>
   <n-flex vertical>
     <n-flex align="center">
-      <h2 >{{t('group.title')}}</h2>
-      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{t('common.refresh')}}</n-button>
-      <n-text>{{t('common.count')}}：{{ group_data?group_data.length:0 }}</n-text>
-      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{t('common.csv')}}</n-button>
+      <h2>{{ t('group.title') }}</h2>
+      <n-button @click="getData" text :render-icon="renderIcon(RefreshOutlined)">{{ t('common.refresh') }}</n-button>
+      <n-text>{{ t('common.count') }}：{{ group_data ? group_data.length : 0 }}</n-text>
+      <n-button @click="downloadAllDataCsv" :render-icon="renderIcon(DriveFileMoveTwotone)">{{ t('common.csv') }}
+      </n-button>
     </n-flex>
     <n-input v-model:value="searchText" clearable placeholder="search" style="max-width: 20%"
              @keyup.enter="searchData"/>
@@ -91,7 +92,7 @@ const getData = async () => {
   try {
     const res = await GetGroups()
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000})
+      message.error(res.err, {duration: 5000})
     } else {
       if (res.results) {
         res.results.sort((a, b) => a['Group'] > b['Group'] ? 1 : -1)
@@ -101,7 +102,7 @@ const getData = async () => {
       }
     }
   } catch (e) {
-    message.error(e.message, {duration:  5000})
+    message.error(e.message, {duration: 5000})
   }
   loading.value = false
 }
@@ -111,18 +112,18 @@ const getMembers = async (group) => {
   try {
     const res = await GetGroupMembers([group])
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000})
+      message.error(res.err, {duration: 5000})
     } else {
       if (res.results[0]) {
         let data0 = res.results[0]
         members_data.value = data0['Members']
-      }else {
+      } else {
         message.warning(t('message.noMemberFound'))
       }
     }
 
   } catch (e) {
-    message.error(e.message, {duration:  5000})
+    message.error(e.message, {duration: 5000})
   }
   loading.value = false
 }
@@ -150,13 +151,13 @@ const downloadAllDataCsv = async () => {
 
 
 const columns = [
-  {title: 'Group', key: 'Group',  width: 60},
+  {title: 'Group', key: 'Group', width: 60},
   {
-    title: 'Coordinator', key: 'Coordinator',  width: 20,
+    title: 'Coordinator', key: 'Coordinator', width: 20,
     render: (row) => h(NTag, {type: "info"}, {default: () => row['Coordinator']}),
   },
   {
-    title: 'State', key: 'State',  width: 20,
+    title: 'State', key: 'State', width: 20,
     render: (row) => h(NTag, {type: "success"}, {default: () => row['State'] || 'unknown'}),
   },
   {
@@ -195,17 +196,17 @@ const columns = [
                 {
                   trigger: () =>
                       h(
-                              NButton,
-                              {
-                                strong: true,
-                                secondary: true,
-                                type: 'error'
-                              },
-                              {
-                                default: () => t('common.delete'),
-                                icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
-                              }
-                          )
+                          NButton,
+                          {
+                            strong: true,
+                            secondary: true,
+                            type: 'error'
+                          },
+                          {
+                            default: () => t('common.delete'),
+                            icon: () => h(NIcon, null, {default: () => h(DeleteForeverTwotone)})
+                          }
+                      )
                   ,
                   default: () => `${t('common.deleteOk')} Group: ${row["Group"]}?`
                 }
@@ -217,11 +218,29 @@ const columns = [
 ]
 
 const members_columns = [
-  {title: 'MemberID', key: 'MemberID',  width: 20},
-  {title: 'InstanceID', key: 'InstanceID',  width: 20},
-  {title: 'ClientID', key: 'ClientID',  width: 20},
-  {title: 'ClientHost', key: 'ClientHost',  width: 20},
-
+  {title: 'MemberID', key: 'MemberID', width: 20},
+  {title: 'InstanceID', key: 'InstanceID', width: 20},
+  {title: 'ClientID', key: 'ClientID', width: 20},
+  {title: 'ClientHost', key: 'ClientHost', width: 20},
+  {
+    title: 'Assigned Topic & Partition',
+    key: 'TPs',
+    width: 60,
+    render(row) {
+      const tps = row.TPs;
+      if (!tps || Object.keys(tps).length === 0) {
+        return h(NText, {depth: 3}, {default: () => 'N/A'});
+      }
+      const tags = Object.entries(tps).map(([topic, partitions]) => {
+        return h(
+            NTag,
+            {type: 'info', style: {marginRight: '6px', marginBottom: '6px'}},
+            {default: () => `${topic}: ${partitions.join(', ')}`}
+        );
+      });
+      return h('div', {style: {display: 'flex', flexWrap: 'wrap'}}, tags);
+    }
+  }
 ]
 
 const deleteGroups = async (group) => {
@@ -229,13 +248,13 @@ const deleteGroups = async (group) => {
   try {
     const res = await DeleteGroup(group)
     if (res.err !== "") {
-      message.error(res.err, {duration:  5000})
+      message.error(res.err, {duration: 5000})
     } else {
       message.success(t('common.deleteFinish'))
       await getData()
     }
   } catch (e) {
-    message.error(e.message, {duration:  5000})
+    message.error(e.message, {duration: 5000})
   }
   loading.value = false
 

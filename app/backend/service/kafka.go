@@ -696,8 +696,12 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 		membersLst := make([]any, 0)
 		for _, member := range describedGroup.Members {
 			subscribedTPs := make(map[string][]int32)
-			if consumerMetadata, ok := member.Join.AsConsumer(); ok {
-				tps := consumerMetadata.OwnedPartitions
+			// member.Assigned.AsConsumer(): 解析的是 "SyncGroup" 请求中的元数据。
+			// 何时使用: 在 JoinGroup 阶段之后，消费者组的 Leader 会根据所有成员的订阅信息和分配策略，为每个成员分配具体的分区。然后，Leader 会通过 SyncGroup 请求将这个分配结果告诉 Broker，Broker 再将结果分发给各个成员。
+			// 包含什么内容: 这部分元数据包含了最终的分区分配结果。也就是说，你能明确地知道这个消费者成员被分配到了哪些主题的哪些具体分区 (partitions)。
+			// 关键点: 这是实际生效的分配方案。如果你想知道一个消费者当前正在处理哪些分区，应该查看这里的数据。
+			if consumerMetadata, ok := member.Assigned.AsConsumer(); ok {
+				tps := consumerMetadata.Topics
 				for _, tp := range tps {
 					subscribedTPs[tp.Topic] = tp.Partitions
 				}
@@ -707,7 +711,7 @@ func (k *Service) GetGroupMembers(groupLst []string) *types.ResultsResp {
 				"InstanceID": member.InstanceID,
 				"ClientID":   member.ClientID,
 				"ClientHost": member.ClientHost,
-				"TPs":        subscribedTPs,
+				"TPs":        subscribedTPs, // TPs:map[topicName:[0]]]]
 			})
 		}
 		result.Results = append(result.Results, map[string]any{

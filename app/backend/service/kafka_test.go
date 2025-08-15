@@ -23,11 +23,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/twmb/franz-go/pkg/kadm"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 // 引入 testing 包
@@ -194,6 +195,20 @@ func gzipCompress(data []byte) ([]byte, error) {
 
 	return buf.Bytes(), nil // Return the compressed data from the buffer
 }
+
+func TestGroupMembers(t *testing.T) {
+	s := NewKafkaService()
+	s.SetConnect("dsd", map[string]any{
+		"name":              "debian",
+		"bootstrap_servers": "192.168.1.100:9092",
+	}, false)
+	gs := s.GetGroups()
+	fmt.Printf("%+v\n", gs)
+
+	res := s.GetGroupMembers([]string{"111"})
+	fmt.Printf("%+v", res)
+}
+
 func TestConsume(t *testing.T) {
 	s := NewKafkaService()
 	s.SetConnect("dsd", map[string]any{
