@@ -56,7 +56,7 @@
                 <template #trigger>
                   <n-button @click="getSysInfo()" style="width: 100px">ProcessInfo</n-button>
                 </template>
-                <n-p :style="sysInfoStyle" class="sys-info">{{ sys_info }}</n-p>
+                <span class="sys-info">{{ sys_info }}</span >
               </n-tooltip>
             </n-flex>
           </n-form-item>
@@ -141,11 +141,6 @@ const changeLanguage = (newLang) => {
   emitter.emit('language_change', newLang)
 }
   
-const sysInfoStyle = computed(() => {
-  return theme.value === darkTheme.name 
-    ? { color: '#ffffff', backgroundColor: '#1f1f1f' } // 深色主题
-    : { color: '#000000', backgroundColor: '#ffffff' }; // 浅色主题
-});  
 </script>
 <style scoped>
 .sys-info {
@@ -153,5 +148,6 @@ const sysInfoStyle = computed(() => {
   max-height: 400px;
   overflow: auto;
   text-align: left;
+  display: block;
 }
 </style>

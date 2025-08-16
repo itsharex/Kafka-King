@@ -406,7 +406,7 @@ const consume = async () => {
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
-      filter_messages, columns
+      filter_messages.value, columns
   )
   download_file(csvContent, 'messages.csv', 'text/csv;charset=utf-8;')
 }
