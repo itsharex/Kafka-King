@@ -150,8 +150,8 @@ jobs:
           cp -r ${{ env.APP_WORKING_DIRECTORY }}/build/bin/* _temp_dist/
           chmod +x _temp_dist/*
           cd _temp_dist/
-          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$ARCH.tar.gz *
-          mv ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-$ARCH.tar.gz ..
+          tar -zcvf ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-x64.tar.gz *
+          mv ${{ env.APP_NAME }}-${{ github.ref_name }}-ubuntu-x64.tar.gz ..
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
