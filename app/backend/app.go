@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-package main
+package backend
 
 import (
 	"app/backend/common"
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"log"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // App struct
@@ -44,8 +45,8 @@ func (a *App) Start(ctx context.Context) {
 	log.Println("===注意，接下来前端执行onMounted，后端初始化必须在此处完成===")
 }
 
-// domReady is called after front-end resources have been loaded
-func (a *App) domReady(ctx context.Context) {
+// DomReady is called after front-end resources have been loaded
+func (a *App) DomReady(ctx context.Context) {
 	log.Println("===最后一步，页面即将显示……可以执行后端异步任务===")
 
 	// 统计版本使用情况
@@ -67,14 +68,14 @@ func (a *App) domReady(ctx context.Context) {
 
 }
 
-// beforeClose is called when the application is about to quit,
+// BeforeClose is called when the application is about to quit,
 // either by clicking the window close button or calling runtime.Quit.
 // Returning true will cause the application to continue, false will continue shutdown as normal.
-func (a *App) beforeClose(ctx context.Context) (prevent bool) {
+func (a *App) BeforeClose(ctx context.Context) (prevent bool) {
 	return false
 }
 
-// shutdown is called at application termination
-func (a *App) shutdown(ctx context.Context) {
+// Shutdown is called at application termination
+func (a *App) Shutdown(ctx context.Context) {
 	// Perform your teardown here
 }

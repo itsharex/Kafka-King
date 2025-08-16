@@ -18,6 +18,7 @@
 package main
 
 import (
+	"app/backend"
 	"app/backend/common"
 	"app/backend/config"
 	"app/backend/service"
@@ -25,6 +26,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -42,7 +44,7 @@ var assets embed.FS
 var icon []byte
 
 func main() {
-	app := NewApp()
+	app := backend.NewApp()
 	appConfig := &config.AppConfig{}
 	configInfo := appConfig.GetConfig()
 	update := &system.Update{}
@@ -77,11 +79,11 @@ func main() {
 			update.Start(ctx)
 		},
 		//在前端加载完毕 index.html 及其资源后调用此回调
-		OnDomReady: app.domReady,
+		OnDomReady: app.DomReady,
 		//在前端被销毁之后，应用程序终止之前，调用此回调。 它提供了应用程序上下文。
 		OnBeforeClose: kafkaService.Close,
 		//应用关闭前回调
-		OnShutdown: app.shutdown,
+		OnShutdown: app.Shutdown,
 		//WindowStartState: options.Normal,
 		//指定向前端暴露哪些结构体方法
 		Bind: []any{
