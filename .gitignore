@@ -7,3 +7,9 @@ app/build/windows/icon.ico
 frontend/package.json.md5
 .vscode
 .idea
+
+# gemini-cli settings
+.gemini/
+
+# GitHub App credentials
+gha-creds-*.json
