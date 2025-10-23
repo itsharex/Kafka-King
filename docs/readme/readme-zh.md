@@ -22,9 +22,7 @@
 
 > 同款好用elasticsearch客户端 `ES-King`，可以一起收藏下：https://github.com/Bronya0/ES-King
 
-
-
-
+**文档（AI）**：[https://zread.ai/Bronya0/Kafka-King](https://zread.ai/Bronya0/Kafka-King)
 
 # Kafka-King功能清单
 - [x] 查看集群节点列表，支持动态配置broker、topic的配置项
