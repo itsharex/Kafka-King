@@ -21,7 +21,9 @@ English | <a href="docs/readme/readme-zh.md">简体中文</a> | <a href="docs/re
 
 This project is a kafka GUI client, adapted to various desktop systems (except Win7), supports kafka 0.8.0 to 3.8+ ，Based on [Wails](https://github.com/wailsapp/wails) and [franz-go](https://github.com/twmb/franz-go).
 
-> Other：A similarly powerful Elasticsearch client `ES-King` : https://github.com/Bronya0/ES-King
+ A similarly powerful Elasticsearch client `ES-King` : https://github.com/Bronya0/ES-King
+
+ AI Doc：[https://zread.ai/Bronya0/Kafka-King](https://zread.ai/Bronya0/Kafka-King)
 
 
 # Features of Kafka-King
