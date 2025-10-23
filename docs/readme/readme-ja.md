@@ -21,6 +21,7 @@ Kafkaの使い勝手を向上させる。
 
 > 同様に便利なElasticsearchクライアント `ES-King` もご確認ください：https://github.com/Bronya0/ES-King
 
+**Doc（AI）**：[https://zread.ai/Bronya0/Kafka-King](https://zread.ai/Bronya0/Kafka-King)
 
 # Kafka-Kingの機能一覧
 - [x] クラスタノードリストの表示、BrokerとTopic設定の動的構成サポート。
