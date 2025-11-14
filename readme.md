@@ -10,6 +10,7 @@
 ![GitHub All Releases](https://img.shields.io/github/downloads/Bronya0/Kafka-King/total)
 ![GitHub stars](https://img.shields.io/github/stars/Bronya0/Kafka-King)
 ![GitHub forks](https://img.shields.io/github/forks/Bronya0/Kafka-King.svg?style=flat-square)
+![star](https://gitcode.com/Bronya0/Kafka-King/star/badge.svg)
 
 <h3 align="center">A modern, practical Kafka GUI client </h3>
 
