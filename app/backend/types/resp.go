@@ -91,3 +91,28 @@ type ConfigSynonym struct {
 	Value  string `json:"value"`
 	Source string `json:"source"`
 }
+
+// AlertConfig 告警配置结构体
+type AlertConfig struct {
+	Enabled       bool   `json:"enabled"`
+	WebhookURL    string `json:"webhook_url"`
+	CustomHeader  string `json:"custom_header"`
+	Threshold     int64  `json:"threshold"`
+	MessageTemplate string `json:"message_template"`
+	CheckInterval int    `json:"check_interval"`
+}
+
+// AlertRequest 告警请求结构体
+type AlertRequest struct {
+	ConsumerGroup string           `json:"consumer_group"`
+	TotalLag      int64            `json:"total_lag"`
+	Threshold     int64            `json:"threshold"`
+	TopicLags     []TopicAlertInfo `json:"topic_lags"`
+	Timestamp     string           `json:"timestamp"`
+}
+
+// TopicAlertInfo 单个topic的告警信息
+type TopicAlertInfo struct {
+	TopicName string `json:"topic_name"`
+	Lag       int64  `json:"lag"`
+}

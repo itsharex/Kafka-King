@@ -37,6 +37,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kmsg"
 	"golang.org/x/crypto/ssh"
@@ -1280,6 +1281,111 @@ func (k *Service) DeleteAcl(acl map[string]any) *types.ResultResp {
 	}
 
 	return result
+}
+
+// CheckAndSendAlert 检查积压并发送告警
+func (k *Service) CheckAndSendAlert(alertReq types.AlertRequest, alertConfig types.AlertConfig) *types.ResultResp {
+	result := &types.ResultResp{}
+
+	if !alertConfig.Enabled {
+		return result
+	}
+
+	if alertConfig.WebhookURL == "" {
+		result.Err = "Webhook URL不能为空"
+		return result
+	}
+
+	// 检查总积压是否超过阈值
+	if alertReq.TotalLag < alertConfig.Threshold {
+		fmt.Printf("总积压 %d 未超过阈值 %d", alertReq.TotalLag, alertConfig.Threshold)
+		return result
+	}
+
+	// 准备告警消息
+	fmt.Printf("准备告警消息: %s\n", alertConfig.MessageTemplate)
+	alertMsg, err := prepareAlertMessage(alertReq, alertConfig.MessageTemplate)
+	if err != nil {
+		result.Err = fmt.Sprintf("准备告警消息失败: %v", err)
+		return result
+	}
+
+	// 发送告警
+	fmt.Printf("发送告警消息: %s\n", alertMsg)
+	err = sendWebhookRequest(alertConfig.WebhookURL, alertConfig.CustomHeader, alertMsg)
+	if err != nil {
+		result.Err = fmt.Sprintf("发送告警失败: %v", err)
+		return result
+	}
+
+	return result
+}
+
+// prepareAlertMessage 准备告警消息
+func prepareAlertMessage(alertReq types.AlertRequest, template string) (string, error) {
+	// 如果没有提供模板，使用默认模板
+	if template == "" {
+		template = `Kafka消费者组积压告警
+消费者组: {{consumer_group}}
+总积压: {{total_lag}}
+阈值: {{threshold}}
+告警时间: {{timestamp}}
+
+Topic积压详情:
+{{topics}}`
+	}
+
+	// 替换占位符
+	msg := template
+	msg = strings.ReplaceAll(msg, "[group]", alertReq.ConsumerGroup)
+	msg = strings.ReplaceAll(msg, "[total_lag]", fmt.Sprintf("%d", alertReq.TotalLag))
+	msg = strings.ReplaceAll(msg, "[threshold]", fmt.Sprintf("%d", alertReq.Threshold))
+	msg = strings.ReplaceAll(msg, "[timestamp]", alertReq.Timestamp)
+
+	// 构建topics部分
+	topicsStr := ""
+	for _, topic := range alertReq.TopicLags {
+		topicsStr += fmt.Sprintf("  %s: %d\n", topic.TopicName, topic.Lag)
+	}
+	msg = strings.ReplaceAll(msg, "[topics]", topicsStr)
+
+	return msg, nil
+}
+
+// sendWebhookRequest 使用go-resty发送webhook请求
+func sendWebhookRequest(url string, customHeader string, message string) error {
+	// 创建resty客户端
+	client := resty.New().
+		SetTimeout(10*time.Second).
+		SetHeader("Content-Type", "application/json")
+
+	// 添加自定义头
+	if customHeader != "" {
+		parts := strings.SplitN(customHeader, ":", 2)
+		if len(parts) == 2 {
+			headerName := strings.TrimSpace(parts[0])
+			headerValue := strings.TrimSpace(parts[1])
+			client.SetHeader(headerName, headerValue)
+		}
+	}
+
+	// 发送POST请求
+	resp, err := client.R().
+		SetBody(message).
+		Post(url)
+
+	if err != nil {
+		return fmt.Errorf("发送请求失败: %v", err)
+	}
+
+	fmt.Printf("结果: %s\n", resp.Body())
+
+	// 检查状态码
+	if resp.StatusCode() < 200 || resp.StatusCode() >= 300 {
+		return fmt.Errorf("HTTP错误: %d", resp.StatusCode())
+	}
+
+	return nil
 }
 
 // ManageKafkaSCRAMUsers  添加、更新或删除 Kafka SCRAM 用户。

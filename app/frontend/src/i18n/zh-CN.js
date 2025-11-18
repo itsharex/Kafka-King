@@ -16,7 +16,7 @@
  */
 
 export default {
-    common:{
+    common: {
         enter: '确认',
         cancel: '取消',
         name: '昵称',
@@ -47,7 +47,7 @@ export default {
         monitor: '巡检',
         settings: '设置'
     },
-    conn:{
+    conn: {
         title: '集群',
         add: '添加集群',
         edit: '编辑连接',
@@ -140,7 +140,7 @@ export default {
         firstConsumeTip: "首次消费可能需要一些时间来重平衡",
         startTimestamp: "默认消费起始时间",
     },
-    group:{
+    group: {
         title: "消费者组",
         member: '成员',
         warn: '请先从具体的topic切换到本页',
@@ -153,7 +153,7 @@ export default {
         loadSchemePlaceholder: "选择监控方案",
         deleteScheme: "删除方案",
         deleteSchemeConfirm: "确认删除",
-        deleteSchemeConfirmContent: "确定要删除方案 '{name}' 吗？此操作不可恢复。",        
+        deleteSchemeConfirmContent: "确定要删除方案 '{name}' 吗？此操作不可恢复。",
         topicsLabel: "Topics",
         topicPlaceholder: "选择或搜索Kafka Topic",
         groupLabel: "Group",
@@ -165,15 +165,27 @@ export default {
         lag: '积压量',
         commit: '提交 offset',
         end: '终末 offset',
+        alertConfig: '告警外发',
+        enableAlert: '启用告警',
+        webhookUrl: 'Webhook地址',
+        webhookUrlPlaceholder: '输入告警接口地址',
+        customHeader: '自定义请求头',
+        customHeaderPlaceholder: '例如: Authorization: Bearer xxxxx',
+        threshold: '积压阈值',
+        thresholdPlaceholder: '输入积压阈值',
+        messageTemplate: '消息模板',
+        messageTemplatePlaceholder: '可选。支持占位符: [total_lag], [topics], [group], [timestamp]',
+        checkInterval: '检查间隔',
+        checkIntervalPlaceholder: '检查间隔(分钟)',
     },
-    settings:{
+    settings: {
         title: '设置',
         width: '窗口宽度',
         height: '窗口高度',
         lang: '语言',
         theme: '主题',
     },
-    message:{
+    message: {
         noMemberFound: "没有找到成员",
         saveSuccess: "保存成功",
         connectSuccess: "连接成功",
@@ -192,6 +204,8 @@ export default {
         mustFill: "请填写所有必填字段",
         saveErr: "保存失败",
         pleaseInput: "请输入消息内容",
+        alertSent: '告警已发送',
+        alertSendFailed: '告警发送失败',
     },
     about: {
         title: "关于",
@@ -203,7 +217,7 @@ export default {
         qqGroup: "QQ交流群",
         translate: '翻译有问题？报告或参与翻译',
     },
-    header:{
+    header: {
         desc: '更人性化的 Kafka GUI',
         c_node: '当前集群',
         netErr: '无法连接github，请检查网络',

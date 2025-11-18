@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/build/appicon.png" width="300" alt="Image Title">
+  <img src="app/build/appicon.png" width="200" alt="Image Title">
 </p>
 <h1 align="center">Kafka King </h1>
 
