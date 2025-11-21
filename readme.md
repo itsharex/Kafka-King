@@ -80,5 +80,5 @@ Support Chinese, Japanese, English, Korean, Russian and other languages
 
 Fix or add new language：https://github.com/Bronya0/Kafka-King/issues/51
 
-# Jetbrains
-We sincerely thank JetBrains for their support of this project.
+# Star
+[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg?variant=adaptive)](https://starchart.cc/Bronya0/Kafka-King)
