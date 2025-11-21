@@ -93,3 +93,7 @@ Apache-2.0 license
 支持中文、日语、英语、韩语、俄语等多种语言
 
 修复或添加新语言：https://github.com/Bronya0/Kafka-King/issues/51
+
+# Star
+
+[![Stargazers over time](https://starchart.cc/Bronya0/Kafka-King.svg?variant=adaptive)](https://starchart.cc/Bronya0/Kafka-King)
