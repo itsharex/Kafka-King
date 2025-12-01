@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../../app/build/appicon.png" width="200" alt="图片标题">
+  <img src="app/build/appicon.png" width="200" alt="图片标题">
 </p>
 <h1 align="center">Kafka King </h1>
 
