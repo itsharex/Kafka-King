@@ -25,6 +25,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -951,7 +952,8 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 
 // Consumer 消费消息 (此函数逻辑复杂，保留完整的优化后代码)
 // 修改：增加了 isolationLevel 参数 (例如传入 "read_committed" 或 "read_uncommitted")
-func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isolationLevel string, isCommit, isLatest bool, startTimestamp int) *types.ResultsResp {
+// 修改：增加了 decode 参数 (例如传入 "base64" 或 "")
+func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isolationLevel string, isCommit, isLatest bool, startTimestamp int, decode string) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -1062,11 +1064,25 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			result.Err = "Failed to decompress data: " + err.Error()
 			return result
 		}
+
+		// 根据decode参数进行解码
+		var decodedData []byte
+		switch strings.ToLower(decode) {
+		case "base64":
+			decodedData, err = base64.StdEncoding.DecodeString(string(data))
+			if err != nil {
+				result.Err = "Failed to decode base64 data: " + err.Error()
+				return result
+			}
+		default:
+			decodedData = data
+		}
+
 		res = append(res, map[string]any{
 			"ID":            i,
 			"Offset":        v.Offset,
 			"Key":           string(v.Key),
-			"Value":         string(data),
+			"Value":         string(decodedData),
 			"Timestamp":     v.Timestamp.Format(time.DateTime),
 			"Partition":     v.Partition,
 			"Topic":         v.Topic,

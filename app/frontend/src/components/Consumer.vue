@@ -102,6 +102,13 @@
         ]" clearable filterable style="width: 100px" />
       </n-form-item>
 
+      <n-form-item label="Decode" path="decode">
+        <n-select v-model:value="select.decode" :options="[
+          { label: 'None', value: '' },
+          { label: 'Base64', value: 'base64' },
+        ]" clearable filterable style="width: 100px" />
+      </n-form-item>
+
       <n-form-item :label="t('consumer.isolationLevel')" path="isolationLevel">
         <n-select v-model:value="select.isolationLevel" :options="[
           { label: t('consumer.isolationLevelReadUncommitted'), value: 'read_uncommitted' },
@@ -182,6 +189,7 @@ const select = ref({
   isCommit: false,
   isLatest: false,
   decompress: null,
+  decode: "", // 默认为空，表示不进行额外解码
   startTimestamp: null,
   isolationLevel: "read_uncommitted", // 默认为read_uncommitted
 })
@@ -388,7 +396,7 @@ const consume = async () => {
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
       select.value.maxMessages, select.value.timeout, select.value.decompress,
       select.value.isolationLevel,
-      select.value.isCommit, select.value.isLatest, select.value.startTimestamp,)
+      select.value.isCommit, select.value.isLatest, select.value.startTimestamp, select.value.decode)
 
     if (result.err !== "") {
       message.error(result.err, { duration: 5000 })
