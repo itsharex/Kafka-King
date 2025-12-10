@@ -73,7 +73,12 @@
         <n-form-item :label="t('inspection.messageTemplate')">
           <n-flex vertical>
             {{ t('inspection.messageTemplatePlaceholder') }}
-            <n-input v-model:value="alertConfig.message_template" type="textarea" rows="8" style="text-align: left;" />
+            <n-input v-model:value="alertConfig.message_template" type="textarea" rows="8" placeholder='{
+  "msgtype": "text",
+  "text": {
+    "content": "kafka积压告警\ntopics: [topics]\ngroup:[group]\nlag:[total_lag]\ntimestamp:[timestamp]"
+  }
+}' style="text-align: left;" />
           </n-flex>
         </n-form-item>
         <n-form-item>
@@ -502,13 +507,24 @@ const addOffsets = (item) => {
 
 // 保存告警配置
 const saveAlertConfig = () => {
-  // 保存告警配置到localStorage
-  // alertConfig.message_template 必须为json
-  try {
-    JSON.parse(alertConfig.value.message_template);
-  } catch (e) {
-    message.error('告警消息模板必须为json格式', { duration: 5000 });
-    return;
+
+  if (alertConfig.value.enabled) {
+    if (!alertConfig.value.webhook_url) {
+      message.error('告警Webhook URL不能为空', { duration: 5000 });
+      return;
+    }
+    if (!alertConfig.value.message_template) {
+      message.error('告警消息模板不能为空', { duration: 5000 });
+      return;
+    }
+    // 保存告警配置到localStorage
+    // alertConfig.message_template 必须为json
+    try {
+      JSON.parse(alertConfig.value.message_template);
+    } catch (e) {
+      message.error('告警消息模板必须为json格式', { duration: 5000 });
+      return;
+    }
   }
 
   localStorage.setItem('kafkaKingAlertConfig', JSON.stringify(alertConfig.value));
