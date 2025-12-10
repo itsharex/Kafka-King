@@ -24,37 +24,20 @@
       </n-button>
     </n-flex>
     <!-- 查询条件区域 -->
-    <n-form
-        ref="formRef"
-        :model="select"
-        :rules="{
-              selectedTopic: {required: true, trigger: 'blur'},
-              selectedGroup: {required: true, trigger: 'blur'},
-              maxMessages: {required: true, type: 'number',trigger: 'blur'},
-            }"
-        inline
-        label-placement="top"
-        label-width="auto"
-        style="text-align: left;"
-    >
+    <n-form ref="formRef" :model="select" :rules="{
+      selectedTopic: { required: true, trigger: 'blur' },
+      selectedGroup: { required: true, trigger: 'blur' },
+      maxMessages: { required: true, type: 'number', trigger: 'blur' },
+    }" inline label-placement="top" label-width="auto" style="text-align: left;">
 
       <n-form-item label="Topic" path="selectedTopic">
-        <n-select
-            v-model:value="select.selectedTopic"
-            :options="topic_data"
-            :placeholder="t('consumer.requiredTopic')"
-            :render-option="renderSelect"
-            clearable
-            filterable
-        />
+        <n-select v-model:value="select.selectedTopic" :options="topic_data" :placeholder="t('consumer.requiredTopic')"
+          :render-option="renderSelect" clearable filterable />
       </n-form-item>
       <n-form-item label="Number" path="maxMessages" style="width: 100px">
         <n-tooltip>
           <template #trigger>
-            <n-input-number
-                v-model:value="select.maxMessages"
-                :min="1"
-            />
+            <n-input-number v-model:value="select.maxMessages" :min="1" />
           </template>
           {{ t('consumer.messagesCountPlaceholder') }}
         </n-tooltip>
@@ -63,15 +46,8 @@
       <n-form-item label="Group" path="selectedGroup">
         <n-tooltip>
           <template #trigger>
-            <n-select
-                v-model:value="select.selectedGroup"
-                :options="group_data"
-                :render-option="renderSelect"
-                clearable
-                filterable
-                style="max-width: 200px"
-                tag
-            />
+            <n-select v-model:value="select.selectedGroup" :options="group_data" :render-option="renderSelect" clearable
+              filterable style="max-width: 200px" tag />
           </template>
           support create
         </n-tooltip>
@@ -80,29 +56,19 @@
       <n-form-item label="Poll Timeout">
         <n-tooltip>
           <template #trigger>
-            <n-input-number
-                v-model:value="select.timeout"
-                :min="1"
-                style="max-width: 100px"
-            />
+            <n-input-number v-model:value="select.timeout" :min="1" style="max-width: 100px" />
           </template>
           {{ t('consumer.pollTimeoutPlaceholder') }}
         </n-tooltip>
       </n-form-item>
 
       <n-form-item :label="t('common.decompress')" path="decompress">
-        <n-select
-            v-model:value="select.decompress"
-            :options="[
-              {label: 'gzip', value: 'gzip'},
-              {label: 'lz4', value: 'lz4'},
-              {label: 'zstd', value: 'zstd'},
-              {label: 'snappy', value: 'snappy'},
-            ]"
-            clearable
-            filterable
-            style="width: 100px"
-        />
+        <n-select v-model:value="select.decompress" :options="[
+          { label: 'gzip', value: 'gzip' },
+          { label: 'lz4', value: 'lz4' },
+          { label: 'zstd', value: 'zstd' },
+          { label: 'snappy', value: 'snappy' },
+        ]" clearable filterable style="width: 100px" />
       </n-form-item>
 
       <n-form-item label="Commit Offset" path="isCommit">
@@ -132,13 +98,8 @@
       <n-form-item :label="t('consumer.startTimestamp')" path="startTimestamp">
         <n-tooltip>
           <template #trigger>
-            <n-date-picker
-                v-model:value="select.startTimestamp"
-                clearable
-                style="max-width: 188px"
-                type="datetime"
-                value-format="timestamp"
-            />
+            <n-date-picker v-model:value="select.startTimestamp" clearable style="max-width: 188px" type="datetime"
+              value-format="timestamp" />
           </template>
           {{ t('consumer.onlyTip') }}
         </n-tooltip>
@@ -146,37 +107,32 @@
 
       <n-form-item>
         <n-button :loading="loading" :render-icon="renderIcon(MessageOutlined)" tertiary type="primary"
-                  @click="consume">
+          @click="consume">
           {{ t('consumer.consumeMessage') }}
         </n-button>
       </n-form-item>
 
       <n-form-item>
         <n-input v-model:value="searchText" clearable placeholder="local search" style="max-width: 150px"
-                 @input="searchData"/>
+          @input="searchData" />
       </n-form-item>
 
     </n-form>
     <!-- 消息列表 -->
-    <n-data-table
-        :bordered="true"
-        :columns="refColumns(columns)"
-        :data="filter_messages"
-        :pagination="pagination"
-        striped
-    />
+    <n-data-table :bordered="true" :columns="refColumns(columns)" :data="filter_messages" :pagination="pagination"
+      striped />
   </n-flex>
 </template>
 <script setup>
-import {onMounted, ref} from 'vue'
+import { onMounted, ref, h } from 'vue'
 import emitter from "../utils/eventBus";
-import {createCsvContent, download_file, refColumns, renderIcon, renderSelect} from "../utils/common";
-import {DriveFileMoveTwotone, MessageOutlined} from "@vicons/material";
-import {NButton, NDataTable, NFlex, NInput, NTooltip, useMessage} from 'naive-ui'
-import {Consumer, GetGroups, GetTopics} from "../../wailsjs/go/service/Service";
-import {useI18n} from "vue-i18n";
+import { createCsvContent, download_file, refColumns, renderIcon, renderSelect } from "../utils/common";
+import { DriveFileMoveTwotone, MessageOutlined, ContentCopyOutlined } from "@vicons/material";
+import { NButton, NDataTable, NFlex, NInput, NTooltip, NIcon, useMessage } from 'naive-ui'
+import { Consumer, GetGroups, GetTopics } from "../../wailsjs/go/service/Service";
+import { useI18n } from "vue-i18n";
 
-const {t} = useI18n()
+const { t } = useI18n()
 const formRef = ref(null)
 
 const message = useMessage()
@@ -230,7 +186,7 @@ const getData = async () => {
   try {
     const res = await GetTopics()
     if (res.err !== "") {
-      message.error(res.err, {duration: 5000})
+      message.error(res.err, { duration: 5000 })
     } else {
       let topic_data_lst = []
       if (res.results) {
@@ -246,7 +202,7 @@ const getData = async () => {
     }
     const res2 = await GetGroups()
     if (res2.err !== "") {
-      message.error(res2.err, {duration: 5000})
+      message.error(res2.err, { duration: 5000 })
     } else {
       let groups = [{
         label: '(auto generate)',
@@ -266,7 +222,7 @@ const getData = async () => {
       group_data.value = groups
     }
   } catch (e) {
-    message.error(e.message, {duration: 5000})
+    message.error(e.message, { duration: 5000 })
   }
 }
 
@@ -309,8 +265,22 @@ const columns = [
     title: 'Value',
     key: 'Value',
     width: 40,
-
-
+    render(row) {
+      return [
+        h(NTooltip, {}, {
+          trigger: () => h(NButton, {
+            size: 'small',
+            text: true,
+            onClick: () => {
+              navigator.clipboard.writeText(row.Value)
+              message.success('复制成功')
+            }
+          }, { default: () => h(NIcon, { size: 14 }, { default: () => h(ContentCopyOutlined) }) }),
+          default: () => '复制Value'
+        }),
+        h('span', { style: { 'margin-left': '8px', 'word-break': 'break-all' } }, row.Value)
+      ]
+    },
     sorter: 'default'
   },
   {
@@ -371,11 +341,11 @@ const columns = [
 // 获取消息
 const consume = async () => {
   if (!select.value.selectedTopic) {
-    message.error(t('message.selectTopic'), {duration: 5000})
+    message.error(t('message.selectTopic'), { duration: 5000 })
     return
   }
   if (!select.value.selectedGroup) {
-    message.error("Group is needed", {duration: 5000})
+    message.error("Group is needed", { duration: 5000 })
     return
   }
   loading.value = true
@@ -387,11 +357,11 @@ const consume = async () => {
     }
 
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
-        select.value.maxMessages, select.value.timeout, select.value.decompress,
-        select.value.isCommit, select.value.isLatest, select.value.startTimestamp)
+      select.value.maxMessages, select.value.timeout, select.value.decompress,
+      select.value.isCommit, select.value.isLatest, select.value.startTimestamp)
 
     if (result.err !== "") {
-      message.error(result.err, {duration: 5000})
+      message.error(result.err, { duration: 5000 })
     } else {
       messages = result.results
       searchData()
@@ -406,7 +376,7 @@ const consume = async () => {
 
 const downloadAllDataCsv = async () => {
   const csvContent = createCsvContent(
-      filter_messages.value, columns
+    filter_messages.value, columns
   )
   download_file(csvContent, 'messages.csv', 'text/csv;charset=utf-8;')
 }
@@ -414,7 +384,7 @@ const downloadAllDataCsv = async () => {
 // 保存为文本文件
 const saveMessageAsString = (message) => {
   const content = message.content
-  const blob = new Blob([content], {type: 'text/plain;charset=utf-8'})
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
   // saveAs(blob, `message-${message.offset}.txt`)
 }
 
@@ -426,7 +396,7 @@ const saveMessageAsBinary = (message) => {
   for (let i = 0; i < content.length; i++) {
     bytes[i] = content.charCodeAt(i)
   }
-  const blob = new Blob([bytes], {type: 'application/octet-stream'})
+  const blob = new Blob([bytes], { type: 'application/octet-stream' })
   // saveAs(blob, `message-${message.offset}.bin`)
 }
 
