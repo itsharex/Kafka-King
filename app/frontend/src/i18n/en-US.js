@@ -139,6 +139,9 @@ export default {
         consumeMessage: "Consume Messages",
         firstConsumeTip: "First consume may take some time to rebalance",
         startTimestamp: "Default consume start time",
+        isolationLevel: "Isolation Level",
+        isolationLevelReadUncommitted: "read_uncommitted",
+        isolationLevelReadCommitted: "read_committed",
     },
     group: {
         title: "Consumer Group",

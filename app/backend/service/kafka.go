@@ -90,8 +90,9 @@ func (k *Service) Close(_ context.Context) bool {
 		k.kac.Close()
 	}
 	// FIX: 增强的关闭逻辑，确保安全
-	if k.consumer != nil && len(k.consumer) == 3 {
-		if consumerClient, ok := k.consumer[2].(*kgo.Client); ok && consumerClient != nil {
+	// 修改：长度变为 4 (group, topic, isolation, client)，client 在索引 3
+	if k.consumer != nil && len(k.consumer) == 4 {
+		if consumerClient, ok := k.consumer[3].(*kgo.Client); ok && consumerClient != nil {
 			consumerClient.Close()
 		}
 		k.consumer = nil
@@ -384,8 +385,9 @@ func (k *Service) SetConnect(connectName string, conn map[string]any, isTest boo
 		if k.sshTunnel != nil {
 			_ = k.sshTunnel.client.Close()
 		}
-		if k.consumer != nil && len(k.consumer) == 3 {
-			if c, ok := k.consumer[2].(*kgo.Client); ok {
+		// 修改：长度变为 4，索引变为 3
+		if k.consumer != nil && len(k.consumer) == 4 {
+			if c, ok := k.consumer[3].(*kgo.Client); ok {
 				c.Close()
 			}
 		}
@@ -948,7 +950,8 @@ func (k *Service) Produce(topic string, key, value string, partition, num int, h
 }
 
 // Consumer 消费消息 (此函数逻辑复杂，保留完整的优化后代码)
-func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isCommit, isLatest bool, startTimestamp int) *types.ResultsResp {
+// 修改：增加了 isolationLevel 参数 (例如传入 "read_committed" 或 "read_uncommitted")
+func (k *Service) Consumer(topic string, group string, num, timeout int, decompress string, isolationLevel string, isCommit, isLatest bool, startTimestamp int) *types.ResultsResp {
 	result := &types.ResultsResp{Results: make([]any, 0)}
 	if k.kac == nil {
 		result.Err = common.PleaseSelectErr
@@ -958,10 +961,12 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 
 	k.mutex.Lock()
 	var _client *kgo.Client
-	if k.consumer == nil || k.consumer[0] != group || k.consumer[1] != topic {
+	if k.consumer == nil || k.consumer[0] != group || k.consumer[1] != topic || k.consumer[2] != isolationLevel {
+
 		fmt.Println("创建新的consumer", k.consumer)
-		if k.consumer != nil && len(k.consumer) == 3 {
-			if c, ok := k.consumer[2].(*kgo.Client); ok {
+		// 关闭旧 client
+		if k.consumer != nil && len(k.consumer) == 4 {
+			if c, ok := k.consumer[3].(*kgo.Client); ok {
 				c.Close()
 			}
 		}
@@ -969,6 +974,15 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			kgo.ConsumeTopics(topic),
 			kgo.DisableAutoCommit(),
 		)
+
+		// 新增：配置隔离级别
+		if strings.ToLower(isolationLevel) == "read_committed" {
+			conf = append(conf, kgo.FetchIsolationLevel(kgo.ReadCommitted()))
+		} else {
+			// 默认为 ReadUncommitted
+			conf = append(conf, kgo.FetchIsolationLevel(kgo.ReadUncommitted()))
+		}
+
 		if group != "__kafka_king_auto_generate__" {
 			conf = append(conf, kgo.ConsumerGroup(group))
 		} else {
@@ -989,11 +1003,14 @@ func (k *Service) Consumer(topic string, group string, num, timeout int, decompr
 			return result
 		}
 		_client = cl
-		k.consumer = []any{group, topic, _client}
+
+		// 更新缓存结构，包含 isolationLevel
+		k.consumer = []any{group, topic, isolationLevel, _client}
 		fmt.Println("创建新的consumer完成", k.consumer)
 	} else {
 		fmt.Println("使用缓存的consumer", k.consumer)
-		_client = k.consumer[2].(*kgo.Client)
+		// 从索引 3 获取 client
+		_client = k.consumer[3].(*kgo.Client)
 	}
 	k.mutex.Unlock()
 

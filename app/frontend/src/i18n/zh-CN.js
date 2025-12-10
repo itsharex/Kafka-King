@@ -139,6 +139,9 @@ export default {
         consumeMessage: "消费",
         firstConsumeTip: "首次消费可能需要一些时间来重平衡",
         startTimestamp: "默认消费起始时间",
+        isolationLevel: "隔离级别",
+        isolationLevelReadUncommitted: "读未提交",
+        isolationLevelReadCommitted: "读已提交",
     },
     group: {
         title: "消费者组",

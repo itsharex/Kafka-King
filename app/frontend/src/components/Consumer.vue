@@ -30,10 +30,12 @@
       maxMessages: { required: true, type: 'number', trigger: 'blur' },
     }" inline label-placement="top" label-width="auto" style="text-align: left;">
 
+      <!-- 常用选项 -->
       <n-form-item label="Topic" path="selectedTopic">
         <n-select v-model:value="select.selectedTopic" :options="topic_data" :placeholder="t('consumer.requiredTopic')"
           :render-option="renderSelect" clearable filterable />
       </n-form-item>
+
       <n-form-item label="Number" path="maxMessages" style="width: 100px">
         <n-tooltip>
           <template #trigger>
@@ -53,7 +55,36 @@
         </n-tooltip>
       </n-form-item>
 
-      <n-form-item label="Poll Timeout">
+      <n-form-item>
+        <n-button :loading="loading" :render-icon="renderIcon(MessageOutlined)" tertiary type="primary"
+          @click="consume">
+          {{ t('consumer.consumeMessage') }}
+        </n-button>
+      </n-form-item>
+
+      <n-form-item>
+        <n-input v-model:value="searchText" clearable placeholder="local search" style="max-width: 150px"
+          @input="searchData" />
+      </n-form-item>
+
+      <!-- 高级选项折叠按钮 -->
+      <n-form-item>
+        <n-button text @click="advancedOptionsCollapsed = !advancedOptionsCollapsed">
+          <template #icon>
+            <n-icon>
+              <ExpandMoreOutlined v-if="advancedOptionsCollapsed" />
+              <ExpandLessOutlined v-else />
+            </n-icon>
+          </template>
+          {{ advancedOptionsCollapsed ? '展开高级选项' : '收起高级选项' }}
+        </n-button>
+      </n-form-item>
+    </n-form>
+
+    <!-- 高级选项区域 -->
+    <n-form v-show="!advancedOptionsCollapsed" :model="select" inline label-placement="top" label-width="auto"
+      style="text-align: left; margin-top: 10px;">
+      <n-form-item label="Pull Timeout">
         <n-tooltip>
           <template #trigger>
             <n-input-number v-model:value="select.timeout" :min="1" style="max-width: 100px" />
@@ -69,6 +100,13 @@
           { label: 'zstd', value: 'zstd' },
           { label: 'snappy', value: 'snappy' },
         ]" clearable filterable style="width: 100px" />
+      </n-form-item>
+
+      <n-form-item :label="t('consumer.isolationLevel')" path="isolationLevel">
+        <n-select v-model:value="select.isolationLevel" :options="[
+          { label: t('consumer.isolationLevelReadUncommitted'), value: 'read_uncommitted' },
+          { label: t('consumer.isolationLevelReadCommitted'), value: 'read_committed' },
+        ]" style="width: 100px" />
       </n-form-item>
 
       <n-form-item label="Commit Offset" path="isCommit">
@@ -104,19 +142,6 @@
           {{ t('consumer.onlyTip') }}
         </n-tooltip>
       </n-form-item>
-
-      <n-form-item>
-        <n-button :loading="loading" :render-icon="renderIcon(MessageOutlined)" tertiary type="primary"
-          @click="consume">
-          {{ t('consumer.consumeMessage') }}
-        </n-button>
-      </n-form-item>
-
-      <n-form-item>
-        <n-input v-model:value="searchText" clearable placeholder="local search" style="max-width: 150px"
-          @input="searchData" />
-      </n-form-item>
-
     </n-form>
     <!-- 消息列表 -->
     <n-data-table :bordered="true" :columns="refColumns(columns)" :data="filter_messages" :pagination="pagination"
@@ -127,7 +152,7 @@
 import { onMounted, ref, h } from 'vue'
 import emitter from "../utils/eventBus";
 import { createCsvContent, download_file, refColumns, renderIcon, renderSelect } from "../utils/common";
-import { DriveFileMoveTwotone, MessageOutlined, ContentCopyOutlined } from "@vicons/material";
+import { DriveFileMoveTwotone, MessageOutlined, ContentCopyOutlined, ExpandMoreOutlined, ExpandLessOutlined } from "@vicons/material";
 import { NButton, NDataTable, NFlex, NInput, NTooltip, NIcon, useMessage } from 'naive-ui'
 import { Consumer, GetGroups, GetTopics } from "../../wailsjs/go/service/Service";
 import { useI18n } from "vue-i18n";
@@ -145,6 +170,9 @@ const searchText = ref(null)
 // 新增状态变量，用于跟踪是否是首次消费
 const isFirstConsume = ref(true)
 
+// 控制高级选项折叠状态
+const advancedOptionsCollapsed = ref(true)
+
 // 表单数据
 const select = ref({
   selectedTopic: null,
@@ -155,6 +183,7 @@ const select = ref({
   isLatest: false,
   decompress: null,
   startTimestamp: null,
+  isolationLevel: "read_uncommitted", // 默认为read_uncommitted
 })
 
 const loading = ref(false)
@@ -358,7 +387,8 @@ const consume = async () => {
 
     const result = await Consumer(select.value.selectedTopic, select.value.selectedGroup,
       select.value.maxMessages, select.value.timeout, select.value.decompress,
-      select.value.isCommit, select.value.isLatest, select.value.startTimestamp)
+      select.value.isolationLevel,
+      select.value.isCommit, select.value.isLatest, select.value.startTimestamp,)
 
     if (result.err !== "") {
       message.error(result.err, { duration: 5000 })
@@ -367,8 +397,8 @@ const consume = async () => {
       searchData()
       message.success(t('message.fetchSuccess'))
     }
-  } catch (error) {
-    console.error(error)
+  } catch (e) {
+    message.error(e.message, { duration: 5000 })
   } finally {
     loading.value = false
   }
